@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Member } from "@/types";
 import { useToast } from "@/hooks/use-toast";
-import { generateMembersPdfReport } from "@/services/pdfService";
+import { generateMembersPdfReport } from "@/services/pdf";
 import { formatMonthYear } from "@/services/formatters";
 
 export const usePdfReportGeneration = (

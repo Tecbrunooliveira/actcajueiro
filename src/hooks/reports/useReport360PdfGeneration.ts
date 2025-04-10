@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { generateReport360Pdf } from "@/services/pdfService";
+import { generateReport360Pdf } from "@/services/pdf";
 import { formatMonthYear } from "@/services/formatters";
 
 export const useReport360PdfGeneration = (
