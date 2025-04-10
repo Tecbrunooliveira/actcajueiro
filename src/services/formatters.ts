@@ -1,4 +1,3 @@
-
 import { MemberStatus } from "@/types";
 
 // Utility formatters
@@ -9,10 +8,15 @@ export const formatCurrency = (value: number): string => {
   }).format(value);
 };
 
-export const formatMonthYear = (monthStr: string): string => {
+export const formatMonthYear = (monthStr: string, showYearOption: boolean = true): string => {
   const [year, month] = monthStr.split("-");
   const date = new Date(parseInt(year), parseInt(month) - 1);
-  return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  
+  if (showYearOption) {
+    return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  } else {
+    return date.toLocaleDateString("pt-BR", { month: "long" });
+  }
 };
 
 export const getCurrentMonthYear = (): { month: string; year: number } => {

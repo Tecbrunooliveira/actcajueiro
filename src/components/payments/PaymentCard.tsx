@@ -26,15 +26,15 @@ export function PaymentCard({
     >
       <div className="flex justify-between items-start">
         <div>
+          {memberName && (
+            <h3 className="font-bold text-base mb-1">{memberName}</h3>
+          )}
           <div className="flex items-center space-x-2">
             <CalendarIcon className="h-4 w-4 text-gray-500" />
-            <span className="font-medium">
-              {formatMonthYear(payment.month)}
+            <span className="text-sm text-gray-600">
+              {formatMonthYear(payment.month, false)}
             </span>
           </div>
-          {memberName && (
-            <p className="text-sm text-gray-600 mt-1">{memberName}</p>
-          )}
         </div>
         <div
           className={cn(

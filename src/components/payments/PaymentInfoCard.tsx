@@ -16,9 +16,14 @@ export function PaymentInfoCard({ payment, member }: PaymentInfoCardProps) {
     <Card>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-6">
-          <h2 className="text-xl font-semibold">
-            {formatMonthYear(payment.month)}
-          </h2>
+          <div>
+            {member && (
+              <h2 className="text-xl font-bold mb-1">{member.name}</h2>
+            )}
+            <p className="text-gray-600">
+              {formatMonthYear(payment.month)}
+            </p>
+          </div>
           <div
             className={cn(
               "flex items-center px-3 py-1 rounded-full text-sm font-medium",
@@ -46,13 +51,6 @@ export function PaymentInfoCard({ payment, member }: PaymentInfoCardProps) {
             <DollarSign className="h-5 w-5 mr-3 text-gray-400" />
             <span className="text-lg font-semibold">
               {formatCurrency(payment.amount)}
-            </span>
-          </div>
-
-          <div className="flex items-center text-gray-700">
-            <User className="h-5 w-5 mr-3 text-gray-400" />
-            <span>
-              {member ? member.name : "Sócio desconhecido"}
             </span>
           </div>
 
