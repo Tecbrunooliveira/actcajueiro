@@ -1,6 +1,6 @@
 
 import { Member } from "@/types";
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
 import { getStatusLabel } from "./dataService";
 
 // Define styles for PDF
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// Create PDF Document component
+// Create PDF Document component as a regular function component
 const MembersPdfDocument = ({ members, title, period }: { members: Member[], title: string, period: string }) => (
   <Document>
     <Page size="A4" style={styles.page}>
