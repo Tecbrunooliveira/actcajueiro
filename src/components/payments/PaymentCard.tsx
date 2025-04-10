@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Payment } from "@/types";
-import { formatCurrency, formatMonthYear } from "@/services/dataService";
+import { formatCurrency, formatMonthYear } from "@/services/formatters";
 import { CalendarIcon, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 

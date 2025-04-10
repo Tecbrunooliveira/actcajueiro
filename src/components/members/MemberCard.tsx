@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Member } from "@/types";
-import { getStatusColor, getStatusLabel } from "@/services/dataService";
+import { getStatusColor, getStatusLabel } from "@/services/formatters";
 import { ChevronRight, Phone, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 

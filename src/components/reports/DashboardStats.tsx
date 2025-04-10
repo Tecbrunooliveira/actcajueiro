@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { MonthlyRecord } from "@/types";
-import { formatCurrency } from "@/services/dataService";
+import { formatCurrency } from "@/services/formatters";
 import { 
   Users,
   CheckCircle,
