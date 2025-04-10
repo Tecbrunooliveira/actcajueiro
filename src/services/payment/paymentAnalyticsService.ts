@@ -2,6 +2,7 @@
 import { MonthlyRecord } from "@/types";
 import { memberService } from "@/services/memberService";
 import { paymentQueryService } from "./paymentQueryService";
+import { supabase } from "@/integrations/supabase/client";
 
 export const paymentAnalyticsService = {
   getMemberPaymentStatus: async (memberId: string): Promise<{ upToDate: boolean; unpaidMonths: string[] }> => {
@@ -47,7 +48,7 @@ export const paymentAnalyticsService = {
     paymentCompletionRate: number;
   }> => {
     // Get all payments for the year
-    const { data, error } = await paymentQueryService.supabase
+    const { data, error } = await supabase
       .from('payments')
       .select('*')
       .eq('year', year);
