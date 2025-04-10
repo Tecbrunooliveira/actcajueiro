@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -22,8 +22,9 @@ import {
   formatMonthYear,
   getCurrentMonthYear,
 } from "@/services/dataService";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, PlusCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const Reports = () => {
   const currentDate = getCurrentMonthYear();
@@ -44,6 +45,8 @@ const Reports = () => {
   const [paidMembers, setPaidMembers] = useState<Member[]>([]);
   const [unpaidMembers, setUnpaidMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [generatingPayments, setGeneratingPayments] = useState(false);
+  const { toast } = useToast();
 
   // Generate month options
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
@@ -163,6 +166,69 @@ const Reports = () => {
     setSelectedMonth(`${value}-${month}`);
   };
 
+  const handleGeneratePendingPayments = async () => {
+    try {
+      setGeneratingPayments(true);
+      
+      const count = await paymentService.generatePendingPaymentsForMonth(
+        selectedMonth,
+        parseInt(selectedYear)
+      );
+      
+      if (count > 0) {
+        toast({
+          title: "Pagamentos Gerados",
+          description: `${count} pagamentos pendentes foram gerados para ${formatMonthYear(selectedMonth)}.`,
+        });
+        
+        // Recarregar os dados para exibir os novos pagamentos
+        const fetchedMembers = await memberService.getAllMembers();
+        const fetchedPayments = await paymentService.getAllPayments();
+        const fetchedMonthlyRecord = await paymentService.getMonthlyRecord(
+          selectedMonth,
+          parseInt(selectedYear)
+        );
+        
+        setAllMembers(fetchedMembers);
+        setAllPayments(fetchedPayments);
+        setMonthlyRecord(fetchedMonthlyRecord);
+        
+        // Filter payments by selected month
+        const monthPayments = fetchedPayments.filter(
+          (payment) => payment.month === selectedMonth
+        );
+        setMonthlyPayments(monthPayments);
+        
+        // Filter members by payment status
+        const membersPaid = fetchedMembers.filter((member) => {
+          const memberPayments = monthPayments.filter(p => p.memberId === member.id);
+          return memberPayments.some(p => p.isPaid);
+        });
+        setPaidMembers(membersPaid);
+        
+        const membersUnpaid = fetchedMembers.filter((member) => {
+          const memberPayments = monthPayments.filter(p => p.memberId === member.id);
+          return memberPayments.length === 0 || memberPayments.every(p => !p.isPaid);
+        });
+        setUnpaidMembers(membersUnpaid);
+      } else {
+        toast({
+          title: "Sem novos pagamentos",
+          description: "Todos os sócios frequentantes já possuem pagamentos registrados para este mês.",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao gerar pagamentos pendentes:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao gerar os pagamentos pendentes.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPayments(false);
+    }
+  };
+
   if (loading) {
     return (
       <MobileLayout title="Relatórios">
@@ -211,6 +277,17 @@ const Reports = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <Button
+                onClick={handleGeneratePendingPayments}
+                disabled={generatingPayments}
+                className="w-full bg-club-500 hover:bg-club-600"
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                {generatingPayments 
+                  ? "Gerando pagamentos..." 
+                  : "Gerar Pagamentos Pendentes"}
+              </Button>
             </div>
           </CardContent>
         </Card>

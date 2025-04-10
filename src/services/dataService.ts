@@ -1,4 +1,3 @@
-
 import { Member, Payment, MemberStatus, MonthlyRecord } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
@@ -421,6 +420,49 @@ export const paymentService = {
       collectedAmount,
     };
   },
+
+  generatePendingPaymentsForMonth: async (month: string, year: number, amount: number = 100): Promise<number> => {
+    try {
+      const members = await memberService.getAllMembers();
+      const activeMembersIds = members
+        .filter(member => member.status === 'frequentante')
+        .map(member => member.id);
+      
+      const existingPayments = await paymentService.getPaymentsByMonth(month, year);
+      const membersWithPayments = new Set(existingPayments.map(payment => payment.memberId));
+      
+      const membersWithoutPayments = activeMembersIds.filter(id => !membersWithPayments.has(id));
+      
+      const newPayments = membersWithoutPayments.map(memberId => ({
+        member_id: memberId,
+        amount: amount,
+        payment_date: null,
+        month: month,
+        year: year,
+        is_paid: false,
+        payment_method: null,
+        notes: "Gerado automaticamente"
+      }));
+      
+      if (newPayments.length === 0) {
+        return 0;
+      }
+      
+      const { error } = await supabase
+        .from('payments')
+        .insert(newPayments);
+      
+      if (error) {
+        console.error('Erro ao gerar pagamentos pendentes:', error);
+        throw error;
+      }
+      
+      return newPayments.length;
+    } catch (error) {
+      console.error('Erro ao gerar pagamentos pendentes:', error);
+      throw error;
+    }
+  }
 };
 
 // Utility functions
