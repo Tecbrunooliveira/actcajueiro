@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { MemberCard } from "@/components/members/MemberCard";
 import { Member, Payment, MonthlyRecord } from "@/types";
 import {
@@ -22,9 +22,10 @@ import {
   formatMonthYear,
   getCurrentMonthYear,
 } from "@/services/dataService";
-import { CheckCircle, PlusCircle, XCircle } from "lucide-react";
+import { CheckCircle, Download, PlusCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { generateMembersPdfReport } from "@/services/pdfService";
 
 const Reports = () => {
   const currentDate = getCurrentMonthYear();
@@ -46,6 +47,7 @@ const Reports = () => {
   const [unpaidMembers, setUnpaidMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [generatingPayments, setGeneratingPayments] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const { toast } = useToast();
 
   // Generate month options
@@ -109,51 +111,6 @@ const Reports = () => {
     
     fetchData();
   }, [selectedMonth, selectedYear]);
-
-  // Prepare data for pie chart
-  const paymentStatusData = [
-    { name: "Pagos", value: paidMembers.length, color: "#22c55e" },
-    { name: "Pendentes", value: unpaidMembers.length, color: "#ef4444" },
-  ];
-
-  // Prepare data for status pie chart
-  const memberStatusData = [
-    {
-      name: "Frequentantes",
-      value: allMembers.filter((m) => m.status === "frequentante").length,
-      color: "#22c55e",
-    },
-    {
-      name: "Afastados",
-      value: allMembers.filter((m) => m.status === "afastado").length,
-      color: "#f59e0b",
-    },
-    {
-      name: "Advertidos",
-      value: allMembers.filter((m) => m.status === "advertido").length,
-      color: "#ef4444",
-    },
-  ];
-
-  // Prepare data for payment history
-  const paymentHistoryData = Array.from({ length: 6 }, (_, i) => {
-    const date = new Date(parseInt(selectedYear), parseInt(selectedMonth.split("-")[1]) - 1);
-    date.setMonth(date.getMonth() - 5 + i);
-    
-    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const monthLabel = date.toLocaleDateString("pt-BR", { month: "short" });
-    
-    const monthPayments = allPayments.filter(p => p.month === month);
-    const paidCount = new Set(monthPayments.filter(p => p.isPaid).map(p => p.memberId)).size;
-    const totalCount = allMembers.length;
-    
-    return {
-      name: monthLabel,
-      paidCount,
-      unpaidCount: totalCount - paidCount,
-      month,
-    };
-  });
 
   const handleMonthChange = (value: string) => {
     setSelectedMonth(value);
@@ -226,6 +183,32 @@ const Reports = () => {
       });
     } finally {
       setGeneratingPayments(false);
+    }
+  };
+
+  const handleGeneratePdfReport = async (type: 'paid' | 'unpaid') => {
+    try {
+      setGeneratingPdf(true);
+      const members = type === 'paid' ? paidMembers : unpaidMembers;
+      const reportTitle = type === 'paid' 
+        ? `Sócios em Dia - ${formatMonthYear(selectedMonth)}`
+        : `Sócios Inadimplentes - ${formatMonthYear(selectedMonth)}`;
+      
+      await generateMembersPdfReport(members, reportTitle, formatMonthYear(selectedMonth));
+      
+      toast({
+        title: "Relatório Gerado",
+        description: `O relatório de ${type === 'paid' ? 'sócios em dia' : 'sócios inadimplentes'} foi gerado com sucesso.`,
+      });
+    } catch (error) {
+      console.error("Erro ao gerar relatório PDF:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao gerar o relatório PDF.",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingPdf(false);
     }
   };
 
@@ -325,82 +308,6 @@ const Reports = () => {
           </Card>
         </div>
         
-        {/* Charts */}
-        <div className="space-y-6">
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-medium mb-2">Status de Pagamentos</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={paymentStatusData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {paymentStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} sócios`, ""]} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-medium mb-2">Status dos Sócios</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={memberStatusData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {memberStatusData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} sócios`, ""]} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-medium mb-2">Histórico de Pagamentos</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={paymentHistoryData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="paidCount" name="Pagos" fill="#22c55e" />
-                    <Bar dataKey="unpaidCount" name="Pendentes" fill="#ef4444" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
         {/* Detailed reports */}
         <Tabs defaultValue="unpaid" className="mt-8">
           <TabsList className="grid grid-cols-2 mb-4">
@@ -414,9 +321,20 @@ const Reports = () => {
                 <XCircle className="h-5 w-5 mr-2 text-red-500" />
                 Sócios Inadimplentes
               </h3>
-              <Badge variant="outline" className="text-red-500">
-                {unpaidMembers.length} sócios
-              </Badge>
+              <div className="flex gap-2">
+                <Badge variant="outline" className="text-red-500">
+                  {unpaidMembers.length} sócios
+                </Badge>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleGeneratePdfReport('unpaid')}
+                  disabled={generatingPdf || unpaidMembers.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  PDF
+                </Button>
+              </div>
             </div>
             
             {unpaidMembers.length === 0 ? (
@@ -438,9 +356,20 @@ const Reports = () => {
                 <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
                 Sócios em Dia
               </h3>
-              <Badge variant="outline" className="text-green-500">
-                {paidMembers.length} sócios
-              </Badge>
+              <div className="flex gap-2">
+                <Badge variant="outline" className="text-green-500">
+                  {paidMembers.length} sócios
+                </Badge>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleGeneratePdfReport('paid')}
+                  disabled={generatingPdf || paidMembers.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  PDF
+                </Button>
+              </div>
             </div>
             
             {paidMembers.length === 0 ? (
