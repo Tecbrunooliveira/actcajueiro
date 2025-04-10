@@ -25,13 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const expenseSchema = z.object({
-  description: z.string().min(2, { message: "A descrição deve ter pelo menos 2 caracteres" }),
+  description: z.string().optional(),
   amount: z.coerce.number().positive({ message: "O valor deve ser maior que zero" }),
   date: z.string().min(1, { message: "Selecione uma data" }),
   categoryId: z.string().min(1, { message: "Selecione uma categoria" }),
-  paymentMethod: z.string().optional(),
+  paymentMethod: z.string().min(1, { message: "Selecione um método de pagamento" }),
   notes: z.string().optional(),
 });
 
@@ -53,15 +54,26 @@ export function ExpenseForm({ onSubmit, initialData, onCancel, categories }: Exp
       amount: initialData?.amount || 0,
       date: initialData?.date || new Date().toISOString().split('T')[0],
       categoryId: initialData?.categoryId || "",
-      paymentMethod: initialData?.paymentMethod || "",
+      paymentMethod: initialData?.paymentMethod || "pix",
       notes: initialData?.notes || "",
     },
   });
 
+  const watchCategoryId = form.watch("categoryId");
+  
+  React.useEffect(() => {
+    if (watchCategoryId) {
+      const selectedCategory = categories.find(cat => cat.id === watchCategoryId);
+      if (selectedCategory) {
+        form.setValue("description", selectedCategory.name);
+      }
+    }
+  }, [watchCategoryId, categories, form]);
+
   const handleSubmit = async (data: ExpenseFormValues) => {
     try {
       await onSubmit({
-        description: data.description,
+        description: data.description || categories.find(cat => cat.id === data.categoryId)?.name || "Despesa sem descrição",
         amount: data.amount,
         date: data.date,
         categoryId: data.categoryId,
@@ -97,13 +109,36 @@ export function ExpenseForm({ onSubmit, initialData, onCancel, categories }: Exp
 
         <FormField
           control={form.control}
-          name="description"
+          name="categoryId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrição</FormLabel>
-              <FormControl>
-                <Input placeholder="Descrição da despesa" {...field} />
-              </FormControl>
+              <FormLabel>Categoria</FormLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem 
+                      key={category.id} 
+                      value={category.id}
+                    >
+                      <div className="flex items-center">
+                        <div 
+                          className="w-3 h-3 rounded-full mr-2" 
+                          style={{ backgroundColor: category.color || '#3b82f6' }}
+                        />
+                        {category.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -149,53 +184,29 @@ export function ExpenseForm({ onSubmit, initialData, onCancel, categories }: Exp
 
         <FormField
           control={form.control}
-          name="categoryId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Categoria</FormLabel>
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem 
-                      key={category.id} 
-                      value={category.id}
-                    >
-                      <div className="flex items-center">
-                        <div 
-                          className="w-3 h-3 rounded-full mr-2" 
-                          style={{ backgroundColor: category.color || '#3b82f6' }}
-                        />
-                        {category.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="paymentMethod"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="space-y-3">
               <FormLabel>Método de Pagamento</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="Ex: Pix, Cartão, Dinheiro" 
-                  {...field} 
-                  value={field.value || ""} 
-                />
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pix" id="pix" />
+                    <label htmlFor="pix" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      PIX
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="dinheiro" id="dinheiro" />
+                    <label htmlFor="dinheiro" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Dinheiro
+                    </label>
+                  </div>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>
