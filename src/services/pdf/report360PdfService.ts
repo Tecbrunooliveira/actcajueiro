@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { pdf } from "@react-pdf/renderer";
 import { Report360PdfDocument } from "./documents/Report360PdfDocument";
 import { downloadPdf } from "./utils";
@@ -17,14 +18,14 @@ export const generateReport360Pdf = async (
   }
 ) => {
   const blob = await pdf(
-    <Report360PdfDocument 
-      title={title}
-      period={period}
-      memberStatusData={memberStatusData}
-      paymentStatusData={paymentStatusData}
-      expensesData={expensesData}
-      financialSummary={financialSummary}
-    />
+    React.createElement(Report360PdfDocument, {
+      title,
+      period,
+      memberStatusData,
+      paymentStatusData,
+      expensesData,
+      financialSummary
+    })
   ).toBlob();
   
   downloadPdf(blob, title);

@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Member } from "@/types";
 import { pdf } from "@react-pdf/renderer";
 import { MembersPdfDocument } from "./documents/MembersPdfDocument";
@@ -11,7 +12,7 @@ export const generateMembersPdfReport = async (
   period: string
 ) => {
   const blob = await pdf(
-    <MembersPdfDocument members={members} title={title} period={period} />
+    React.createElement(MembersPdfDocument, { members, title, period })
   ).toBlob();
   
   downloadPdf(blob, title);
