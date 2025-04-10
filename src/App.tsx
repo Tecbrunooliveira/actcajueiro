@@ -1,9 +1,17 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Members from "./pages/Members";
+import MemberDetail from "./pages/MemberDetail";
+import MemberForm from "./pages/MemberForm";
+import Payments from "./pages/Payments";
+import PaymentDetail from "./pages/PaymentDetail";
+import PaymentForm from "./pages/PaymentForm";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,7 +24,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/members" element={<Members />} />
+          <Route path="/members/:id" element={<MemberDetail />} />
+          <Route path="/members/new" element={<MemberForm />} />
+          <Route path="/members/edit/:id" element={<MemberForm />} />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="/payments/:id" element={<PaymentDetail />} />
+          <Route path="/payments/new" element={<PaymentForm />} />
+          <Route path="/payments/edit/:id" element={<PaymentForm />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
