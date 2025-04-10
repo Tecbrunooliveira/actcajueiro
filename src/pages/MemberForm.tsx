@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
@@ -26,6 +27,7 @@ import { memberService } from "@/services/memberService";
 import { getStatusLabel } from "@/services/formatters";
 import { MemberStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
+import { PhoneCall } from "lucide-react";
 
 const memberSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -89,6 +91,30 @@ const MemberForm = () => {
 
     fetchMember();
   }, [id, isEditMode, form, toast]);
+
+  const openWhatsApp = (phone: string) => {
+    // Limpar o número de telefone (remover parênteses, espaços e traços)
+    const cleanedPhone = phone.replace(/\D/g, '');
+    
+    // Verificar se o número começa com 0 ou tem código do país
+    let formattedPhone = cleanedPhone;
+    
+    // Se não começar com + (código do país), adicionar o código brasileiro
+    if (!cleanedPhone.startsWith('+')) {
+      // Se começar com 0, remover o 0
+      if (cleanedPhone.startsWith('0')) {
+        formattedPhone = cleanedPhone.substring(1);
+      }
+      // Adicionar código do Brasil (+55)
+      formattedPhone = `55${formattedPhone}`;
+    }
+    
+    // Criar URL do WhatsApp
+    const whatsappUrl = `https://wa.me/${formattedPhone}`;
+    
+    // Abrir em nova janela/aba
+    window.open(whatsappUrl, '_blank');
+  };
 
   const onSubmit = async (data: MemberFormValues) => {
     try {
@@ -222,9 +248,22 @@ const MemberForm = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
-                <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
-                </FormControl>
+                <div className="flex gap-2">
+                  <FormControl className="flex-1">
+                    <Input placeholder="(00) 00000-0000" {...field} />
+                  </FormControl>
+                  {field.value && (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="icon"
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                      onClick={() => openWhatsApp(field.value)}
+                    >
+                      <PhoneCall className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
