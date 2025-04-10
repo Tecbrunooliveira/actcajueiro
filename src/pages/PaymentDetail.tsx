@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,50 +31,133 @@ import {
 } from "@/services/dataService";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { Member, Payment } from "@/types";
 
 const PaymentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [payment, setPayment] = useState<Payment | null>(null);
+  const [member, setMember] = useState<Member | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  if (!id) {
-    navigate("/payments");
-    return null;
-  }
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) {
+        navigate("/payments");
+        return;
+      }
 
-  const payment = paymentService.getPaymentById(id);
-  if (!payment) {
-    navigate("/payments");
-    return null;
-  }
-
-  const member = memberService.getMemberById(payment.memberId);
-  
-  const handleTogglePaid = () => {
-    const updatedPayment = {
-      ...payment,
-      isPaid: !payment.isPaid,
-      date: !payment.isPaid ? new Date().toISOString().split("T")[0] : "",
+      try {
+        setLoading(true);
+        const fetchedPayment = await paymentService.getPaymentById(id);
+        
+        if (!fetchedPayment) {
+          toast({
+            title: "Erro",
+            description: "Pagamento não encontrado",
+            variant: "destructive",
+          });
+          navigate("/payments");
+          return;
+        }
+        
+        setPayment(fetchedPayment);
+        
+        if (fetchedPayment.memberId) {
+          const fetchedMember = await memberService.getMemberById(fetchedPayment.memberId);
+          setMember(fetchedMember || null);
+        }
+      } catch (error) {
+        console.error("Error fetching payment details:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os detalhes do pagamento",
+          variant: "destructive",
+        });
+        navigate("/payments");
+      } finally {
+        setLoading(false);
+      }
     };
-    paymentService.updatePayment(updatedPayment);
-    toast({
-      title: payment.isPaid ? "Pagamento desmarcado" : "Pagamento marcado como pago",
-      description: payment.isPaid 
-        ? "O pagamento foi desmarcado como pago"
-        : "O pagamento foi marcado como pago",
-    });
-    navigate(`/payments/${id}`);
+
+    fetchData();
+  }, [id, navigate, toast]);
+
+  const handleTogglePaid = async () => {
+    if (!payment || !id) return;
+    
+    try {
+      setActionLoading(true);
+      
+      const updatedPayment = {
+        ...payment,
+        isPaid: !payment.isPaid,
+        date: !payment.isPaid ? new Date().toISOString().split("T")[0] : "",
+      };
+      
+      await paymentService.updatePayment(updatedPayment);
+      
+      setPayment(updatedPayment);
+      
+      toast({
+        title: payment.isPaid ? "Pagamento desmarcado" : "Pagamento marcado como pago",
+        description: payment.isPaid 
+          ? "O pagamento foi desmarcado como pago"
+          : "O pagamento foi marcado como pago",
+      });
+    } catch (error) {
+      console.error("Error toggling payment status:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status do pagamento",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleDelete = () => {
-    paymentService.deletePayment(id);
-    toast({
-      title: "Pagamento excluído",
-      description: "O pagamento foi excluído com sucesso",
-    });
-    navigate("/payments");
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      setActionLoading(true);
+      await paymentService.deletePayment(id);
+      
+      toast({
+        title: "Pagamento excluído",
+        description: "O pagamento foi excluído com sucesso",
+      });
+      
+      navigate("/payments");
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o pagamento",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <MobileLayout title="Detalhes do Pagamento">
+        <div className="flex items-center justify-center h-full py-10">
+          <p>Carregando detalhes...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (!payment) {
+    return null;
+  }
 
   return (
     <MobileLayout title="Detalhes do Pagamento">
@@ -153,6 +236,7 @@ const PaymentDetail = () => {
           <Button
             className="w-full bg-club-500 hover:bg-club-600"
             onClick={() => navigate(`/payments/edit/${payment.id}`)}
+            disabled={actionLoading}
           >
             <Edit className="h-4 w-4 mr-2" />
             Editar Pagamento
@@ -165,6 +249,7 @@ const PaymentDetail = () => {
               !payment.isPaid && "bg-green-600 hover:bg-green-700"
             )}
             onClick={handleTogglePaid}
+            disabled={actionLoading}
           >
             {payment.isPaid ? (
               <>
@@ -183,6 +268,7 @@ const PaymentDetail = () => {
             variant="outline"
             className="w-full text-red-500 border-red-200 hover:bg-red-50"
             onClick={() => setShowDeleteDialog(true)}
+            disabled={actionLoading}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Excluir Pagamento
@@ -203,9 +289,12 @@ const PaymentDetail = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>
-                Excluir
+              <AlertDialogCancel disabled={actionLoading}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDelete}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Excluindo..." : "Excluir"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

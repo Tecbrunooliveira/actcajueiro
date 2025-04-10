@@ -1,10 +1,9 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -24,7 +23,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { memberService, getStatusLabel } from "@/services/dataService";
+import {
+  memberService,
+  getStatusLabel
+} from "@/services/dataService";
 import { MemberStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,46 +46,108 @@ const MemberForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isEditMode = !!id;
-
-  const member = isEditMode ? memberService.getMemberById(id) : null;
+  const [loading, setLoading] = useState(isEditMode);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const form = useForm<MemberFormValues>({
     resolver: zodResolver(memberSchema),
     defaultValues: {
-      name: member?.name || "",
-      status: member?.status || "frequentante",
-      email: member?.email || "",
-      phone: member?.phone || "",
-      joinDate: member?.joinDate || new Date().toISOString().split("T")[0],
-      notes: member?.notes || "",
+      name: "",
+      status: "frequentante",
+      email: "",
+      phone: "",
+      joinDate: new Date().toISOString().split("T")[0],
+      notes: "",
     },
   });
 
-  const onSubmit = (data: MemberFormValues) => {
-    if (isEditMode && member) {
-      memberService.updateMember({ ...member, ...data });
+  useEffect(() => {
+    const fetchMember = async () => {
+      if (isEditMode && id) {
+        try {
+          setLoading(true);
+          const member = await memberService.getMemberById(id);
+          if (member) {
+            form.reset({
+              name: member.name,
+              status: member.status,
+              email: member.email || "",
+              phone: member.phone || "",
+              joinDate: member.joinDate,
+              notes: member.notes || "",
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching member:", error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível carregar os dados do sócio",
+            variant: "destructive",
+          });
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchMember();
+  }, [id, isEditMode, form, toast]);
+
+  const onSubmit = async (data: MemberFormValues) => {
+    try {
+      setSubmitLoading(true);
+      
+      if (isEditMode && id) {
+        await memberService.updateMember({ 
+          id, 
+          ...data,
+          email: data.email || undefined,
+          phone: data.phone || undefined,
+          notes: data.notes || undefined,
+        });
+        
+        toast({
+          title: "Sócio atualizado",
+          description: "As informações do sócio foram atualizadas com sucesso",
+        });
+      } else {
+        await memberService.createMember({
+          name: data.name,
+          status: data.status,
+          joinDate: data.joinDate,
+          email: data.email || undefined,
+          phone: data.phone || undefined,
+          notes: data.notes || undefined,
+        });
+        
+        toast({
+          title: "Sócio criado",
+          description: "O novo sócio foi criado com sucesso",
+        });
+      }
+      
+      navigate("/members");
+    } catch (error) {
+      console.error("Error saving member:", error);
       toast({
-        title: "Sócio atualizado",
-        description: "As informações do sócio foram atualizadas com sucesso",
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar o sócio",
+        variant: "destructive",
       });
-    } else {
-      // Ensure all required fields are present
-      const newMember = {
-        name: data.name,
-        status: data.status,
-        joinDate: data.joinDate,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        notes: data.notes || undefined,
-      };
-      memberService.createMember(newMember);
-      toast({
-        title: "Sócio criado",
-        description: "O novo sócio foi criado com sucesso",
-      });
+    } finally {
+      setSubmitLoading(false);
     }
-    navigate("/members");
   };
+
+  if (loading) {
+    return (
+      <MobileLayout title={isEditMode ? "Editar Sócio" : "Novo Sócio"}>
+        <div className="flex items-center justify-center h-full py-10">
+          <p>Carregando dados...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <MobileLayout
@@ -204,11 +268,16 @@ const MemberForm = () => {
               variant="outline"
               className="flex-1"
               onClick={() => navigate("/members")}
+              disabled={submitLoading}
             >
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1 bg-club-500 hover:bg-club-600">
-              {isEditMode ? "Atualizar" : "Criar"}
+            <Button 
+              type="submit" 
+              className="flex-1 bg-club-500 hover:bg-club-600"
+              disabled={submitLoading}
+            >
+              {submitLoading ? "Salvando..." : isEditMode ? "Atualizar" : "Criar"}
             </Button>
           </div>
         </form>

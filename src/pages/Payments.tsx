@@ -1,8 +1,8 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { PaymentCard } from "@/components/payments/PaymentCard";
-import { Payment } from "@/types";
+import { Payment, Member } from "@/types";
 import { memberService, paymentService } from "@/services/dataService";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,17 +13,38 @@ import { PlusCircle, Search } from "lucide-react";
 const Payments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "paid" | "unpaid">("all");
-  const allPayments = paymentService.getAllPayments();
-  const allMembers = memberService.getAllMembers();
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [fetchedPayments, fetchedMembers] = await Promise.all([
+          paymentService.getAllPayments(),
+          memberService.getAllMembers()
+        ]);
+        setPayments(fetchedPayments);
+        setMembers(fetchedMembers);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Get member name by ID
   const getMemberName = (memberId: string) => {
-    const member = allMembers.find((m) => m.id === memberId);
+    const member = members.find((m) => m.id === memberId);
     return member ? member.name : "Desconhecido";
   };
 
   // Filter by payment status and search term
-  const filteredPayments = allPayments
+  const filteredPayments = payments
     .filter((payment) => {
       if (activeTab === "all") return true;
       if (activeTab === "paid") return payment.isPaid;
@@ -74,13 +95,31 @@ const Payments = () => {
         </TabsList>
 
         <TabsContent value="all">
-          <PaymentsList payments={sortedPayments} getMemberName={getMemberName} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando pagamentos...</p>
+            </div>
+          ) : (
+            <PaymentsList payments={sortedPayments} getMemberName={getMemberName} />
+          )}
         </TabsContent>
         <TabsContent value="paid">
-          <PaymentsList payments={sortedPayments} getMemberName={getMemberName} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando pagamentos...</p>
+            </div>
+          ) : (
+            <PaymentsList payments={sortedPayments} getMemberName={getMemberName} />
+          )}
         </TabsContent>
         <TabsContent value="unpaid">
-          <PaymentsList payments={sortedPayments} getMemberName={getMemberName} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando pagamentos...</p>
+            </div>
+          ) : (
+            <PaymentsList payments={sortedPayments} getMemberName={getMemberName} />
+          )}
         </TabsContent>
       </Tabs>
     </MobileLayout>

@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -29,7 +29,6 @@ import {
   memberService,
   paymentService,
   getCurrentMonthYear,
-  formatMonthYear,
 } from "@/services/dataService";
 import { Member } from "@/types";
 import { useToast } from "@/hooks/use-toast";
@@ -53,69 +52,135 @@ const PaymentForm = () => {
   const { toast } = useToast();
   const isEditMode = !!id;
   const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const { month, year } = getCurrentMonthYear();
-
-  const payment = isEditMode ? paymentService.getPaymentById(id) : null;
 
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      memberId: payment?.memberId || "",
-      amount: payment?.amount || 100,
-      month: payment?.month || month,
-      year: payment?.year || year,
-      isPaid: payment?.isPaid || false,
-      date: payment?.date || "",
-      paymentMethod: payment?.paymentMethod || "",
-      notes: payment?.notes || "",
+      memberId: "",
+      amount: 100,
+      month: month,
+      year: year,
+      isPaid: false,
+      date: "",
+      paymentMethod: "",
+      notes: "",
     },
   });
 
   useEffect(() => {
-    setMembers(memberService.getAllMembers());
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const fetchedMembers = await memberService.getAllMembers();
+        setMembers(fetchedMembers);
+
+        if (isEditMode && id) {
+          const payment = await paymentService.getPaymentById(id);
+          if (payment) {
+            form.reset({
+              memberId: payment.memberId,
+              amount: payment.amount,
+              month: payment.month,
+              year: payment.year,
+              isPaid: payment.isPaid,
+              date: payment.date || "",
+              paymentMethod: payment.paymentMethod || "",
+              notes: payment.notes || "",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os dados",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, isEditMode, form, toast]);
 
   const watchIsPaid = form.watch("isPaid");
 
-  const onSubmit = (data: PaymentFormValues) => {
-    // Make sure date is set if isPaid is true
-    if (data.isPaid && !data.date) {
-      data.date = new Date().toISOString().split("T")[0];
-    }
-
-    // Clear payment method if not paid
-    if (!data.isPaid) {
-      data.paymentMethod = "";
-      data.date = "";
-    }
-
-    if (isEditMode && payment) {
-      paymentService.updatePayment({ ...payment, ...data });
-      toast({
-        title: "Pagamento atualizado",
-        description: "As informações do pagamento foram atualizadas com sucesso",
-      });
-    } else {
-      // Ensure all required fields are present
-      const newPayment = {
-        memberId: data.memberId,
-        amount: data.amount,
-        month: data.month,
-        year: data.year,
-        isPaid: data.isPaid,
-        date: data.date || "",
-        paymentMethod: data.paymentMethod || undefined,
-        notes: data.notes || undefined,
-      };
+  const onSubmit = async (data: PaymentFormValues) => {
+    try {
+      setSubmitLoading(true);
       
-      paymentService.createPayment(newPayment);
+      // Make sure date is set if isPaid is true
+      if (data.isPaid && !data.date) {
+        data.date = new Date().toISOString().split("T")[0];
+      }
+
+      // Clear payment method if not paid
+      if (!data.isPaid) {
+        data.paymentMethod = "";
+        data.date = "";
+      }
+
+      if (isEditMode && id) {
+        await paymentService.updatePayment({
+          id,
+          memberId: data.memberId,
+          amount: data.amount,
+          month: data.month,
+          year: data.year,
+          isPaid: data.isPaid,
+          date: data.date || "",
+          paymentMethod: data.paymentMethod || undefined,
+          notes: data.notes || undefined,
+        });
+        
+        toast({
+          title: "Pagamento atualizado",
+          description: "As informações do pagamento foram atualizadas com sucesso",
+        });
+      } else {
+        await paymentService.createPayment({
+          memberId: data.memberId,
+          amount: data.amount,
+          month: data.month,
+          year: data.year,
+          isPaid: data.isPaid,
+          date: data.date || "",
+          paymentMethod: data.paymentMethod || undefined,
+          notes: data.notes || undefined,
+        });
+        
+        toast({
+          title: "Pagamento criado",
+          description: "O novo pagamento foi criado com sucesso",
+        });
+      }
+      
+      navigate("/payments");
+    } catch (error) {
+      console.error("Error saving payment:", error);
       toast({
-        title: "Pagamento criado",
-        description: "O novo pagamento foi criado com sucesso",
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar o pagamento",
+        variant: "destructive",
       });
+    } finally {
+      setSubmitLoading(false);
     }
-    navigate("/payments");
   };
+
+  if (loading) {
+    return (
+      <MobileLayout title={isEditMode ? "Editar Pagamento" : "Novo Pagamento"}>
+        <div className="flex items-center justify-center h-full py-10">
+          <p>Carregando dados...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <MobileLayout
@@ -199,7 +264,6 @@ const PaymentForm = () => {
                       type="number"
                       placeholder="Ano"
                       {...field}
-                      defaultValue={String(year)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -304,11 +368,16 @@ const PaymentForm = () => {
               variant="outline"
               className="flex-1"
               onClick={() => navigate("/payments")}
+              disabled={submitLoading}
             >
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1 bg-club-500 hover:bg-club-600">
-              {isEditMode ? "Atualizar" : "Criar"}
+            <Button 
+              type="submit" 
+              className="flex-1 bg-club-500 hover:bg-club-600"
+              disabled={submitLoading}
+            >
+              {submitLoading ? "Salvando..." : isEditMode ? "Atualizar" : "Criar"}
             </Button>
           </div>
         </form>

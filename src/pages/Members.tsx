@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MemberCard } from "@/components/members/MemberCard";
 import { Member, MemberStatus } from "@/types";
@@ -13,10 +13,27 @@ import { UserPlus, Search } from "lucide-react";
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<MemberStatus | "all">("all");
-  const allMembers = memberService.getAllMembers();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        setLoading(true);
+        const allMembers = await memberService.getAllMembers();
+        setMembers(allMembers);
+      } catch (error) {
+        console.error("Error fetching members:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, []);
 
   // Filter by status and search term
-  const filteredMembers = allMembers
+  const filteredMembers = members
     .filter((member) => 
       activeTab === "all" ? true : member.status === activeTab
     )
@@ -55,16 +72,40 @@ const Members = () => {
         </TabsList>
 
         <TabsContent value="all">
-          <MembersList members={filteredMembers} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando sócios...</p>
+            </div>
+          ) : (
+            <MembersList members={filteredMembers} />
+          )}
         </TabsContent>
         <TabsContent value="frequentante">
-          <MembersList members={filteredMembers} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando sócios...</p>
+            </div>
+          ) : (
+            <MembersList members={filteredMembers} />
+          )}
         </TabsContent>
         <TabsContent value="afastado">
-          <MembersList members={filteredMembers} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando sócios...</p>
+            </div>
+          ) : (
+            <MembersList members={filteredMembers} />
+          )}
         </TabsContent>
         <TabsContent value="advertido">
-          <MembersList members={filteredMembers} />
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Carregando sócios...</p>
+            </div>
+          ) : (
+            <MembersList members={filteredMembers} />
+          )}
         </TabsContent>
       </Tabs>
     </MobileLayout>

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,15 +13,56 @@ import {
 import { Link } from "react-router-dom";
 import { Users, CreditCard, BarChart3, AlertTriangle } from "lucide-react";
 import { memberService, paymentService, formatCurrency, getCurrentMonthYear } from "@/services/dataService";
+import { MonthlyRecord, Payment } from "@/types";
 
 const Index = () => {
-  const members = memberService.getAllMembers();
+  const [members, setMembers] = useState([]);
+  const [unpaidPayments, setUnpaidPayments] = useState<Payment[]>([]);
+  const [monthlyRecord, setMonthlyRecord] = useState<MonthlyRecord>({
+    month: "",
+    year: 0,
+    totalMembers: 0,
+    paidMembers: 0,
+    unpaidMembers: 0,
+    totalAmount: 0,
+    collectedAmount: 0,
+  });
+  const [loading, setLoading] = useState(true);
   const currentMonth = getCurrentMonthYear();
-  const unpaidPayments = paymentService.getUnpaidPayments();
-  const monthlyRecord = paymentService.getMonthlyRecord(
-    currentMonth.month,
-    currentMonth.year
-  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const fetchedMembers = await memberService.getAllMembers();
+        const fetchedUnpaidPayments = await paymentService.getUnpaidPayments();
+        const fetchedMonthlyRecord = await paymentService.getMonthlyRecord(
+          currentMonth.month,
+          currentMonth.year
+        );
+
+        setMembers(fetchedMembers);
+        setUnpaidPayments(fetchedUnpaidPayments);
+        setMonthlyRecord(fetchedMonthlyRecord);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
+        <div className="flex items-center justify-center h-full py-10">
+          <p>Carregando dados...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
