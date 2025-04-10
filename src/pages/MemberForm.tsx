@@ -67,7 +67,16 @@ const MemberForm = () => {
         description: "As informações do sócio foram atualizadas com sucesso",
       });
     } else {
-      memberService.createMember(data);
+      // Ensure all required fields are present
+      const newMember = {
+        name: data.name,
+        status: data.status,
+        joinDate: data.joinDate,
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        notes: data.notes || undefined,
+      };
+      memberService.createMember(newMember);
       toast({
         title: "Sócio criado",
         description: "O novo sócio foi criado com sucesso",
