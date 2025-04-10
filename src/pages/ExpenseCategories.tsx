@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { ExpenseCategory } from "@/types";
@@ -95,15 +94,13 @@ const ExpenseCategories = () => {
     if (!categoryToDelete) return;
     
     try {
-      const success = await expenseService.deleteCategory(categoryToDelete);
-      if (success) {
-        setCategories((prev) => prev.filter((cat) => cat.id !== categoryToDelete));
-        setCategoryToDelete(null);
-        toast({
-          title: "Sucesso",
-          description: "Categoria excluída com sucesso!",
-        });
-      }
+      await expenseService.deleteCategory(categoryToDelete);
+      setCategories((prev) => prev.filter((cat) => cat.id !== categoryToDelete));
+      setCategoryToDelete(null);
+      toast({
+        title: "Sucesso",
+        description: "Categoria excluída com sucesso!",
+      });
     } catch (error) {
       toast({
         title: "Erro",
