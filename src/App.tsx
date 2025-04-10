@@ -11,6 +11,8 @@ import Payments from "./pages/Payments";
 import PaymentDetail from "./pages/PaymentDetail";
 import PaymentForm from "./pages/PaymentForm";
 import Reports from "./pages/Reports";
+import Expenses from "./pages/Expenses";
+import ExpenseCategories from "./pages/ExpenseCategories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
         <Route path="/payments/new" element={<PaymentForm />} />
         <Route path="/payments/edit/:id" element={<PaymentForm />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/expenses" element={<Expenses />} />
+        <Route path="/expense-categories" element={<ExpenseCategories />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

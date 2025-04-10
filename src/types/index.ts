@@ -32,3 +32,20 @@ export interface MonthlyRecord {
   totalAmount: number;
   collectedAmount: number;
 }
+
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+  categoryId: string;
+  paymentMethod?: string;
+  notes?: string;
+}

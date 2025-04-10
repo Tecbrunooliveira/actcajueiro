@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, CreditCard, BarChart3, Home } from "lucide-react";
+import { Users, CreditCard, BarChart3, Home, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MobileLayoutProps {
@@ -17,6 +17,7 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
     { icon: Home, label: "Início", path: "/" },
     { icon: Users, label: "Sócios", path: "/members" },
     { icon: CreditCard, label: "Pagamentos", path: "/payments" },
+    { icon: Receipt, label: "Despesas", path: "/expenses" },
     { icon: BarChart3, label: "Relatórios", path: "/reports" },
   ];
 
@@ -41,7 +42,8 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
                 to={item.path}
                 className={cn(
                   "flex flex-col items-center py-3 px-1",
-                  currentPath === item.path
+                  currentPath === item.path || 
+                  (item.path === "/expenses" && currentPath.startsWith("/expense"))
                     ? "text-primary"
                     : "text-gray-500 hover:text-primary"
                 )}
@@ -49,7 +51,8 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
                 <item.icon
                   className={cn(
                     "h-5 w-5 mb-1",
-                    currentPath === item.path
+                    currentPath === item.path || 
+                    (item.path === "/expenses" && currentPath.startsWith("/expense"))
                       ? "text-primary"
                       : "text-gray-500"
                   )}
