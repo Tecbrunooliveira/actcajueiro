@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
   },
 });
 
-// Create PDF Document component as a regular function component
-const MembersPdfDocument = ({ members, title, period }: { members: Member[], title: string, period: string }) => (
+// Create PDF Document component with explicit React import
+const MembersPdfDocument = ({ members, title, period }: { members: Member[]; title: string; period: string }) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <Text style={styles.title}>{title}</Text>
@@ -93,7 +93,7 @@ const MembersPdfDocument = ({ members, title, period }: { members: Member[], tit
       </View>
       
       <Text style={styles.footer}>
-        Relatório gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
+        Relatório gerado em {new Date().toLocaleDateString("pt-BR")} às {new Date().toLocaleTimeString("pt-BR")}
       </Text>
     </Page>
   </Document>
