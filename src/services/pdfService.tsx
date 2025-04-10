@@ -1,6 +1,6 @@
 import React from 'react';
 import { Member } from "@/types";
-import { Document, Page, Text, View, StyleSheet, pdf, Font } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, pdf, Font, Svg, Circle, Path } from "@react-pdf/renderer";
 import { getStatusLabel } from "./formatters";
 
 // Registrando fonte para usar no PDF
@@ -131,6 +131,70 @@ const styles = StyleSheet.create({
     color: "#718096",
     textAlign: "center",
   },
+  chartContainer: {
+    marginVertical: 20,
+    alignItems: 'center',
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: 700,
+    marginBottom: 10,
+    color: "#0CA678",
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    marginRight: 8,
+  },
+  legendText: {
+    fontSize: 10,
+    color: "#4A5568",
+  },
+  summaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#edf2f7',
+    borderBottomStyle: 'solid',
+  },
+  summaryLabel: {
+    fontSize: 12,
+    color: "#4A5568",
+  },
+  summaryValue: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: "#2D3748",
+  },
+  summaryValuePositive: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: "#0CA678",
+  },
+  summaryValueNegative: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: "#E53E3E",
+  },
+  report360Section: {
+    marginTop: 25,
+    marginBottom: 15,
+    borderTop: '1px solid #e0e0e0',
+    paddingTop: 20,
+  },
+  report360SectionTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#2C5282",
+    marginBottom: 15,
+  },
 });
 
 // Componente para o status com cores
@@ -203,10 +267,150 @@ const MembersPdfDocument = ({ members, title, period }: { members: Member[]; tit
   </Document>
 );
 
+// Componente para criar os gráficos de pizza no PDF (simplificado para relatório 360)
+const PieChartLegend = ({ data }: { data: { name: string; value: number; color: string }[] }) => (
+  <View style={{ flexDirection: 'column', marginTop: 10 }}>
+    {data.map((item, index) => (
+      <View key={index} style={styles.legendItem}>
+        <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+        <Text style={styles.legendText}>
+          {item.name}: {item.value} ({item.value > 0 ? Math.round((item.value / data.reduce((acc, curr) => acc + curr.value, 0)) * 100) : 0}%)
+        </Text>
+      </View>
+    ))}
+  </View>
+);
+
+// Componente para o relatório 360
+const Report360PdfDocument = ({ 
+  title, 
+  period, 
+  memberStatusData, 
+  paymentStatusData,
+  expensesData,
+  financialSummary
+}: { 
+  title: string; 
+  period: string;
+  memberStatusData: { name: string; value: number; color: string }[];
+  paymentStatusData: { name: string; value: number; color: string }[];
+  expensesData: { name: string; value: number; color: string }[];
+  financialSummary: {
+    totalIncome: number;
+    totalExpenses: number;
+    balance: number;
+  };
+}) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.headerSection}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>Período: {period}</Text>
+        
+        <View style={styles.statsRow}>
+          <View style={styles.stat}>
+            <Text style={styles.statLabel}>Gerado em</Text>
+            <Text style={styles.statValue}>{new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</Text>
+          </View>
+        </View>
+      </View>
+      
+      {/* Financial Summary Section */}
+      <View style={styles.report360Section}>
+        <Text style={styles.report360SectionTitle}>Resumo Financeiro</Text>
+        <View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Receita Total</Text>
+            <Text style={styles.summaryValue}>
+              {financialSummary.totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Despesas Totais</Text>
+            <Text style={styles.summaryValue}>
+              {financialSummary.totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Text>
+          </View>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryLabel}>Balanço</Text>
+            <Text style={financialSummary.balance >= 0 ? styles.summaryValuePositive : styles.summaryValueNegative}>
+              {financialSummary.balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Member Status Section */}
+      <View style={styles.report360Section}>
+        <Text style={styles.report360SectionTitle}>Status dos Sócios</Text>
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Distribuição por Status</Text>
+          <PieChartLegend data={memberStatusData} />
+        </View>
+      </View>
+
+      {/* Payment Status Section */}
+      <View style={styles.report360Section}>
+        <Text style={styles.report360SectionTitle}>Status de Pagamentos</Text>
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Sócios Em Dia vs. Inadimplentes</Text>
+          <PieChartLegend data={paymentStatusData} />
+        </View>
+      </View>
+
+      {/* Expenses Section */}
+      <View style={styles.report360Section}>
+        <Text style={styles.report360SectionTitle}>Despesas por Categoria</Text>
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Distribuição de Despesas</Text>
+          <PieChartLegend data={expensesData} />
+        </View>
+      </View>
+      
+      <Text style={styles.footer}>
+        Relatório gerado em {new Date().toLocaleDateString("pt-BR")} às {new Date().toLocaleTimeString("pt-BR")}
+      </Text>
+    </Page>
+  </Document>
+);
+
 // Função para gerar e baixar o relatório PDF
 export const generateMembersPdfReport = async (members: Member[], title: string, period: string) => {
   const blob = await pdf(
     <MembersPdfDocument members={members} title={title} period={period} />
+  ).toBlob();
+  
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${title.replace(/\s+/g, "_")}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+// Função para gerar e baixar o relatório 360 em PDF
+export const generateReport360Pdf = async (
+  title: string,
+  period: string,
+  memberStatusData: { name: string; value: number; color: string }[],
+  paymentStatusData: { name: string; value: number; color: string }[],
+  expensesData: { name: string; value: number; color: string }[],
+  financialSummary: {
+    totalIncome: number;
+    totalExpenses: number;
+    balance: number;
+  }
+) => {
+  const blob = await pdf(
+    <Report360PdfDocument 
+      title={title}
+      period={period}
+      memberStatusData={memberStatusData}
+      paymentStatusData={paymentStatusData}
+      expensesData={expensesData}
+      financialSummary={financialSummary}
+    />
   ).toBlob();
   
   const url = URL.createObjectURL(blob);
