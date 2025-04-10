@@ -150,7 +150,7 @@ export const memberService = {
       email: member.email || undefined,
       phone: member.phone || undefined,
       joinDate: member.join_date,
-      notes: data.notes || undefined,
+      notes: member.notes || undefined,
       photo: member.photo || undefined,
     })) || [];
   },
