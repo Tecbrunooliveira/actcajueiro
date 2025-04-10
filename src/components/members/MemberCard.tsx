@@ -6,12 +6,21 @@ import { getStatusColor, getStatusLabel } from "@/services/formatters";
 import { ChevronRight, Phone, Mail, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { openWhatsApp } from "@/services/communicationService";
 
 interface MemberCardProps {
   member: Member;
 }
 
 export function MemberCard({ member }: MemberCardProps) {
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to member detail
+    if (member.phone) {
+      openWhatsApp(member.phone);
+    }
+  };
+
   return (
     <Link
       to={`/members/${member.id}`}
@@ -46,9 +55,18 @@ export function MemberCard({ member }: MemberCardProps) {
 
           <div className="mt-3 space-y-1">
             {member.phone && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Phone className="h-4 w-4 mr-2" />
-                <span>{member.phone}</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Phone className="h-4 w-4 mr-2" />
+                  <span>{member.phone}</span>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="h-8 bg-green-500 hover:bg-green-600"
+                  onClick={handleWhatsAppClick}
+                >
+                  WhatsApp
+                </Button>
               </div>
             )}
             {member.email && (

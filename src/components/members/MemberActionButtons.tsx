@@ -1,19 +1,35 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, User } from "lucide-react";
+import { Edit, Trash2, User, MessageCircle } from "lucide-react";
+import { openWhatsAppWithTemplate } from "@/services/communicationService";
 
 interface MemberActionButtonsProps {
   onEdit: () => void;
   onStatus: () => void;
   onDelete: () => void;
+  phone?: string;
+  isUpToDate?: boolean;
 }
 
 export function MemberActionButtons({ 
   onEdit, 
   onStatus, 
-  onDelete 
+  onDelete,
+  phone,
+  isUpToDate = true
 }: MemberActionButtonsProps) {
+  const handleWhatsAppClick = () => {
+    if (phone) {
+      // Se o membro está inadimplente, usar template de mensagem específico
+      if (!isUpToDate) {
+        openWhatsAppWithTemplate(phone, "payment_reminder");
+      } else {
+        openWhatsAppWithTemplate(phone, "general");
+      }
+    }
+  };
+
   return (
     <div className="flex gap-3 py-6">
       <Button
@@ -32,6 +48,16 @@ export function MemberActionButtons({
         <User className="h-4 w-4 mr-2" />
         Status
       </Button>
+      
+      {phone && (
+        <Button
+          className="flex-1 bg-green-500 hover:bg-green-600"
+          onClick={handleWhatsAppClick}
+        >
+          <MessageCircle className="h-4 w-4 mr-2" />
+          WhatsApp
+        </Button>
+      )}
       
       <Button
         variant="destructive"

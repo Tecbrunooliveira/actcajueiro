@@ -65,6 +65,8 @@ const MemberDetail = () => {
           onEdit={() => navigate(`/members/edit/${member.id}`)}
           onStatus={() => setShowStatusDialog(true)}
           onDelete={() => setShowDeleteDialog(true)}
+          phone={member.phone}
+          isUpToDate={paymentStatus.upToDate}
         />
 
         {/* Status change dialog */}
