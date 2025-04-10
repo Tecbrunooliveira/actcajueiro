@@ -12,6 +12,8 @@ import PaymentDetail from "./pages/PaymentDetail";
 import PaymentForm from "./pages/PaymentForm";
 import Reports from "./pages/Reports";
 import Expenses from "./pages/Expenses";
+import ExpenseDetail from "./pages/ExpenseDetail";
+import ExpenseForm from "./pages/ExpenseForm";
 import ExpenseCategories from "./pages/ExpenseCategories";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +36,9 @@ const App = () => (
         <Route path="/payments/edit/:id" element={<PaymentForm />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/expenses" element={<Expenses />} />
+        <Route path="/expenses/:id" element={<ExpenseDetail />} />
+        <Route path="/expenses/new" element={<ExpenseForm />} />
+        <Route path="/expenses/edit/:id" element={<ExpenseForm />} />
         <Route path="/expense-categories" element={<ExpenseCategories />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
