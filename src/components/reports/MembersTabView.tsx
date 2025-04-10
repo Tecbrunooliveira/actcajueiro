@@ -66,23 +66,6 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
               <Download className="h-4 w-4 mr-2" />
               PDF
             </Button>
-            {unpaidMembers.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => {
-                  unpaidMembers.forEach(member => {
-                    if (member.phone) {
-                      handleWhatsAppClick(member.phone);
-                    }
-                  });
-                }}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                WhatsApp Todos
-              </Button>
-            )}
           </div>
         </div>
         
@@ -164,3 +147,4 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
     </Tabs>
   );
 };
+
