@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Member } from "@/types";
 import { MemberCard } from "@/components/members/MemberCard";
-import { CheckCircle, XCircle, Download, AlertTriangle } from "lucide-react";
+import { CheckCircle, XCircle, Download, AlertTriangle, MessageCircle } from "lucide-react";
+import { openWhatsAppWithTemplate } from "@/services/communicationService";
 
 interface MembersTabViewProps {
   paidMembers: Member[];
@@ -20,6 +21,12 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
   handleGeneratePdfReport,
   generatingPdf,
 }) => {
+  const handleWhatsAppClick = (phone: string) => {
+    if (phone) {
+      openWhatsAppWithTemplate(phone, "payment_reminder");
+    }
+  };
+
   return (
     <Tabs defaultValue="unpaid" className="mt-8">
       <TabsList className="grid grid-cols-2 mb-4 p-1 bg-muted rounded-lg">
@@ -59,6 +66,23 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
               <Download className="h-4 w-4 mr-2" />
               PDF
             </Button>
+            {unpaidMembers.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-green-500 hover:bg-green-600 text-white"
+                onClick={() => {
+                  unpaidMembers.forEach(member => {
+                    if (member.phone) {
+                      handleWhatsAppClick(member.phone);
+                    }
+                  });
+                }}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                WhatsApp Todos
+              </Button>
+            )}
           </div>
         </div>
         
@@ -77,7 +101,18 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
         ) : (
           <div className="space-y-3">
             {unpaidMembers.map((member) => (
-              <MemberCard key={member.id} member={member} />
+              <div key={member.id} className="relative">
+                <MemberCard member={member} />
+                {member.phone && (
+                  <Button
+                    size="sm"
+                    className="absolute top-2 right-2 bg-green-500 hover:bg-green-600"
+                    onClick={() => handleWhatsAppClick(member.phone!)}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
         )}

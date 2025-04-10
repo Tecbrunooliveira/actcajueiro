@@ -43,6 +43,7 @@ const PaymentDetail = () => {
         {/* Action buttons */}
         <PaymentActionButtons
           payment={payment}
+          member={member}
           actionLoading={actionLoading}
           onTogglePaid={handleTogglePaid}
           onShowDeleteDialog={() => setShowDeleteDialog(true)}

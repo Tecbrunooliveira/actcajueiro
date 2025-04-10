@@ -2,12 +2,14 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Edit, Trash2, XCircle } from "lucide-react";
+import { CheckCircle, Edit, Trash2, XCircle, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Payment } from "@/types";
+import { Payment, Member } from "@/types";
+import { openWhatsAppWithTemplate } from "@/services/communicationService";
 
 interface PaymentActionButtonsProps {
   payment: Payment;
+  member?: Member;
   actionLoading: boolean;
   onTogglePaid: () => void;
   onShowDeleteDialog: () => void;
@@ -15,11 +17,23 @@ interface PaymentActionButtonsProps {
 
 export function PaymentActionButtons({
   payment,
+  member,
   actionLoading,
   onTogglePaid,
   onShowDeleteDialog,
 }: PaymentActionButtonsProps) {
   const navigate = useNavigate();
+
+  const handleWhatsAppClick = () => {
+    if (member?.phone) {
+      // Se o pagamento não está pago, usar template de lembrete
+      if (!payment.isPaid) {
+        openWhatsAppWithTemplate(member.phone, "payment_reminder");
+      } else {
+        openWhatsAppWithTemplate(member.phone, "general");
+      }
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -53,6 +67,17 @@ export function PaymentActionButtons({
           </>
         )}
       </Button>
+
+      {member?.phone && (
+        <Button
+          className="w-full bg-green-500 hover:bg-green-600"
+          onClick={handleWhatsAppClick}
+          disabled={actionLoading}
+        >
+          <MessageCircle className="h-4 w-4 mr-2" />
+          WhatsApp
+        </Button>
+      )}
 
       <Button
         variant="outline"

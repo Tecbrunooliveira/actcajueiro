@@ -135,6 +135,7 @@ const PaymentsList = ({ payments, members }: PaymentsListProps) => {
             payment={payment}
             memberName={members[payment.memberId]?.name}
             memberPhoto={members[payment.memberId]?.photo}
+            memberPhone={members[payment.memberId]?.phone}
             onClick={() => window.location.href = `/payments/${payment.id}`}
           />
         ))}
