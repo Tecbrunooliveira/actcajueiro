@@ -24,6 +24,7 @@ import { MemberStatus } from "@/types";
 import { MemberFormValues } from "@/schemas/memberSchema";
 import { UseFormReturn } from "react-hook-form";
 import { PhoneInput } from "./PhoneInput";
+import { PhotoUpload } from "./PhotoUpload";
 
 interface MemberFormComponentProps {
   form: UseFormReturn<MemberFormValues>;
@@ -43,6 +44,20 @@ export const MemberFormComponent = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="photo"
+          render={({ field }) => (
+            <FormItem className="flex flex-col items-center pb-2">
+              <PhotoUpload
+                value={field.value || ""}
+                onChange={field.onChange}
+              />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="name"

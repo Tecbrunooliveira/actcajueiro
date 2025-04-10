@@ -1,10 +1,11 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { DollarSign, User, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { DollarSign, Calendar, CheckCircle, XCircle, User } from "lucide-react";
 import { Payment, Member } from "@/types";
 import { formatCurrency, formatMonthYear } from "@/services/formatters";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PaymentInfoCardProps {
   payment: Payment;
@@ -16,14 +17,26 @@ export function PaymentInfoCard({ payment, member }: PaymentInfoCardProps) {
     <Card>
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-6">
-          <div>
+          <div className="flex items-center gap-3">
             {member && (
-              <h2 className="text-xl font-bold mb-1">{member.name}</h2>
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={member.photo} alt={member.name} />
+                <AvatarFallback className="bg-gray-200">
+                  <User className="h-6 w-6 text-gray-400" />
+                </AvatarFallback>
+              </Avatar>
             )}
-            <p className="text-gray-600">
-              {formatMonthYear(payment.month)}
-            </p>
+            
+            <div>
+              {member && (
+                <h2 className="text-xl font-bold mb-1">{member.name}</h2>
+              )}
+              <p className="text-gray-600">
+                {formatMonthYear(payment.month)}
+              </p>
+            </div>
           </div>
+          
           <div
             className={cn(
               "flex items-center px-3 py-1 rounded-full text-sm font-medium",

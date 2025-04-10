@@ -33,6 +33,7 @@ export const useMemberForm = (memberId?: string) => {
               phone: member.phone || "",
               joinDate: member.joinDate,
               notes: member.notes || "",
+              photo: member.photo || "",
             });
           }
         } catch (error) {
@@ -64,6 +65,7 @@ export const useMemberForm = (memberId?: string) => {
           phone: data.phone || undefined,
           joinDate: data.joinDate,
           notes: data.notes || undefined,
+          photo: data.photo || undefined,
         });
         
         toast({
@@ -78,6 +80,7 @@ export const useMemberForm = (memberId?: string) => {
           email: data.email || undefined,
           phone: data.phone || undefined,
           notes: data.notes || undefined,
+          photo: data.photo || undefined,
         });
         
         toast({

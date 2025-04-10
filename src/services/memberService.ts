@@ -1,4 +1,3 @@
-
 import { Member, MemberStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,6 +20,7 @@ export const memberService = {
       phone: member.phone || undefined,
       joinDate: member.join_date,
       notes: member.notes || undefined,
+      photo: member.photo || undefined,
     })) || [];
   },
 
@@ -46,6 +46,7 @@ export const memberService = {
       phone: data.phone || undefined,
       joinDate: data.join_date,
       notes: data.notes || undefined,
+      photo: data.photo || undefined,
     };
   },
 
@@ -59,6 +60,7 @@ export const memberService = {
         phone: member.phone,
         join_date: member.joinDate,
         notes: member.notes,
+        photo: member.photo,
       })
       .select()
       .single();
@@ -78,6 +80,7 @@ export const memberService = {
       phone: data.phone || undefined,
       joinDate: data.join_date,
       notes: data.notes || undefined,
+      photo: data.photo || undefined,
     };
   },
 
@@ -91,6 +94,7 @@ export const memberService = {
         phone: member.phone,
         join_date: member.joinDate,
         notes: member.notes,
+        photo: member.photo,
       })
       .eq('id', member.id)
       .select()
@@ -111,6 +115,7 @@ export const memberService = {
       phone: data.phone || undefined,
       joinDate: data.join_date,
       notes: data.notes || undefined,
+      photo: data.photo || undefined,
     };
   },
 
@@ -145,6 +150,7 @@ export const memberService = {
       phone: member.phone || undefined,
       joinDate: member.join_date,
       notes: member.notes || undefined,
+      photo: member.photo || undefined,
     })) || [];
   },
 };

@@ -1,4 +1,3 @@
-
 export type MemberStatus = 'frequentante' | 'afastado' | 'advertido';
 
 export interface Member {
@@ -9,6 +8,7 @@ export interface Member {
   phone?: string;
   joinDate: string;
   notes?: string;
+  photo?: string;
 }
 
 export interface Payment {
