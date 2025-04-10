@@ -1,3 +1,4 @@
+
 import { Member, MemberStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -149,7 +150,7 @@ export const memberService = {
       email: member.email || undefined,
       phone: member.phone || undefined,
       joinDate: member.join_date,
-      notes: member.notes || undefined,
+      notes: data.notes || undefined,
       photo: member.photo || undefined,
     })) || [];
   },
