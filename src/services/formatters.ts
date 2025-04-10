@@ -1,3 +1,4 @@
+
 import { MemberStatus } from "@/types";
 
 // Utility formatters
@@ -17,6 +18,12 @@ export const formatMonthYear = (monthStr: string, showYearOption: boolean = true
   } else {
     return date.toLocaleDateString("pt-BR", { month: "long" });
   }
+};
+
+// Add the missing formatDateBR function
+export const formatDateBR = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 };
 
 export const getCurrentMonthYear = (): { month: string; year: number } => {
