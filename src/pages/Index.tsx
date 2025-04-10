@@ -24,7 +24,7 @@ const Index = () => {
   );
 
   return (
-    <MobileLayout title="ACT - CAJUEIRO">
+    <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
       <div className="space-y-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
