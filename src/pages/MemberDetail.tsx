@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ import {
   getStatusColor,
   getStatusLabel,
 } from "@/services/dataService";
-import { MemberStatus } from "@/types";
+import { Member, MemberStatus, Payment } from "@/types";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -50,38 +50,120 @@ const MemberDetail = () => {
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [member, setMember] = useState<Member | null>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentStatus, setPaymentStatus] = useState<{
+    upToDate: boolean;
+    unpaidMonths: string[];
+  }>({ upToDate: true, unpaidMonths: [] });
+  const [loading, setLoading] = useState(true);
 
-  if (!id) {
-    navigate("/members");
-    return null;
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) {
+        navigate("/members");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const fetchedMember = await memberService.getMemberById(id);
+        
+        if (!fetchedMember) {
+          toast({
+            title: "Erro",
+            description: "Sócio não encontrado",
+            variant: "destructive",
+          });
+          navigate("/members");
+          return;
+        }
+        
+        setMember(fetchedMember);
+        
+        const fetchedPayments = await paymentService.getPaymentsByMember(id);
+        setPayments(fetchedPayments);
+        
+        const fetchedPaymentStatus = await paymentService.getMemberPaymentStatus(id);
+        setPaymentStatus(fetchedPaymentStatus);
+      } catch (error) {
+        console.error("Error fetching member data:", error);
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro ao carregar os dados do sócio",
+          variant: "destructive",
+        });
+        navigate("/members");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, navigate, toast]);
+
+  const handleDelete = async () => {
+    if (!id) return;
+    
+    try {
+      await memberService.deleteMember(id);
+      toast({
+        title: "Sócio excluído",
+        description: "O sócio foi excluído com sucesso",
+      });
+      navigate("/members");
+    } catch (error) {
+      console.error("Error deleting member:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao excluir o sócio",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStatusChange = async (newStatus: MemberStatus) => {
+    if (!member) return;
+    
+    try {
+      const updatedMember = await memberService.updateMember({
+        ...member,
+        status: newStatus
+      });
+      
+      if (updatedMember) {
+        setMember(updatedMember);
+      }
+      
+      toast({
+        title: "Status atualizado",
+        description: `O status foi alterado para ${getStatusLabel(newStatus)}`,
+      });
+      
+      setShowStatusDialog(false);
+    } catch (error) {
+      console.error("Error updating member status:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar o status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <MobileLayout title="Detalhes do Sócio">
+        <div className="flex items-center justify-center h-full py-10">
+          <p>Carregando dados...</p>
+        </div>
+      </MobileLayout>
+    );
   }
 
-  const member = memberService.getMemberById(id);
   if (!member) {
-    navigate("/members");
     return null;
   }
-
-  const payments = paymentService.getPaymentsByMember(id);
-  const paymentStatus = paymentService.getMemberPaymentStatus(id);
-
-  const handleDelete = () => {
-    memberService.deleteMember(id);
-    toast({
-      title: "Sócio excluído",
-      description: "O sócio foi excluído com sucesso",
-    });
-    navigate("/members");
-  };
-
-  const handleStatusChange = (newStatus: MemberStatus) => {
-    memberService.updateMember({ ...member, status: newStatus });
-    toast({
-      title: "Status atualizado",
-      description: `O status foi alterado para ${getStatusLabel(newStatus)}`,
-    });
-    setShowStatusDialog(false);
-  };
 
   return (
     <MobileLayout title="Detalhes do Sócio">
@@ -210,6 +292,7 @@ const MemberDetail = () => {
                   <PaymentCard
                     key={payment.id}
                     payment={payment}
+                    memberName={member.name}
                     onClick={() => navigate(`/payments/${payment.id}`)}
                   />
                 ))}

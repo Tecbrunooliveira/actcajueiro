@@ -1,6 +1,7 @@
 
 import { Member, Payment, MemberStatus, MonthlyRecord } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
 // Member Service
 export const memberService = {
@@ -14,7 +15,7 @@ export const memberService = {
       return [];
     }
     
-    return data.map(member => ({
+    return data?.map(member => ({
       id: member.id,
       name: member.name,
       status: member.status as MemberStatus,
@@ -22,10 +23,10 @@ export const memberService = {
       phone: member.phone || undefined,
       joinDate: member.join_date,
       notes: member.notes || undefined,
-    }));
+    })) || [];
   },
 
-  getMemberById: async (id: string): Promise<Member | undefined> => {
+  getMemberById: async (id: string): Promise<Member | null> => {
     const { data, error } = await supabase
       .from('members')
       .select('*')
@@ -34,8 +35,10 @@ export const memberService = {
     
     if (error) {
       console.error('Error fetching member:', error);
-      return undefined;
+      return null;
     }
+    
+    if (!data) return null;
     
     return {
       id: data.id,
@@ -48,7 +51,7 @@ export const memberService = {
     };
   },
 
-  createMember: async (member: Omit<Member, "id">): Promise<Member> => {
+  createMember: async (member: Omit<Member, "id">): Promise<Member | null> => {
     const { data, error } = await supabase
       .from('members')
       .insert({
@@ -67,6 +70,8 @@ export const memberService = {
       throw error;
     }
     
+    if (!data) return null;
+    
     return {
       id: data.id,
       name: data.name,
@@ -78,7 +83,7 @@ export const memberService = {
     };
   },
 
-  updateMember: async (member: Member): Promise<Member> => {
+  updateMember: async (member: Member): Promise<Member | null> => {
     const { data, error } = await supabase
       .from('members')
       .update({
@@ -97,6 +102,8 @@ export const memberService = {
       console.error('Error updating member:', error);
       throw error;
     }
+    
+    if (!data) return null;
     
     return {
       id: data.id,
@@ -132,7 +139,7 @@ export const memberService = {
       return [];
     }
     
-    return data.map(member => ({
+    return data?.map(member => ({
       id: member.id,
       name: member.name,
       status: member.status as MemberStatus,
@@ -140,7 +147,7 @@ export const memberService = {
       phone: member.phone || undefined,
       joinDate: member.join_date,
       notes: member.notes || undefined,
-    }));
+    })) || [];
   },
 };
 
@@ -156,7 +163,7 @@ export const paymentService = {
       return [];
     }
     
-    return data.map(payment => ({
+    return data?.map(payment => ({
       id: payment.id,
       memberId: payment.member_id,
       amount: payment.amount,
@@ -166,10 +173,10 @@ export const paymentService = {
       isPaid: payment.is_paid,
       paymentMethod: payment.payment_method || undefined,
       notes: payment.notes || undefined,
-    }));
+    })) || [];
   },
 
-  getPaymentById: async (id: string): Promise<Payment | undefined> => {
+  getPaymentById: async (id: string): Promise<Payment | null> => {
     const { data, error } = await supabase
       .from('payments')
       .select('*')
@@ -178,8 +185,10 @@ export const paymentService = {
     
     if (error) {
       console.error('Error fetching payment:', error);
-      return undefined;
+      return null;
     }
+    
+    if (!data) return null;
     
     return {
       id: data.id,
@@ -205,7 +214,7 @@ export const paymentService = {
       return [];
     }
     
-    return data.map(payment => ({
+    return data?.map(payment => ({
       id: payment.id,
       memberId: payment.member_id,
       amount: payment.amount,
@@ -215,7 +224,7 @@ export const paymentService = {
       isPaid: payment.is_paid,
       paymentMethod: payment.payment_method || undefined,
       notes: payment.notes || undefined,
-    }));
+    })) || [];
   },
 
   getPaymentsByMonth: async (month: string, year: number): Promise<Payment[]> => {
@@ -230,7 +239,7 @@ export const paymentService = {
       return [];
     }
     
-    return data.map(payment => ({
+    return data?.map(payment => ({
       id: payment.id,
       memberId: payment.member_id,
       amount: payment.amount,
@@ -240,10 +249,10 @@ export const paymentService = {
       isPaid: payment.is_paid,
       paymentMethod: payment.payment_method || undefined,
       notes: payment.notes || undefined,
-    }));
+    })) || [];
   },
 
-  createPayment: async (payment: Omit<Payment, "id">): Promise<Payment> => {
+  createPayment: async (payment: Omit<Payment, "id">): Promise<Payment | null> => {
     const { data, error } = await supabase
       .from('payments')
       .insert({
@@ -264,6 +273,8 @@ export const paymentService = {
       throw error;
     }
     
+    if (!data) return null;
+    
     return {
       id: data.id,
       memberId: data.member_id,
@@ -277,7 +288,7 @@ export const paymentService = {
     };
   },
 
-  updatePayment: async (payment: Payment): Promise<Payment> => {
+  updatePayment: async (payment: Payment): Promise<Payment | null> => {
     const { data, error } = await supabase
       .from('payments')
       .update({
@@ -298,6 +309,8 @@ export const paymentService = {
       console.error('Error updating payment:', error);
       throw error;
     }
+    
+    if (!data) return null;
     
     return {
       id: data.id,
@@ -335,7 +348,7 @@ export const paymentService = {
       return [];
     }
     
-    return data.map(payment => ({
+    return data?.map(payment => ({
       id: payment.id,
       memberId: payment.member_id,
       amount: payment.amount,
@@ -345,7 +358,7 @@ export const paymentService = {
       isPaid: payment.is_paid,
       paymentMethod: payment.payment_method || undefined,
       notes: payment.notes || undefined,
-    }));
+    })) || [];
   },
 
   getUnpaidPayments: async (): Promise<Payment[]> => {
@@ -359,7 +372,7 @@ export const paymentService = {
       return [];
     }
     
-    return data.map(payment => ({
+    return data?.map(payment => ({
       id: payment.id,
       memberId: payment.member_id,
       amount: payment.amount,
@@ -369,7 +382,7 @@ export const paymentService = {
       isPaid: payment.is_paid,
       paymentMethod: payment.payment_method || undefined,
       notes: payment.notes || undefined,
-    }));
+    })) || [];
   },
 
   getMemberPaymentStatus: async (memberId: string): Promise<{ upToDate: boolean; unpaidMonths: string[] }> => {

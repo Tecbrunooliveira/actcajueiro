@@ -100,9 +100,11 @@ const MemberForm = () => {
       if (isEditMode && id) {
         await memberService.updateMember({ 
           id, 
-          ...data,
+          name: data.name,
+          status: data.status,
           email: data.email || undefined,
           phone: data.phone || undefined,
+          joinDate: data.joinDate,
           notes: data.notes || undefined,
         });
         

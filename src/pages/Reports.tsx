@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,27 +12,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { MemberCard } from "@/components/members/MemberCard";
-import { PaymentCard } from "@/components/payments/PaymentCard";
-import { Member, Payment } from "@/types";
+import { Member, Payment, MonthlyRecord } from "@/types";
 import {
   memberService,
   paymentService,
   formatCurrency,
   formatMonthYear,
   getCurrentMonthYear,
-  getStatusColor,
-  getStatusLabel,
 } from "@/services/dataService";
-import { ArrowDownToLine, CheckCircle, Users, XCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Reports = () => {
   const currentDate = getCurrentMonthYear();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.month);
   const [selectedYear, setSelectedYear] = useState(currentDate.year.toString());
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
+  const [allPayments, setAllPayments] = useState<Payment[]>([]);
+  const [monthlyPayments, setMonthlyPayments] = useState<Payment[]>([]);
+  const [monthlyRecord, setMonthlyRecord] = useState<MonthlyRecord>({
+    month: "",
+    year: 0,
+    totalMembers: 0,
+    paidMembers: 0,
+    unpaidMembers: 0,
+    totalAmount: 0,
+    collectedAmount: 0,
+  });
+  const [paidMembers, setPaidMembers] = useState<Member[]>([]);
+  const [unpaidMembers, setUnpaidMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Generate month options
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
@@ -51,31 +62,50 @@ const Reports = () => {
     (_, i) => (currentDate.year - 5 + i).toString()
   );
 
-  // Get members and payments
-  const allMembers = memberService.getAllMembers();
-  const allPayments = paymentService.getAllPayments();
-  
-  // Filter payments by selected month
-  const monthlyPayments = allPayments.filter(
-    (payment) => payment.month === selectedMonth
-  );
-  
-  // Get monthly record
-  const monthlyRecord = paymentService.getMonthlyRecord(
-    selectedMonth,
-    parseInt(selectedYear)
-  );
-
-  // Filter members by payment status
-  const paidMembers = allMembers.filter((member) => {
-    const memberPayments = monthlyPayments.filter(p => p.memberId === member.id);
-    return memberPayments.some(p => p.isPaid);
-  });
-
-  const unpaidMembers = allMembers.filter((member) => {
-    const memberPayments = monthlyPayments.filter(p => p.memberId === member.id);
-    return memberPayments.length === 0 || memberPayments.every(p => !p.isPaid);
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all data
+        const fetchedMembers = await memberService.getAllMembers();
+        const fetchedPayments = await paymentService.getAllPayments();
+        const fetchedMonthlyRecord = await paymentService.getMonthlyRecord(
+          selectedMonth,
+          parseInt(selectedYear)
+        );
+        
+        setAllMembers(fetchedMembers);
+        setAllPayments(fetchedPayments);
+        setMonthlyRecord(fetchedMonthlyRecord);
+        
+        // Filter payments by selected month
+        const monthPayments = fetchedPayments.filter(
+          (payment) => payment.month === selectedMonth
+        );
+        setMonthlyPayments(monthPayments);
+        
+        // Filter members by payment status
+        const membersPaid = fetchedMembers.filter((member) => {
+          const memberPayments = monthPayments.filter(p => p.memberId === member.id);
+          return memberPayments.some(p => p.isPaid);
+        });
+        setPaidMembers(membersPaid);
+        
+        const membersUnpaid = fetchedMembers.filter((member) => {
+          const memberPayments = monthPayments.filter(p => p.memberId === member.id);
+          return memberPayments.length === 0 || memberPayments.every(p => !p.isPaid);
+        });
+        setUnpaidMembers(membersUnpaid);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [selectedMonth, selectedYear]);
 
   // Prepare data for pie chart
   const paymentStatusData = [
@@ -132,6 +162,16 @@ const Reports = () => {
     const [_, month] = selectedMonth.split("-");
     setSelectedMonth(`${value}-${month}`);
   };
+
+  if (loading) {
+    return (
+      <MobileLayout title="Relatórios">
+        <div className="flex items-center justify-center h-full py-10">
+          <p>Carregando dados...</p>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <MobileLayout title="Relatórios">
