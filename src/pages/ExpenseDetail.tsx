@@ -4,7 +4,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { expenseService } from "@/services/expenseService";
+import { expenseService } from "@/services/expense";
 import { Expense, ExpenseCategory } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/services/formatters";

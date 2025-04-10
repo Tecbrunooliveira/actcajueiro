@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { expenseService } from "@/services/expenseService";
+import { expenseService } from "@/services/expense";
 import { Expense, ExpenseCategory } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";

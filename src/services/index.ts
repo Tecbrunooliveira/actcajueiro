@@ -5,6 +5,7 @@ export * from './payment';
 export * from './formatters';
 export * from './pdfService';
 export * from './communicationService';
+export * from './expense';
 
 // Create a consolidated paymentService for backward compatibility
 import { 

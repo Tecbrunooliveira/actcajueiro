@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { ExpenseCategory } from "@/types";
-import { expenseService } from "@/services/expenseService";
+import { expenseService } from "@/services/expense";
 import { CategoryForm } from "@/components/expenses/CategoryForm";
 import { CategoryCard } from "@/components/expenses/CategoryCard";
 import { Button } from "@/components/ui/button";
