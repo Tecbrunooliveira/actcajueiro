@@ -9,7 +9,7 @@ type MessageTemplate = "general" | "payment_reminder";
 // Templates de mensagens
 const messageTemplates: Record<MessageTemplate, string> = {
   general: "Olá! ",
-  payment_reminder: "Olá! Lembramos que a mensalidade está vencida. Utilize a chave PIX (75) 99239-9324 para pagamento. Agradecemos pela atenção!"
+  payment_reminder: "Olá! Lembramos que a mensalidade está vencida. Utilize a chave PIX (75) 99239-9324 para pagamento. Associação ACT Agradecemos pela atenção!"
 };
 
 /**
