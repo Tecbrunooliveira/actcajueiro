@@ -60,7 +60,7 @@ const PaymentForm = () => {
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       memberId: "",
-      amount: 100,
+      amount: 30,
       month: month,
       year: year,
       isPaid: false,
