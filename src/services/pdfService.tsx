@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Member } from "@/types";
 import { Document, Page, Text, View, StyleSheet, pdf, Font } from "@react-pdf/renderer";
-import { getStatusLabel } from "./dataService";
+import { getStatusLabel } from "./formatters";
 
 // Registrando fonte para usar no PDF
 Font.register({

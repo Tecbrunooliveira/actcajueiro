@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MemberCard } from "@/components/members/MemberCard";
 import { Member, MemberStatus } from "@/types";
-import { memberService } from "@/services/dataService";
+import { memberService } from "@/services/memberService";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

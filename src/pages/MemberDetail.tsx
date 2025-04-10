@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
@@ -34,12 +33,9 @@ import {
   Check,
   AlertTriangle,
 } from "lucide-react";
-import {
-  memberService,
-  paymentService,
-  getStatusColor,
-  getStatusLabel,
-} from "@/services/dataService";
+import { memberService } from "@/services/memberService";
+import { paymentService } from "@/services/paymentService";
+import { getStatusColor, getStatusLabel } from "@/services/formatters";
 import { Member, MemberStatus, Payment } from "@/types";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";

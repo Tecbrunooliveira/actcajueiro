@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
@@ -23,10 +22,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  memberService,
-  getStatusLabel
-} from "@/services/dataService";
+import { memberService } from "@/services/memberService";
+import { getStatusLabel } from "@/services/formatters";
 import { MemberStatus } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 

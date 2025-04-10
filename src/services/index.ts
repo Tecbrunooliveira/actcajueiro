@@ -3,3 +3,4 @@
 export * from './memberService';
 export * from './paymentService';
 export * from './formatters';
+export * from './pdfService';

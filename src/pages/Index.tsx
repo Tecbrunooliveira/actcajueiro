@@ -12,7 +12,9 @@ import {
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Users, CreditCard, BarChart3, AlertTriangle } from "lucide-react";
-import { memberService, paymentService, formatCurrency, getCurrentMonthYear } from "@/services/dataService";
+import { memberService } from "@/services/memberService";
+import { paymentService } from "@/services/paymentService";
+import { formatCurrency, getCurrentMonthYear } from "@/services/formatters";
 import { MonthlyRecord, Payment } from "@/types";
 
 const Index = () => {

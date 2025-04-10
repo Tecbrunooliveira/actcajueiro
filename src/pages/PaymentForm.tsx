@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
@@ -25,11 +24,9 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import {
-  memberService,
-  paymentService,
-  getCurrentMonthYear,
-} from "@/services/dataService";
+import { memberService } from "@/services/memberService";
+import { paymentService } from "@/services/paymentService";
+import { getCurrentMonthYear } from "@/services/formatters";
 import { Member } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 
