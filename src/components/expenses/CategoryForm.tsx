@@ -24,8 +24,10 @@ const categorySchema = z.object({
   description: z.string().optional(),
   color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i, { 
     message: "Insira uma cor HEX válida (ex: #ff0000)" 
-  }).optional(),
+  }).default("#3b82f6"),
 });
+
+type CategoryFormValues = z.infer<typeof categorySchema>;
 
 type CategoryFormProps = {
   onSubmit: (data: Omit<ExpenseCategory, "id">) => Promise<void>;
@@ -35,7 +37,7 @@ type CategoryFormProps = {
 
 export function CategoryForm({ onSubmit, initialData, onCancel }: CategoryFormProps) {
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof categorySchema>>({
+  const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: initialData?.name || "",
@@ -44,9 +46,13 @@ export function CategoryForm({ onSubmit, initialData, onCancel }: CategoryFormPr
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof categorySchema>) => {
+  const handleSubmit = async (data: CategoryFormValues) => {
     try {
-      await onSubmit(data);
+      await onSubmit({
+        name: data.name,
+        description: data.description,
+        color: data.color,
+      });
       form.reset();
     } catch (error) {
       toast({
@@ -99,6 +105,7 @@ export function CategoryForm({ onSubmit, initialData, onCancel }: CategoryFormPr
                   placeholder="Descrição da categoria" 
                   className="resize-none"
                   {...field} 
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
