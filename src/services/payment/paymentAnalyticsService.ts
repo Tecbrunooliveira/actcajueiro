@@ -40,4 +40,51 @@ export const paymentAnalyticsService = {
       collectedAmount,
     };
   },
+
+  getAnnualPaymentStats: async (year: number): Promise<{
+    totalCollected: number;
+    monthlyCollection: Record<string, number>;
+    paymentCompletionRate: number;
+  }> => {
+    // Get all payments for the year
+    const { data, error } = await paymentQueryService.supabase
+      .from('payments')
+      .select('*')
+      .eq('year', year);
+      
+    if (error) {
+      console.error('Error fetching annual payment data:', error);
+      return {
+        totalCollected: 0,
+        monthlyCollection: {},
+        paymentCompletionRate: 0
+      };
+    }
+    
+    // Process data to get statistics
+    const paidPayments = data.filter(p => p.is_paid);
+    const totalPayments = data.length;
+    const totalCollected = paidPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    // Group by month
+    const monthlyCollection: Record<string, number> = {};
+    paidPayments.forEach(payment => {
+      const monthKey = payment.month;
+      if (!monthlyCollection[monthKey]) {
+        monthlyCollection[monthKey] = 0;
+      }
+      monthlyCollection[monthKey] += payment.amount;
+    });
+    
+    // Calculate completion rate
+    const paymentCompletionRate = totalPayments > 0 
+      ? (paidPayments.length / totalPayments) * 100 
+      : 0;
+    
+    return {
+      totalCollected,
+      monthlyCollection,
+      paymentCompletionRate
+    };
+  }
 };
