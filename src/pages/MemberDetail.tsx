@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
@@ -33,8 +34,7 @@ import {
   Check,
   AlertTriangle,
 } from "lucide-react";
-import { memberService } from "@/services/memberService";
-import { paymentService } from "@/services/paymentService";
+import { memberService, paymentService } from "@/services";
 import { getStatusColor, getStatusLabel } from "@/services/formatters";
 import { Member, MemberStatus, Payment } from "@/types";
 import { cn } from "@/lib/utils";

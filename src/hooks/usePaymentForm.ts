@@ -1,10 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { memberService } from "@/services/memberService";
-import { paymentService } from "@/services/paymentService";
+import { memberService, paymentService } from "@/services";
 import { paymentSchema, PaymentFormValues, defaultPaymentValues } from "@/schemas/paymentSchema";
 import { useNavigate } from "react-router-dom";
 import { Member } from "@/types";

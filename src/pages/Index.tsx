@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Users, CreditCard, BarChart3, AlertTriangle } from "lucide-react";
-import { memberService } from "@/services/memberService";
-import { paymentService } from "@/services/paymentService";
+import { memberService, paymentService } from "@/services";
 import { formatCurrency, getCurrentMonthYear } from "@/services/formatters";
 import { MonthlyRecord, Payment } from "@/types";
 

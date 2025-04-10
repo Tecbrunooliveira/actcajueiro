@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Member, Payment, MonthlyRecord } from "@/types";
@@ -5,8 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateMembersPdfReport } from "@/services/pdfService";
 
 // Importações atualizadas
-import { memberService } from "@/services/memberService";
-import { paymentService } from "@/services/paymentService";
+import { memberService, paymentService } from "@/services";
 import { formatMonthYear, getCurrentMonthYear } from "@/services/formatters";
 
 // Componentes refatorados

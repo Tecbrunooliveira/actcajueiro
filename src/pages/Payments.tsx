@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { PaymentCard } from "@/components/payments/PaymentCard";
 import { Payment, Member } from "@/types";
-import { memberService } from "@/services/memberService";
-import { paymentService } from "@/services/paymentService";
+import { memberService, paymentService } from "@/services";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,13 +36,11 @@ const Payments = () => {
     fetchData();
   }, []);
 
-  // Get member name by ID
   const getMemberName = (memberId: string) => {
     const member = members.find((m) => m.id === memberId);
     return member ? member.name : "Desconhecido";
   };
 
-  // Filter by payment status and search term
   const filteredPayments = payments
     .filter((payment) => {
       if (activeTab === "all") return true;
@@ -57,14 +53,12 @@ const Payments = () => {
       return memberName.includes(searchTerm.toLowerCase());
     });
 
-  // Sort payments by date (most recent first)
   const sortedPayments = [...filteredPayments].sort((a, b) => {
     return new Date(b.month).getTime() - new Date(a.month).getTime();
   });
 
   return (
     <MobileLayout title="Pagamentos">
-      {/* Search and Add button */}
       <div className="mb-4 flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -83,7 +77,6 @@ const Payments = () => {
         </Link>
       </div>
 
-      {/* Tabs for filtering by payment status */}
       <Tabs
         defaultValue="all"
         className="mb-6"

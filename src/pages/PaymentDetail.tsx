@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useParams, useNavigate } from "react-router-dom";
@@ -22,8 +23,7 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { memberService } from "@/services/memberService";
-import { paymentService } from "@/services/paymentService";
+import { memberService, paymentService } from "@/services";
 import { formatCurrency, formatMonthYear } from "@/services/formatters";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
