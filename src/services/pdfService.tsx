@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Member } from "@/types";
 import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
 import { getStatusLabel } from "./dataService";
