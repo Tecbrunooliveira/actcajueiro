@@ -39,7 +39,7 @@ export const MembersPdfDocument = ({
         <View style={styles.tableHeader}>
           <Text style={styles.memberName}>Nome</Text>
           <Text style={styles.memberStatus}>Status</Text>
-          <Text style={styles.memberContact}>Contato</Text>
+          
         </View>
         
         {members.map((member) => (
