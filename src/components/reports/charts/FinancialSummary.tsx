@@ -58,7 +58,7 @@ export const FinancialSummary = ({
             {formatCurrency(balance)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {isPositiveBalance ? 'Superávit' : 'Déficit'} no período
+            {isPositiveBalance ? 'Positivo' : 'Negativo'} no período
           </p>
         </CardContent>
       </Card>
