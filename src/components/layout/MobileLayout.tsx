@@ -24,7 +24,7 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-primary text-primary-foreground p-4 shadow-md">
+      <header className="sticky top-0 z-10 bg-club-500 text-white p-4 shadow-md">
         <h1 className="text-xl font-semibold text-center">{title}</h1>
       </header>
 
@@ -44,8 +44,8 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
                   "flex flex-col items-center py-3 px-1",
                   currentPath === item.path || 
                   (item.path === "/expenses" && currentPath.startsWith("/expense"))
-                    ? "text-primary"
-                    : "text-gray-500 hover:text-primary"
+                    ? "text-club-500"
+                    : "text-gray-500 hover:text-club-500"
                 )}
               >
                 <item.icon
@@ -53,7 +53,7 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
                     "h-5 w-5 mb-1",
                     currentPath === item.path || 
                     (item.path === "/expenses" && currentPath.startsWith("/expense"))
-                      ? "text-primary"
+                      ? "text-club-500"
                       : "text-gray-500"
                   )}
                 />

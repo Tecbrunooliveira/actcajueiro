@@ -32,14 +32,14 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
       <TabsList className="grid grid-cols-2 mb-4 p-1 bg-muted rounded-lg">
         <TabsTrigger 
           value="unpaid" 
-          className="rounded-md data-[state=active]:bg-white data-[state=active]:text-club-700 data-[state=active]:shadow-sm transition-all"
+          className="rounded-md data-[state=active]:bg-white data-[state=active]:text-club-500 data-[state=active]:shadow-sm transition-all"
         >
           <XCircle className="h-4 w-4 mr-2 text-red-500" />
           Inadimplentes
         </TabsTrigger>
         <TabsTrigger 
           value="paid" 
-          className="rounded-md data-[state=active]:bg-white data-[state=active]:text-club-700 data-[state=active]:shadow-sm transition-all"
+          className="rounded-md data-[state=active]:bg-white data-[state=active]:text-club-500 data-[state=active]:shadow-sm transition-all"
         >
           <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
           Em Dia
@@ -89,7 +89,7 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
                 {member.phone && (
                   <Button
                     size="sm"
-                    className="absolute top-2 right-2 bg-green-500 hover:bg-green-600"
+                    className="absolute top-2 right-2 bg-club-500 hover:bg-club-600"
                     onClick={() => handleWhatsAppClick(member.phone!)}
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -147,4 +147,3 @@ export const MembersTabView: React.FC<MembersTabViewProps> = ({
     </Tabs>
   );
 };
-
