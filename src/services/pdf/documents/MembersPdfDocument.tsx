@@ -20,7 +20,7 @@ export const MembersPdfDocument = ({
     <Page size="A4" style={styles.page}>
       <View style={styles.headerSection}>
         <Text style={styles.title}>{title}</Text>
-        
+        <Text style={styles.subtitle}>Período: {period}</Text>
         
         <View style={styles.statsRow}>
           <View style={styles.stat}>
