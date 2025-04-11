@@ -48,7 +48,9 @@ export const MembersPdfDocument = ({
             <View style={styles.memberStatus}>
               <StatusBadge status={getStatusLabel(member.status)} />
             </View>
-            
+            <Text style={styles.memberContact}>
+              {member.phone || member.email || "Não informado"}
+            </Text>
           </View>
         ))}
       </View>
