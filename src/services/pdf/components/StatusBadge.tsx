@@ -17,14 +17,14 @@ export const StatusBadge = ({ status }: { status: string }) => {
       badgeStyle = styles.statusInactive;
       break;
     case 'advertido':
-      badgeStyle = styles.statusPending;
+      badgeStyle = styles.statusWarning;
       break;
     default:
       badgeStyle = styles.statusPending;
   }
   
   return (
-    <View style={{ alignItems: 'center' }}>
+    <View style={{ alignItems: 'flex-end' }}>
       <Text style={[styles.statusBadge, badgeStyle]}>
         {statusText}
       </Text>

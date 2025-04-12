@@ -37,9 +37,9 @@ export const MembersPdfDocument = ({
       
       <View style={styles.section}>
         <View style={styles.tableHeader}>
-          <Text style={[styles.memberPhoto, { fontSize: 7 }]}>Foto</Text>
-          <Text style={[styles.memberName, { fontSize: 7 }]}>Nome</Text>
-          <Text style={[styles.memberStatus, { fontSize: 7 }]}>Status</Text>
+          <Text style={styles.memberPhotoHeader}>Foto</Text>
+          <Text style={styles.memberNameHeader}>Nome</Text>
+          <Text style={styles.memberStatusHeader}>Status</Text>
         </View>
         
         {members.map((member) => (
