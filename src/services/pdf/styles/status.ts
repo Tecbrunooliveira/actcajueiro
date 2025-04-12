@@ -33,4 +33,16 @@ export const statusStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#A0AEC0",
   },
+  statusSuspenso: {
+    backgroundColor: "#FDE1D3",
+    color: "#9C4221",
+    borderWidth: 1,
+    borderColor: "#F97316",
+  },
+  statusLicenciado: {
+    backgroundColor: "#FEF7CD",
+    color: "#723B13",
+    borderWidth: 1,
+    borderColor: "#ECC94B",
+  },
 });

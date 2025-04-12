@@ -1,4 +1,5 @@
-export type MemberStatus = 'frequentante' | 'afastado' | 'advertido';
+
+export type MemberStatus = 'frequentante' | 'afastado' | 'advertido' | 'suspenso' | 'licenciado';
 
 export interface Member {
   id: string;
