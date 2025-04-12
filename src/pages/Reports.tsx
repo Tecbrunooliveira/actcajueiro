@@ -12,6 +12,7 @@ import { Report360 } from "@/components/reports/Report360";
 import { LoadingState } from "@/components/reports/LoadingState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import { BarChart3, FileBarChart } from "lucide-react";
 
 const Reports = () => {
   const {
@@ -65,17 +66,19 @@ const Reports = () => {
         />
 
         <Tabs defaultValue="basic" className="mt-8">
-          <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-muted">
+          <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-muted border border-club-100 dark:border-club-700 shadow-md">
             <TabsTrigger 
               value="basic" 
-              className="rounded-lg py-2.5 font-medium data-[state=active]:bg-white data-[state=active]:text-club-500 data-[state=active]:shadow-sm transition-all duration-200"
+              className="rounded-lg py-2.5 font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-club-800 data-[state=active]:text-club-600 dark:data-[state=active]:text-club-300 data-[state=active]:shadow-sm transition-all duration-200"
             >
+              <BarChart3 className="h-4 w-4 mr-2" />
               Pagamentos
             </TabsTrigger>
             <TabsTrigger 
               value="advanced" 
-              className="rounded-lg py-2.5 font-medium data-[state=active]:bg-white data-[state=active]:text-club-500 data-[state=active]:shadow-sm transition-all duration-200"
+              className="rounded-lg py-2.5 font-medium data-[state=active]:bg-white dark:data-[state=active]:bg-club-800 data-[state=active]:text-club-600 dark:data-[state=active]:text-club-300 data-[state=active]:shadow-sm transition-all duration-200"
             >
+              <FileBarChart className="h-4 w-4 mr-2" />
               Relatório 360°
             </TabsTrigger>
           </TabsList>

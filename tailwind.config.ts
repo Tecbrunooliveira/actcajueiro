@@ -64,28 +64,28 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				club: {
-					50: '#edf9ed',
-					100: '#d5f3d6',
-					200: '#b1e7b2',
-					300: '#8ddb8f',
-					400: '#69cf6c',
-					500: '#46b644', // Nova cor primária
-					600: '#388f37',
-					700: '#2a6c29',
-					800: '#1d481c',
-					900: '#0f240e',
+					50: '#e6f7fa',
+					100: '#cceef5',
+					200: '#99ddeb',
+					300: '#66cce0',
+					400: '#33bbd6',
+					500: '#00b4cc', // Terceira cor da paleta
+					600: '#008c9e', // Segunda cor da paleta
+					700: '#005f6b', // Primeira cor da paleta
+					800: '#004854',
+					900: '#343838', // Quarta cor da paleta
 				},
 				accent: {
-					50: '#fefaec',
-					100: '#fdf5d9',
-					200: '#fbebb3',
-					300: '#fae08d',
-					400: '#f8d667',
-					500: '#fce138', // Nova cor de destaque
-					600: '#cbb42d',
-					700: '#988722',
-					800: '#665a17',
-					900: '#332d0b',
+					50: '#e6f7fa',
+					100: '#cceef5',
+					200: '#99ddeb',
+					300: '#66cce0',
+					400: '#33bbd6',
+					500: '#00b4cc',
+					600: '#008c9e',
+					700: '#005f6b',
+					800: '#004854',
+					900: '#343838',
 				}
 			},
 			borderRadius: {
@@ -109,11 +109,49 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'slide-in': {
+					'0%': {
+						transform: 'translateX(-100%)'
+					},
+					'100%': {
+						transform: 'translateX(0)'
+					}
+				},
+				'pulse': {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.5'
+					}
+				},
+				'scale': {
+					'0%': {
+						transform: 'scale(0.95)'
+					},
+					'100%': {
+						transform: 'scale(1)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out',
+				'slide-in': 'slide-in 0.3s ease-out',
+				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'scale': 'scale 0.2s ease-out'
 			}
 		}
 	},

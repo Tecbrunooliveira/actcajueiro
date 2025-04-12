@@ -45,14 +45,14 @@ export const Report360 = ({
       transition={{ duration: 0.3 }}
       className="space-y-4"
     >
-      <Card className="overflow-hidden border border-gray-100 rounded-xl shadow-lg bg-white">
-        <CardHeader className="pb-2 px-6 pt-6 flex flex-row items-center justify-between border-b border-gray-100">
+      <Card className="overflow-hidden border border-club-100 dark:border-club-700 rounded-xl shadow-lg bg-white dark:bg-club-900/80 backdrop-blur-sm">
+        <CardHeader className="pb-2 px-6 pt-6 flex flex-row items-center justify-between border-b border-club-100 dark:border-club-800">
           <div>
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-              <BarChart2 className="h-5 w-5 mr-2 text-club-500" />
+            <CardTitle className="text-xl font-semibold text-club-800 dark:text-club-100 flex items-center">
+              <BarChart2 className="h-5 w-5 mr-2 text-club-600 dark:text-club-300" />
               Relatório 360° - {formatMonthYear(selectedMonth)}
             </CardTitle>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-club-600 dark:text-club-300 mt-1">
               Visão completa do desempenho financeiro e administrativo
             </p>
           </div>
@@ -60,7 +60,7 @@ export const Report360 = ({
             size="sm" 
             onClick={handleGeneratePdfReport} 
             disabled={generatingPdf}
-            className="ml-auto bg-gradient-to-r from-club-500 to-club-600 hover:from-club-600 hover:to-club-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+            className="ml-auto gradient-bg hover:bg-gradient-to-r hover:from-club-600 hover:via-club-500 hover:to-club-400 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
           >
             {generatingPdf ? (
               <>
@@ -77,20 +77,32 @@ export const Report360 = ({
         </CardHeader>
         <CardContent className="p-0">
           <Tabs defaultValue="summary" className="w-full">
-            <TabsList className="w-full flex justify-between pt-2 px-4 border-b border-gray-100">
-              <TabsTrigger value="summary" className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 rounded-none pb-2 px-4 font-medium">
+            <TabsList className="w-full flex justify-between pt-2 px-4 border-b border-club-100 dark:border-club-800">
+              <TabsTrigger 
+                value="summary" 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 dark:data-[state=active]:text-club-300 rounded-none pb-2 px-4 font-medium"
+              >
                 <Wallet className="h-4 w-4 mr-2" />
                 Resumo
               </TabsTrigger>
-              <TabsTrigger value="members" className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 rounded-none pb-2 px-4 font-medium">
+              <TabsTrigger 
+                value="members" 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 dark:data-[state=active]:text-club-300 rounded-none pb-2 px-4 font-medium"
+              >
                 <Users className="h-4 w-4 mr-2" />
                 Sócios
               </TabsTrigger>
-              <TabsTrigger value="payments" className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 rounded-none pb-2 px-4 font-medium">
+              <TabsTrigger 
+                value="payments" 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 dark:data-[state=active]:text-club-300 rounded-none pb-2 px-4 font-medium"
+              >
                 <CreditCard className="h-4 w-4 mr-2" />
                 Pagamentos
               </TabsTrigger>
-              <TabsTrigger value="expenses" className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 rounded-none pb-2 px-4 font-medium">
+              <TabsTrigger 
+                value="expenses" 
+                className="data-[state=active]:border-b-2 data-[state=active]:border-club-500 data-[state=active]:text-club-600 dark:data-[state=active]:text-club-300 rounded-none pb-2 px-4 font-medium"
+              >
                 <Wallet className="h-4 w-4 mr-2" />
                 Despesas
               </TabsTrigger>

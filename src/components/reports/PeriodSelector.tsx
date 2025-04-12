@@ -40,8 +40,8 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="overflow-hidden border border-gray-100 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className="bg-gradient-to-r from-club-500 to-club-600 px-6 py-4 text-white">
+      <Card className="overflow-hidden border border-club-100 dark:border-club-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-white dark:bg-club-900/80 backdrop-blur-sm">
+        <div className="gradient-bg px-6 py-4 text-white">
           <div className="flex items-center">
             <CalendarRange className="h-5 w-5 mr-2" />
             <h3 className="font-medium text-lg">Período de Análise</h3>
@@ -51,17 +51,17 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
         <CardContent className="p-6 space-y-5">
           <div className="grid grid-cols-2 gap-5">
             <div>
-              <Label htmlFor="year" className="text-sm font-medium text-gray-600 mb-2 block">Ano</Label>
+              <Label htmlFor="year" className="text-sm font-medium text-club-800 dark:text-club-100 mb-2 block">Ano</Label>
               <Select value={selectedYear} onValueChange={onYearChange}>
                 <SelectTrigger 
                   id="year" 
-                  className="w-full border-gray-200 focus:border-club-400 focus:ring-club-400 rounded-lg bg-white p-3 shadow-sm hover:border-club-300 transition-all"
+                  className="w-full border-club-200 dark:border-club-700 focus:border-club-500 focus:ring-club-500 rounded-lg bg-white dark:bg-club-800/50 p-3 shadow-sm hover:border-club-400 transition-all"
                 >
                   <SelectValue placeholder="Selecione o ano" />
                 </SelectTrigger>
-                <SelectContent className="rounded-lg border-gray-100 shadow-lg">
+                <SelectContent className="rounded-lg border-club-100 dark:border-club-800 shadow-lg">
                   {yearOptions.map((year) => (
-                    <SelectItem key={year} value={year} className="hover:bg-club-50 focus:bg-club-50 cursor-pointer">
+                    <SelectItem key={year} value={year} className="hover:bg-club-50 dark:hover:bg-club-800 focus:bg-club-50 cursor-pointer">
                       {year}
                     </SelectItem>
                   ))}
@@ -70,17 +70,17 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
             </div>
             
             <div>
-              <Label htmlFor="month" className="text-sm font-medium text-gray-600 mb-2 block">Mês</Label>
+              <Label htmlFor="month" className="text-sm font-medium text-club-800 dark:text-club-100 mb-2 block">Mês</Label>
               <Select value={selectedMonth} onValueChange={onMonthChange}>
                 <SelectTrigger 
                   id="month" 
-                  className="w-full border-gray-200 focus:border-club-400 focus:ring-club-400 rounded-lg bg-white p-3 shadow-sm hover:border-club-300 transition-all"
+                  className="w-full border-club-200 dark:border-club-700 focus:border-club-500 focus:ring-club-500 rounded-lg bg-white dark:bg-club-800/50 p-3 shadow-sm hover:border-club-400 transition-all"
                 >
                   <SelectValue placeholder="Selecione o mês" />
                 </SelectTrigger>
-                <SelectContent className="rounded-lg border-gray-100 shadow-lg">
+                <SelectContent className="rounded-lg border-club-100 dark:border-club-800 shadow-lg">
                   {monthOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className="hover:bg-club-50 focus:bg-club-50 cursor-pointer">
+                    <SelectItem key={option.value} value={option.value} className="hover:bg-club-50 dark:hover:bg-club-800 focus:bg-club-50 cursor-pointer">
                       {option.label}
                     </SelectItem>
                   ))}
@@ -92,7 +92,7 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
           <Button
             onClick={onGeneratePendingPayments}
             disabled={generatingPayments}
-            className="w-full bg-gradient-to-r from-club-500 to-club-600 hover:from-club-600 hover:to-club-700 rounded-lg font-medium p-4 h-auto shadow-md hover:shadow-lg transition-all"
+            className="w-full gradient-bg hover:bg-gradient-to-r hover:from-club-600 hover:via-club-500 hover:to-club-400 rounded-lg font-medium p-4 h-auto shadow-md hover:shadow-lg transition-all"
           >
             {generatingPayments ? (
               <>
