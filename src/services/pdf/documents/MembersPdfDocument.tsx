@@ -24,12 +24,12 @@ export const MembersPdfDocument = ({
         
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statLabel}>Total de Membros</Text>
+            <Text style={styles.statLabel}>Total</Text>
             <Text style={styles.statValue}>{members.length}</Text>
           </View>
           
           <View style={styles.stat}>
-            <Text style={styles.statLabel}>Gerado em</Text>
+            <Text style={styles.statLabel}>Data</Text>
             <Text style={styles.statValue}>{new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}</Text>
           </View>
         </View>
@@ -37,9 +37,9 @@ export const MembersPdfDocument = ({
       
       <View style={styles.section}>
         <View style={styles.tableHeader}>
-          <Text style={styles.memberPhoto}>Foto</Text>
-          <Text style={styles.memberName}>Nome</Text>
-          <Text style={styles.memberStatus}>Status</Text>
+          <Text style={[styles.memberPhoto, { fontSize: 7 }]}>Foto</Text>
+          <Text style={[styles.memberName, { fontSize: 7 }]}>Nome</Text>
+          <Text style={[styles.memberStatus, { fontSize: 7 }]}>Status</Text>
         </View>
         
         {members.map((member) => (
