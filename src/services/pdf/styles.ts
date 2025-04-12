@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     marginBottom: 8,
     fontWeight: 700,
     color: "#00b4cc",
