@@ -26,6 +26,12 @@ export const useMemberForm = (memberId?: string) => {
           setLoading(true);
           const member = await memberService.getMemberById(memberId);
           if (member) {
+            // Ensure warnings array has the required properties
+            const formattedWarnings = (member.warnings || []).map(warning => ({
+              text: warning.text || '',
+              date: warning.date || new Date().toISOString().split('T')[0]
+            }));
+            
             form.reset({
               name: member.name,
               status: member.status,
@@ -34,7 +40,7 @@ export const useMemberForm = (memberId?: string) => {
               joinDate: member.joinDate,
               notes: member.notes || "",
               photo: member.photo || "",
-              warnings: member.warnings || [],
+              warnings: formattedWarnings,
             });
           }
         } catch (error) {
@@ -57,6 +63,12 @@ export const useMemberForm = (memberId?: string) => {
     try {
       setSubmitLoading(true);
       
+      // Ensure warnings are properly formatted
+      const formattedWarnings = (data.warnings || []).map(warning => ({
+        text: warning.text,
+        date: warning.date
+      }));
+      
       if (isEditMode && memberId) {
         await memberService.updateMember({ 
           id: memberId, 
@@ -67,7 +79,7 @@ export const useMemberForm = (memberId?: string) => {
           joinDate: data.joinDate,
           notes: data.notes || undefined,
           photo: data.photo || undefined,
-          warnings: data.warnings || [],
+          warnings: formattedWarnings,
         });
         
         toast({
@@ -83,7 +95,7 @@ export const useMemberForm = (memberId?: string) => {
           phone: data.phone || undefined,
           notes: data.notes || undefined,
           photo: data.photo || undefined,
-          warnings: data.warnings || [],
+          warnings: formattedWarnings,
         });
         
         toast({
