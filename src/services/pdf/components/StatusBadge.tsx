@@ -1,17 +1,16 @@
 
 import React from 'react';
-import { Text } from "@react-pdf/renderer";
-import { styles } from "../styles";
+import { Text, View } from '@react-pdf/renderer';
+import { styles } from '../styles';
 
-// Componente para o status com cores
 export const StatusBadge = ({ status }: { status: string }) => {
   let badgeStyle;
   
-  switch (status) {
-    case "Ativo":
+  switch (status.toLowerCase()) {
+    case 'ativo':
       badgeStyle = styles.statusActive;
       break;
-    case "Inativo":
+    case 'inativo':
       badgeStyle = styles.statusInactive;
       break;
     default:
@@ -19,8 +18,10 @@ export const StatusBadge = ({ status }: { status: string }) => {
   }
   
   return (
-    <Text style={[styles.statusBadge, badgeStyle]}>
-      {status}
-    </Text>
+    <View style={{ alignItems: 'center' }}>
+      <Text style={[styles.statusBadge, badgeStyle]}>
+        {status}
+      </Text>
+    </View>
   );
 };
