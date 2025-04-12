@@ -11,6 +11,7 @@ import { MembersTabView } from "@/components/reports/MembersTabView";
 import { Report360 } from "@/components/reports/Report360";
 import { LoadingState } from "@/components/reports/LoadingState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
 
 const Reports = () => {
   const {
@@ -51,7 +52,7 @@ const Reports = () => {
 
   return (
     <MobileLayout title="Relatórios">
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in pb-12">
         <PeriodSelector 
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
@@ -63,38 +64,66 @@ const Reports = () => {
           generatingPayments={generatingPayments}
         />
 
-        <Tabs defaultValue="basic">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="basic">Pagamentos</TabsTrigger>
-            <TabsTrigger value="advanced">Relatório 360°</TabsTrigger>
+        <Tabs defaultValue="basic" className="mt-8">
+          <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-muted">
+            <TabsTrigger 
+              value="basic" 
+              className="rounded-lg py-2.5 font-medium data-[state=active]:bg-white data-[state=active]:text-club-500 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Pagamentos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="advanced" 
+              className="rounded-lg py-2.5 font-medium data-[state=active]:bg-white data-[state=active]:text-club-500 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Relatório 360°
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="basic" className="space-y-6 pt-4">
-            <DashboardStats 
-              monthlyRecord={monthlyRecord}
-              allMembers={allMembers.length}
-              unpaidMembersCount={unpaidMembers.length}
-              selectedMonth={selectedMonth}
-              formatMonthYear={formatMonthYear}
-            />
+          <TabsContent value="basic" className="space-y-6 pt-6 animate-in fade-in-50 duration-300">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <DashboardStats 
+                monthlyRecord={monthlyRecord}
+                allMembers={allMembers.length}
+                unpaidMembersCount={unpaidMembers.length}
+                selectedMonth={selectedMonth}
+                formatMonthYear={formatMonthYear}
+              />
+            </motion.div>
             
-            <MembersTabView 
-              paidMembers={paidMembers}
-              unpaidMembers={unpaidMembers}
-              handleGeneratePdfReport={handleGeneratePdfReport}
-              generatingPdf={generatingPdf}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <MembersTabView 
+                paidMembers={paidMembers}
+                unpaidMembers={unpaidMembers}
+                handleGeneratePdfReport={handleGeneratePdfReport}
+                generatingPdf={generatingPdf}
+              />
+            </motion.div>
           </TabsContent>
           
-          <TabsContent value="advanced" className="pt-4">
-            <Report360 
-              memberStatusData={memberStatusData}
-              paymentStatusData={paymentStatusData}
-              expensesData={expensesData}
-              financialSummary={financialSummary}
-              selectedMonth={selectedMonth}
-              formatMonthYear={formatMonthYear}
-            />
+          <TabsContent value="advanced" className="pt-6 animate-in fade-in-50 duration-300">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Report360 
+                memberStatusData={memberStatusData}
+                paymentStatusData={paymentStatusData}
+                expensesData={expensesData}
+                financialSummary={financialSummary}
+                selectedMonth={selectedMonth}
+                formatMonthYear={formatMonthYear}
+              />
+            </motion.div>
           </TabsContent>
         </Tabs>
       </div>

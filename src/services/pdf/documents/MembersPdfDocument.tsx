@@ -24,7 +24,7 @@ export const MembersPdfDocument = ({
         
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statLabel}>Total</Text>
+            <Text style={styles.statLabel}>Total de Membros</Text>
             <Text style={styles.statValue}>{members.length}</Text>
           </View>
           
