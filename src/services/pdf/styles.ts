@@ -18,14 +18,14 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   title: {
-    fontSize: 12,
+    fontSize: 18,
     marginBottom: 8,
     fontWeight: 700,
     color: "#00b4cc",
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 10,
+    fontSize: 12,
     marginBottom: 5,
     color: "#4A5568",
     textAlign: "center",
@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
     borderStyle: "solid",
   },
   statLabel: {
-    fontSize: 9,
+    fontSize: 5,
     color: "#4A5568",
     marginBottom: 3,
   },
