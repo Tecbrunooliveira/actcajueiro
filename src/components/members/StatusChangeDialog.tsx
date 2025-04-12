@@ -56,6 +56,22 @@ export function StatusChangeDialog({
             <span className="w-3 h-3 rounded-full bg-red-500 mr-2"></span>
             Advertido
           </Button>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-orange-700"
+            onClick={() => onStatusChange("suspenso")}
+          >
+            <span className="w-3 h-3 rounded-full bg-orange-500 mr-2"></span>
+            Suspenso
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-yellow-700"
+            onClick={() => onStatusChange("licenciado")}
+          >
+            <span className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></span>
+            Licenciado
+          </Button>
         </div>
         <DialogFooter>
           <Button

@@ -4,7 +4,7 @@ import { MemberStatus } from "@/types";
 
 export const memberSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
-  status: z.enum(["frequentante", "afastado", "advertido"] as const),
+  status: z.enum(["frequentante", "afastado", "advertido", "suspenso", "licenciado"] as const),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
   joinDate: z.string().min(1, "Data de entrada é obrigatória"),

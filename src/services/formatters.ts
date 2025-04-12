@@ -41,6 +41,8 @@ export const getStatusLabel = (status: MemberStatus): string => {
     frequentante: "Frequentante",
     afastado: "Afastado",
     advertido: "Advertido",
+    suspenso: "Suspenso",
+    licenciado: "Licenciado"
   };
   return statusMap[status] || status;
 };
@@ -50,6 +52,8 @@ export const getStatusColor = (status: MemberStatus): string => {
     frequentante: "bg-green-500",
     afastado: "bg-amber-500",
     advertido: "bg-red-500",
+    suspenso: "bg-orange-500",
+    licenciado: "bg-yellow-500"
   };
   return statusMap[status] || "bg-gray-500";
 };

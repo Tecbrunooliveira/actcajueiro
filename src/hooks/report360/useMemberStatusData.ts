@@ -18,7 +18,9 @@ export const useMemberStatusData = () => {
     const statusColors: Record<string, string> = {
       'Frequentante': '#10b981',
       'Afastado': '#f59e0b',
-      'Advertido': '#ef4444'
+      'Advertido': '#ef4444',
+      'Suspenso': '#f97316',
+      'Licenciado': '#ecc94b'
     };
     
     const data = Object.entries(statusGroups).map(([name, value]) => ({

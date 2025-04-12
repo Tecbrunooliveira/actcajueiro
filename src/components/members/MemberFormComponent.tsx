@@ -88,7 +88,7 @@ export const MemberFormComponent = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {(["frequentante", "afastado", "advertido"] as MemberStatus[]).map(
+                  {(["frequentante", "afastado", "advertido", "suspenso", "licenciado"] as MemberStatus[]).map(
                     (status) => (
                       <SelectItem key={status} value={status}>
                         {getStatusLabel(status)}
