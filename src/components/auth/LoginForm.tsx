@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn, AlertCircle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
