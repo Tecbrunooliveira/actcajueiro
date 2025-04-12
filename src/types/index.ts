@@ -1,3 +1,4 @@
+
 export type MemberStatus = 'frequentante' | 'afastado';
 
 export interface Member {

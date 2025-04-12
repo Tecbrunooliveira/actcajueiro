@@ -67,7 +67,7 @@ export const useMemberForm = (memberId?: string) => {
           joinDate: data.joinDate,
           notes: data.notes || undefined,
           photo: data.photo || undefined,
-          warnings: data.warnings || undefined,
+          warnings: data.warnings || [],
         });
         
         toast({
@@ -83,7 +83,7 @@ export const useMemberForm = (memberId?: string) => {
           phone: data.phone || undefined,
           notes: data.notes || undefined,
           photo: data.photo || undefined,
-          warnings: data.warnings || undefined,
+          warnings: data.warnings || [],
         });
         
         toast({
