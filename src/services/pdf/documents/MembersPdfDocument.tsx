@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Document, Page, Text, View } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image } from "@react-pdf/renderer";
 import { Member } from "@/types";
 import { StatusBadge } from "../components/StatusBadge";
 import { styles } from "../styles";
@@ -37,20 +37,31 @@ export const MembersPdfDocument = ({
       
       <View style={styles.section}>
         <View style={styles.tableHeader}>
+          <Text style={styles.memberPhoto}>Foto</Text>
           <Text style={styles.memberName}>Nome</Text>
           <Text style={styles.memberStatus}>Status</Text>
-          <Text style={styles.memberContact}>Contato</Text>
         </View>
         
         {members.map((member) => (
           <View key={member.id} style={styles.memberRow}>
+            <View style={styles.memberPhoto}>
+              {member.photo ? (
+                <Image 
+                  src={member.photo} 
+                  style={styles.memberPhotoImage} 
+                />
+              ) : (
+                <View style={styles.memberPhotoPlaceholder}>
+                  <Text style={styles.memberPhotoInitial}>
+                    {member.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+            </View>
             <Text style={styles.memberName}>{member.name}</Text>
             <View style={styles.memberStatus}>
               <StatusBadge status={getStatusLabel(member.status)} />
             </View>
-            <Text style={styles.memberContact}>
-              {member.phone || member.email || "Não informado"}
-            </Text>
           </View>
         ))}
       </View>
