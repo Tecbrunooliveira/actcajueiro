@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
     borderStyle: "solid",
   },
   statLabel: {
-    fontSize: 5,
+    fontSize: 9,
     color: "#4A5568",
     marginBottom: 3,
   },
@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#008c9e",
     borderRadius: 6,
-    padding: 8,
+    padding: 4,
     marginBottom: 8,
     color: "white",
     fontWeight: 500,
