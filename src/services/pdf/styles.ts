@@ -18,14 +18,14 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   title: {
-    fontSize: 10,
+    fontSize: 15,
     marginBottom: 8,
     fontWeight: 700,
     color: "#00b4cc",
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 10,
     marginBottom: 5,
     color: "#4A5568",
     textAlign: "center",
