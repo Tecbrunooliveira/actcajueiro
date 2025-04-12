@@ -7,8 +7,8 @@ import LoginForm from "@/components/auth/LoginForm";
 import CreateAdminButton from "@/components/auth/CreateAdminButton";
 
 const Login = () => {
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("admin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -29,7 +29,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-club-500">ACT Cajueiro</CardTitle>
-          <CardDescription>Entre com suas credenciais para acessar</CardDescription>
+          <CardDescription></CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm defaultEmail={email} defaultPassword={password} />
@@ -37,7 +37,6 @@ const Login = () => {
         <CardFooter className="flex flex-col space-y-3">
           <div className="text-center pt-2">
             <p className="text-sm text-gray-500 mb-2">
-              Usuário padrão: admin@example.com / Senha: admin
             </p>
             <CreateAdminButton onSuccess={handleAdminCreationSuccess} />
           </div>
