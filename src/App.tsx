@@ -3,6 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Members from "./pages/Members";
 import MemberDetail from "./pages/MemberDetail";
@@ -15,6 +17,7 @@ import Expenses from "./pages/Expenses";
 import ExpenseDetail from "./pages/ExpenseDetail";
 import ExpenseForm from "./pages/ExpenseForm";
 import ExpenseCategories from "./pages/ExpenseCategories";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,26 +25,32 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
-      <Toaster />
-      <Sonner />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/members/:id" element={<MemberDetail />} />
-        <Route path="/members/new" element={<MemberForm />} />
-        <Route path="/members/edit/:id" element={<MemberForm />} />
-        <Route path="/payments" element={<Payments />} />
-        <Route path="/payments/:id" element={<PaymentDetail />} />
-        <Route path="/payments/new" element={<PaymentForm />} />
-        <Route path="/payments/edit/:id" element={<PaymentForm />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/expenses" element={<Expenses />} />
-        <Route path="/expenses/:id" element={<ExpenseDetail />} />
-        <Route path="/expenses/new" element={<ExpenseForm />} />
-        <Route path="/expenses/edit/:id" element={<ExpenseForm />} />
-        <Route path="/expense-categories" element={<ExpenseCategories />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <Routes>
+          {/* Public route */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected routes */}
+          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
+          <Route path="/members/:id" element={<ProtectedRoute><MemberDetail /></ProtectedRoute>} />
+          <Route path="/members/new" element={<ProtectedRoute><MemberForm /></ProtectedRoute>} />
+          <Route path="/members/edit/:id" element={<ProtectedRoute><MemberForm /></ProtectedRoute>} />
+          <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
+          <Route path="/payments/:id" element={<ProtectedRoute><PaymentDetail /></ProtectedRoute>} />
+          <Route path="/payments/new" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
+          <Route path="/payments/edit/:id" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+          <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
+          <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetail /></ProtectedRoute>} />
+          <Route path="/expenses/new" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
+          <Route path="/expenses/edit/:id" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
+          <Route path="/expense-categories" element={<ProtectedRoute><ExpenseCategories /></ProtectedRoute>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );

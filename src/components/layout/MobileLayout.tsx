@@ -1,9 +1,12 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, CreditCard, BarChart3, Home, Receipt, Menu } from "lucide-react";
+import { Users, CreditCard, BarChart3, Home, Receipt, Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -13,6 +16,8 @@ interface MobileLayoutProps {
 export function MobileLayout({ children, title }: MobileLayoutProps) {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { signOut, user, profile } = useAuth();
+  const { toast } = useToast();
 
   const navItems = [
     { icon: Home, label: "Início", path: "/" },
@@ -21,6 +26,14 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
     { icon: Receipt, label: "Despesas", path: "/expenses" },
     { icon: BarChart3, label: "Relatórios", path: "/reports" },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Logout bem-sucedido",
+      description: "Você saiu da sua conta",
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -33,11 +46,44 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Menu className="h-5 w-5 mr-2" />
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="p-1">
+                  <Menu className="h-5 w-5 mr-2" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[250px] sm:w-[300px]">
+                <SheetHeader className="pb-4">
+                  <SheetTitle>ACT Cajueiro</SheetTitle>
+                </SheetHeader>
+                <div className="py-4">
+                  <div className="flex items-center gap-3 border-b border-border pb-4 mb-4">
+                    <div className="h-10 w-10 rounded-full bg-club-400 flex items-center justify-center text-white">
+                      <span className="text-sm font-semibold">
+                        {user?.email?.charAt(0).toUpperCase() || "A"}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="font-medium">{profile?.username || user?.email}</div>
+                      <div className="text-xs text-muted-foreground">{profile?.role || "Usuário"}</div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2 px-3 py-2 w-full rounded-md hover:bg-club-100 text-club-700"
+                  >
+                    <LogOut size={18} />
+                    <span>Sair</span>
+                  </button>
+                </div>
+              </SheetContent>
+            </Sheet>
             <h1 className="text-xl font-semibold">{title}</h1>
           </div>
           <div className="h-8 w-8 rounded-full bg-club-400/30 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-sm font-semibold">AC</span>
+            <span className="text-sm font-semibold">
+              {user?.email?.charAt(0).toUpperCase() || "A"}
+            </span>
           </div>
         </div>
       </motion.header>
