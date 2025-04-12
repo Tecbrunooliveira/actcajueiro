@@ -34,6 +34,7 @@ export const useMemberForm = (memberId?: string) => {
               joinDate: member.joinDate,
               notes: member.notes || "",
               photo: member.photo || "",
+              warnings: member.warnings || [],
             });
           }
         } catch (error) {
@@ -66,6 +67,7 @@ export const useMemberForm = (memberId?: string) => {
           joinDate: data.joinDate,
           notes: data.notes || undefined,
           photo: data.photo || undefined,
+          warnings: data.warnings || undefined,
         });
         
         toast({
@@ -81,6 +83,7 @@ export const useMemberForm = (memberId?: string) => {
           phone: data.phone || undefined,
           notes: data.notes || undefined,
           photo: data.photo || undefined,
+          warnings: data.warnings || undefined,
         });
         
         toast({

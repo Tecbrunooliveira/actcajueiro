@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { User, Mail, Phone, Calendar } from "lucide-react";
+import { User, Mail, Phone, Calendar, AlertCircle } from "lucide-react";
 import { Member } from "@/types";
 import { getStatusLabel } from "@/services/formatters";
 import { cn } from "@/lib/utils";
@@ -32,9 +32,7 @@ export function MemberInfoCard({ member }: MemberInfoCardProps) {
                   "ml-2",
                   member.status === "frequentante"
                     ? "bg-green-500"
-                    : member.status === "afastado"
-                    ? "bg-amber-500"
-                    : "bg-red-500"
+                    : "bg-amber-500"
                 )}
               >
                 {getStatusLabel(member.status)}
@@ -70,6 +68,28 @@ export function MemberInfoCard({ member }: MemberInfoCardProps) {
         {member.notes && (
           <div className="mt-4 p-3 bg-gray-50 rounded-md text-gray-700 text-sm">
             {member.notes}
+          </div>
+        )}
+        
+        {/* Warnings Section */}
+        {member.warnings && member.warnings.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-medium flex items-center mb-3">
+              <AlertCircle className="mr-2 h-5 w-5 text-amber-500" />
+              Advertências
+            </h3>
+            <div className="space-y-3">
+              {member.warnings.map((warning, index) => (
+                <div key={index} className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <div className="flex justify-between items-start">
+                    <p className="font-medium">{warning.text}</p>
+                    <Badge variant="outline" className="ml-2 bg-white">
+                      {new Date(warning.date).toLocaleDateString("pt-BR")}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </CardContent>

@@ -1,4 +1,3 @@
-
 import { MemberStatus } from "@/types";
 
 // Utility formatters
@@ -39,10 +38,7 @@ export const getCurrentMonthYear = (): { month: string; year: number } => {
 export const getStatusLabel = (status: MemberStatus): string => {
   const statusMap: Record<MemberStatus, string> = {
     frequentante: "Frequentante",
-    afastado: "Afastado",
-    advertido: "Advertido",
-    suspenso: "Suspenso",
-    licenciado: "Licenciado"
+    afastado: "Afastado"
   };
   return statusMap[status] || status;
 };
@@ -50,10 +46,7 @@ export const getStatusLabel = (status: MemberStatus): string => {
 export const getStatusColor = (status: MemberStatus): string => {
   const statusMap: Record<MemberStatus, string> = {
     frequentante: "bg-green-500",
-    afastado: "bg-amber-500",
-    advertido: "bg-red-500",
-    suspenso: "bg-orange-500",
-    licenciado: "bg-yellow-500"
+    afastado: "bg-amber-500"
   };
   return statusMap[status] || "bg-gray-500";
 };

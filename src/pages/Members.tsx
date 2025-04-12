@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MemberCard } from "@/components/members/MemberCard";
@@ -64,13 +63,10 @@ const Members = () => {
 
       {/* Tabs for filtering by status */}
       <Tabs defaultValue="all" className="mb-6" onValueChange={(v) => setActiveTab(v as MemberStatus | "all")}>
-        <TabsList className="grid grid-cols-6 mb-2">
+        <TabsList className="grid grid-cols-3 mb-2">
           <TabsTrigger value="all">Todos</TabsTrigger>
           <TabsTrigger value="frequentante">Frequentantes</TabsTrigger>
           <TabsTrigger value="afastado">Afastados</TabsTrigger>
-          <TabsTrigger value="advertido">Advertidos</TabsTrigger>
-          <TabsTrigger value="suspenso">Suspensos</TabsTrigger>
-          <TabsTrigger value="licenciado">Licenciados</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all">
@@ -92,33 +88,6 @@ const Members = () => {
           )}
         </TabsContent>
         <TabsContent value="afastado">
-          {loading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Carregando sócios...</p>
-            </div>
-          ) : (
-            <MembersList members={filteredMembers} />
-          )}
-        </TabsContent>
-        <TabsContent value="advertido">
-          {loading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Carregando sócios...</p>
-            </div>
-          ) : (
-            <MembersList members={filteredMembers} />
-          )}
-        </TabsContent>
-        <TabsContent value="suspenso">
-          {loading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Carregando sócios...</p>
-            </div>
-          ) : (
-            <MembersList members={filteredMembers} />
-          )}
-        </TabsContent>
-        <TabsContent value="licenciado">
           {loading ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Carregando sócios...</p>

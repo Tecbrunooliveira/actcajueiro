@@ -1,4 +1,3 @@
-
 import { Member, MemberStatus } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,6 +21,7 @@ export const memberService = {
       joinDate: member.join_date,
       notes: member.notes || undefined,
       photo: member.photo || undefined,
+      warnings: member.warnings as Array<{text: string, date: string}> || [],
     })) || [];
   },
 
@@ -48,6 +48,7 @@ export const memberService = {
       joinDate: data.join_date,
       notes: data.notes || undefined,
       photo: data.photo || undefined,
+      warnings: data.warnings as Array<{text: string, date: string}> || [],
     };
   },
 
@@ -62,6 +63,7 @@ export const memberService = {
         join_date: member.joinDate,
         notes: member.notes,
         photo: member.photo,
+        warnings: member.warnings || [],
       })
       .select()
       .single();
@@ -82,6 +84,7 @@ export const memberService = {
       joinDate: data.join_date,
       notes: data.notes || undefined,
       photo: data.photo || undefined,
+      warnings: data.warnings as Array<{text: string, date: string}> || [],
     };
   },
 
@@ -96,6 +99,7 @@ export const memberService = {
         join_date: member.joinDate,
         notes: member.notes,
         photo: member.photo,
+        warnings: member.warnings || [],
       })
       .eq('id', member.id)
       .select()
@@ -117,6 +121,7 @@ export const memberService = {
       joinDate: data.join_date,
       notes: data.notes || undefined,
       photo: data.photo || undefined,
+      warnings: data.warnings as Array<{text: string, date: string}> || [],
     };
   },
 
@@ -152,6 +157,7 @@ export const memberService = {
       joinDate: member.join_date,
       notes: member.notes || undefined,
       photo: member.photo || undefined,
+      warnings: member.warnings as Array<{text: string, date: string}> || [],
     })) || [];
   },
 };

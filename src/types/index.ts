@@ -1,5 +1,4 @@
-
-export type MemberStatus = 'frequentante' | 'afastado' | 'advertido' | 'suspenso' | 'licenciado';
+export type MemberStatus = 'frequentante' | 'afastado';
 
 export interface Member {
   id: string;
@@ -10,6 +9,7 @@ export interface Member {
   joinDate: string;
   notes?: string;
   photo?: string;
+  warnings?: Array<{text: string, date: string}>;
 }
 
 export interface Payment {

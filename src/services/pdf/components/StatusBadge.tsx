@@ -16,15 +16,6 @@ export const StatusBadge = ({ status }: { status: string }) => {
     case 'afastado':
       badgeStyle = styles.statusInactive;
       break;
-    case 'advertido':
-      badgeStyle = styles.statusWarning;
-      break;
-    case 'suspenso':
-      badgeStyle = styles.statusSuspenso;
-      break;
-    case 'licenciado':
-      badgeStyle = styles.statusLicenciado;
-      break;
     default:
       badgeStyle = styles.statusPending;
   }
