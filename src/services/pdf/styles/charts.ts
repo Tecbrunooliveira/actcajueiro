@@ -6,8 +6,8 @@ export const chartStyles = {
     marginBottom: 10,
   },
   legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
     marginBottom: 5,
   },
   legendColor: {
@@ -22,9 +22,9 @@ export const chartStyles = {
   noDataText: {
     fontSize: 11,
     marginTop: 20,
-    textAlign: 'center',
+    textAlign: 'center' as const,
     color: '#666',
-    fontStyle: 'italic',
+    fontStyle: 'italic' as const,
   },
   summaryTableContainer: {
     marginTop: 10,
@@ -34,7 +34,7 @@ export const chartStyles = {
     borderRadius: 4,
   },
   summaryTableHeader: {
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     backgroundColor: '#f8fafc',
     padding: 8,
     borderBottomWidth: 1,
@@ -42,12 +42,12 @@ export const chartStyles = {
   },
   summaryTableHeaderText: {
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     flex: 1,
     color: '#334155',
   },
   summaryTableRow: {
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
     padding: 8,
@@ -60,20 +60,20 @@ export const chartStyles = {
   summaryTableCellValue: {
     fontSize: 10,
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'right' as const,
     color: '#475569',
   },
   summaryTableCellTotal: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     flex: 1,
     color: '#334155',
   },
   summaryTableCellTotalValue: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'right' as const,
     color: '#334155',
   }
 };
