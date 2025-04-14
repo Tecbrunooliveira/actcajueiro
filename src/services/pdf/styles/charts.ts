@@ -1,73 +1,79 @@
 
-import { StyleSheet } from "@react-pdf/renderer";
-
-export const chartStyles = StyleSheet.create({
+// Styles for charts used in PDF documents
+export const chartStyles = {
   chartContainer: {
-    marginVertical: 20,
-    alignItems: 'center',
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: 700,
+    marginTop: 10,
     marginBottom: 10,
-    color: "#46b644",
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 5,
+    marginBottom: 5,
   },
   legendColor: {
     width: 12,
     height: 12,
-    marginRight: 8,
+    marginRight: 5,
     borderRadius: 6,
   },
   legendText: {
     fontSize: 10,
-    color: "#4A5568",
   },
-  summaryItem: {
+  noDataText: {
+    fontSize: 11,
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  summaryTableContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 4,
+  },
+  summaryTableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 8,
-    paddingVertical: 8,
+    backgroundColor: '#f8fafc',
+    padding: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#edf2f7',
-    borderBottomStyle: 'solid',
+    borderBottomColor: '#e2e8f0',
   },
-  summaryLabel: {
-    fontSize: 12,
-    color: "#4A5568",
-  },
-  summaryValue: {
-    fontSize: 12,
+  summaryTableHeaderText: {
+    fontSize: 11,
     fontWeight: 'bold',
-    color: "#2D3748",
+    flex: 1,
+    color: '#334155',
   },
-  summaryValuePositive: {
-    fontSize: 12,
+  summaryTableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    padding: 8,
+  },
+  summaryTableCell: {
+    fontSize: 10,
+    flex: 1,
+    color: '#475569',
+  },
+  summaryTableCellValue: {
+    fontSize: 10,
+    flex: 1,
+    textAlign: 'right',
+    color: '#475569',
+  },
+  summaryTableCellTotal: {
+    fontSize: 10,
     fontWeight: 'bold',
-    color: "#46b644",
+    flex: 1,
+    color: '#334155',
   },
-  summaryValueNegative: {
-    fontSize: 12,
+  summaryTableCellTotalValue: {
+    fontSize: 10,
     fontWeight: 'bold',
-    color: "#E53E3E",
-  },
-  report360Section: {
-    marginTop: 25,
-    marginBottom: 15,
-    borderTop: '1px solid #e0e0e0',
-    paddingTop: 20,
-    backgroundColor: "#F9FAFB",
-    padding: 20,
-    borderRadius: 8,
-  },
-  report360SectionTitle: {
-    fontSize: 18,
-    fontWeight: 700,
-    color: "#46b644",
-    marginBottom: 15,
-  },
-});
+    flex: 1,
+    textAlign: 'right',
+    color: '#334155',
+  }
+};

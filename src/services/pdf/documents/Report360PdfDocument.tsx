@@ -63,30 +63,37 @@ export const Report360PdfDocument = ({
         </View>
       </View>
 
-      {/* Member Status Section */}
+      {/* Members Summary Section */}
       <View style={styles.report360Section}>
-        <Text style={styles.report360SectionTitle}>Status dos Sócios</Text>
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Distribuição por Status</Text>
-          <PieChartLegend data={memberStatusData} />
+        <Text style={styles.report360SectionTitle}>Resumo de Sócios</Text>
+        <View style={styles.summaryTableContainer}>
+          <View style={styles.summaryTableHeader}>
+            <Text style={styles.summaryTableHeaderText}>Status</Text>
+            <Text style={styles.summaryTableHeaderText}>Quantidade</Text>
+          </View>
+          {paymentStatusData.map((item, index) => (
+            <View key={index} style={styles.summaryTableRow}>
+              <Text style={styles.summaryTableCell}>{item.name}</Text>
+              <Text style={styles.summaryTableCellValue}>{item.value}</Text>
+            </View>
+          ))}
+          <View style={styles.summaryTableRow}>
+            <Text style={styles.summaryTableCellTotal}>Total</Text>
+            <Text style={styles.summaryTableCellTotalValue}>
+              {paymentStatusData.reduce((acc, curr) => acc + curr.value, 0)}
+            </Text>
+          </View>
         </View>
       </View>
 
-      {/* Payment Status Section */}
+      {/* Expenses Summary Section */}
       <View style={styles.report360Section}>
-        <Text style={styles.report360SectionTitle}>Status de Pagamentos</Text>
+        <Text style={styles.report360SectionTitle}>Resumo de Despesas por Categoria</Text>
         <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Sócios Em Dia vs. Inadimplentes</Text>
-          <PieChartLegend data={paymentStatusData} />
-        </View>
-      </View>
-
-      {/* Expenses Section */}
-      <View style={styles.report360Section}>
-        <Text style={styles.report360SectionTitle}>Despesas por Categoria</Text>
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Distribuição de Despesas</Text>
           <PieChartLegend data={expensesData} />
+          {expensesData.length === 0 && (
+            <Text style={styles.noDataText}>Nenhuma despesa registrada para este período</Text>
+          )}
         </View>
       </View>
       
