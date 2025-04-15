@@ -1,11 +1,9 @@
+
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Users, CreditCard, BarChart3, Home, Receipt, Menu, LogOut, ChevronLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth";
-import { useToast } from "@/hooks/use-toast";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { motion } from "framer-motion";
+import { Header } from "./Header";
+import { BottomNavigation } from "./BottomNavigation";
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -14,87 +12,12 @@ interface MobileLayoutProps {
 }
 
 export function MobileLayout({ children, title, onBackClick }: MobileLayoutProps) {
-  const location = useLocation();
-  const currentPath = location.pathname;
-  const { signOut, user, profile } = useAuth();
-  const { toast } = useToast();
-
-  const navItems = [
-    { icon: Home, label: "Início", path: "/" },
-    { icon: Users, label: "Sócios", path: "/members" },
-    { icon: CreditCard, label: "Pagamentos", path: "/payments" },
-    { icon: Receipt, label: "Despesas", path: "/expenses" },
-    { icon: BarChart3, label: "Relatórios", path: "/reports" },
-  ];
-
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "Logout bem-sucedido",
-      description: "Você saiu da sua conta",
-    });
-  };
+  const { user, profile } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <motion.header 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="sticky top-0 z-10 gradient-bg text-white p-4 shadow-lg"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            {onBackClick && (
-              <button 
-                onClick={onBackClick} 
-                className="p-1 mr-2"
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-            )}
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="p-1">
-                  <Menu className="h-5 w-5 mr-2" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[250px] sm:w-[300px]">
-                <SheetHeader className="pb-4">
-                  <SheetTitle>ACT Cajueiro</SheetTitle>
-                </SheetHeader>
-                <div className="py-4">
-                  <div className="flex items-center gap-3 border-b border-border pb-4 mb-4">
-                    <div className="h-10 w-10 rounded-full bg-club-400 flex items-center justify-center text-white">
-                      <span className="text-sm font-semibold">
-                        {user?.email?.charAt(0).toUpperCase() || "A"}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="font-medium">{profile?.username || user?.email}</div>
-                      <div className="text-xs text-muted-foreground">{profile?.role || "Usuário"}</div>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={handleSignOut}
-                    className="flex items-center gap-2 px-3 py-2 w-full rounded-md hover:bg-club-100 text-club-700"
-                  >
-                    <LogOut size={18} />
-                    <span>Sair</span>
-                  </button>
-                </div>
-              </SheetContent>
-            </Sheet>
-            <h1 className="text-xl font-semibold">{title}</h1>
-          </div>
-          <div className="h-8 w-8 rounded-full bg-club-400/30 backdrop-blur-sm flex items-center justify-center">
-            <span className="text-sm font-semibold">
-              {user?.email?.charAt(0).toUpperCase() || "A"}
-            </span>
-          </div>
-        </div>
-      </motion.header>
+      <Header title={title} onBackClick={onBackClick} user={user} />
 
       {/* Main content */}
       <motion.main 
@@ -107,50 +30,7 @@ export function MobileLayout({ children, title, onBackClick }: MobileLayoutProps
       </motion.main>
 
       {/* Bottom navigation */}
-      <motion.nav 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="sticky bottom-0 z-10 bg-white dark:bg-club-900 border-t border-club-100 dark:border-club-800 shadow-lg"
-      >
-        <ul className="flex justify-around">
-          {navItems.map((item, index) => (
-            <motion.li 
-              key={item.path} 
-              className="flex-1"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.05 * index }}
-            >
-              <Link
-                to={item.path}
-                className={cn(
-                  "flex flex-col items-center py-3 px-1 relative",
-                  currentPath === item.path || 
-                  (item.path === "/expenses" && currentPath.startsWith("/expense"))
-                    ? "text-club-500"
-                    : "text-gray-500 hover:text-club-600"
-                )}
-              >
-                {currentPath === item.path || 
-                (item.path === "/expenses" && currentPath.startsWith("/expense")) ? (
-                  <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-club-500 rounded-full" />
-                ) : null}
-                <item.icon
-                  className={cn(
-                    "h-5 w-5 mb-1",
-                    currentPath === item.path || 
-                    (item.path === "/expenses" && currentPath.startsWith("/expense"))
-                      ? "text-club-500"
-                      : "text-gray-500"
-                  )}
-                />
-                <span className="text-xs font-medium">{item.label}</span>
-              </Link>
-            </motion.li>
-          ))}
-        </ul>
-      </motion.nav>
+      <BottomNavigation />
     </div>
   );
 }
