@@ -9,6 +9,7 @@ import { Plus, Search } from "lucide-react";
 import { paymentService, memberService } from "@/services";
 import { Payment, Member } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getCurrentMonthYear } from "@/services/formatters";
 
 const Payments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -16,6 +17,7 @@ const Payments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "paid" | "pending">("all");
+  const { month: currentMonth } = getCurrentMonthYear();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,19 +44,52 @@ const Payments = () => {
     fetchData();
   }, []);
 
-  // Filter by status and search term
-  const filteredPayments = payments
-    .filter(payment => {
-      if (activeTab === "paid") return payment.isPaid;
-      if (activeTab === "pending") return !payment.isPaid;
-      return true; // "all" tab
-    })
-    .filter(payment => {
-      const member = members[payment.memberId];
-      if (!member) return false;
-      
-      return member.name.toLowerCase().includes(searchTerm.toLowerCase());
+  // Group payments by member and get the current month's payment status
+  const getMemberPaymentStatus = () => {
+    const memberPaymentStatus: Record<string, { isPaid: boolean; payment: Payment | null }> = {};
+    
+    // Initialize with all members as not paid
+    Object.keys(members).forEach(memberId => {
+      memberPaymentStatus[memberId] = { isPaid: false, payment: null };
     });
+    
+    // Find current month's payments
+    payments.forEach(payment => {
+      if (payment.month === currentMonth) {
+        memberPaymentStatus[payment.memberId] = { 
+          isPaid: payment.isPaid, 
+          payment: payment 
+        };
+      }
+    });
+    
+    return memberPaymentStatus;
+  };
+
+  // Filter members by search term and payment status
+  const getFilteredMembers = () => {
+    const memberPaymentStatus = getMemberPaymentStatus();
+    
+    return Object.keys(members)
+      .filter(memberId => {
+        const member = members[memberId];
+        const paymentStatus = memberPaymentStatus[memberId];
+        
+        // Filter by search term
+        const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // Filter by payment status tab
+        if (activeTab === "paid") return paymentStatus.isPaid && matchesSearch;
+        if (activeTab === "pending") return !paymentStatus.isPaid && matchesSearch;
+        return matchesSearch; // "all" tab
+      })
+      .map(memberId => ({
+        member: members[memberId],
+        paymentStatus: memberPaymentStatus[memberId]
+      }));
+  };
+
+  const filteredMembers = getFilteredMembers();
 
   return (
     <MobileLayout title="Pagamentos">
@@ -64,7 +99,7 @@ const Payments = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             type="text"
-            placeholder="Buscar pagamento..."
+            placeholder="Buscar sócio..."
             className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -89,21 +124,30 @@ const Payments = () => {
           {loading ? (
             <LoadingState />
           ) : (
-            <PaymentsList payments={filteredPayments} members={members} />
+            <MemberPaymentsList 
+              filteredMembers={filteredMembers} 
+              currentMonth={currentMonth}
+            />
           )}
         </TabsContent>
         <TabsContent value="paid">
           {loading ? (
             <LoadingState />
           ) : (
-            <PaymentsList payments={filteredPayments} members={members} />
+            <MemberPaymentsList 
+              filteredMembers={filteredMembers}
+              currentMonth={currentMonth}
+            />
           )}
         </TabsContent>
         <TabsContent value="pending">
           {loading ? (
             <LoadingState />
           ) : (
-            <PaymentsList payments={filteredPayments} members={members} />
+            <MemberPaymentsList 
+              filteredMembers={filteredMembers}
+              currentMonth={currentMonth}
+            />
           )}
         </TabsContent>
       </Tabs>
@@ -111,34 +155,56 @@ const Payments = () => {
   );
 };
 
-interface PaymentsListProps {
-  payments: Payment[];
-  members: Record<string, Member>;
+interface MemberPaymentsListProps {
+  filteredMembers: Array<{
+    member: Member;
+    paymentStatus: { isPaid: boolean; payment: Payment | null };
+  }>;
+  currentMonth: string;
 }
 
-const PaymentsList = ({ payments, members }: PaymentsListProps) => {
-  if (payments.length === 0) {
+const MemberPaymentsList = ({ filteredMembers, currentMonth }: MemberPaymentsListProps) => {
+  if (filteredMembers.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Nenhum pagamento encontrado</p>
+        <p className="text-gray-500">Nenhum sócio encontrado</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      {payments
-        .sort((a, b) => new Date(b.month).getTime() - new Date(a.month).getTime())
-        .map((payment) => (
-          <PaymentCard
-            key={payment.id}
-            payment={payment}
-            memberName={members[payment.memberId]?.name}
-            memberPhoto={members[payment.memberId]?.photo}
-            memberPhone={members[payment.memberId]?.phone}
-            onClick={() => window.location.href = `/payments/${payment.id}`}
-          />
-        ))}
+      {filteredMembers
+        .sort((a, b) => a.member.name.localeCompare(b.member.name))
+        .map(({ member, paymentStatus }) => {
+          // Criar um objeto de pagamento fictício se não houver um para o mês atual
+          const payment = paymentStatus.payment || {
+            id: `temp-${member.id}`,
+            memberId: member.id,
+            amount: 30,
+            month: currentMonth,
+            year: new Date().getFullYear(),
+            isPaid: false,
+            date: ""
+          };
+          
+          return (
+            <PaymentCard
+              key={member.id}
+              payment={payment}
+              memberName={member.name}
+              memberPhoto={member.photo}
+              memberPhone={member.phone}
+              onClick={() => {
+                if (paymentStatus.payment) {
+                  window.location.href = `/payments/${paymentStatus.payment.id}`;
+                } else {
+                  window.location.href = `/payments/new?memberId=${member.id}`;
+                }
+              }}
+            />
+          );
+        })}
     </div>
   );
 };
