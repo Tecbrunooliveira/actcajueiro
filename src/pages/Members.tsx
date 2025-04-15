@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MemberCard } from "@/components/members/MemberCard";
@@ -20,7 +21,11 @@ const Members = () => {
       try {
         setLoading(true);
         const allMembers = await memberService.getAllMembers();
-        setMembers(allMembers);
+        // Sort members alphabetically by name
+        const sortedMembers = allMembers.sort((a, b) => 
+          a.name.localeCompare(b.name)
+        );
+        setMembers(sortedMembers);
       } catch (error) {
         console.error("Error fetching members:", error);
       } finally {
