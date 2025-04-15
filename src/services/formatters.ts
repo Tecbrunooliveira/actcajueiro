@@ -10,7 +10,11 @@ export const formatCurrency = (value: number): string => {
 };
 
 export const formatMonthYear = (monthStr: string, showYearOption: boolean = true): string => {
+  if (!monthStr) return '';
+  
   const [year, month] = monthStr.split("-");
+  if (!year || !month) return '';
+  
   const date = new Date(parseInt(year), parseInt(month) - 1);
   
   if (showYearOption) {
@@ -22,7 +26,19 @@ export const formatMonthYear = (monthStr: string, showYearOption: boolean = true
 
 // Add the missing formatDateBR function
 export const formatDateBR = (dateStr: string): string => {
+  if (!dateStr) return '';
+  
+  // Se for no formato YYYY-MM (para pagamentos)
+  if (dateStr.match(/^\d{4}-\d{2}$/)) {
+    const [year, month] = dateStr.split("-");
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  }
+  
+  // Se for uma data completa YYYY-MM-DD
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  
   return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 };
 
@@ -50,4 +66,14 @@ export const getStatusColor = (status: MemberStatus): string => {
     afastado: "bg-amber-500"
   };
   return statusMap[status] || "bg-gray-500";
+};
+
+// Função para formatar mês/ano em formato legível para badges
+export const formatMonthBadge = (monthStr: string): string => {
+  if (!monthStr) return '';
+  
+  const [year, month] = monthStr.split("-");
+  if (!year || !month) return '';
+  
+  return `${month}/${year}`;
 };

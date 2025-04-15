@@ -3,6 +3,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Check, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatMonthBadge } from "@/services/formatters";
 
 interface PaymentStatusCardProps {
   upToDate: boolean;
@@ -46,7 +47,7 @@ export function PaymentStatusCard({ upToDate, unpaidMonths }: PaymentStatusCardP
                 variant="outline"
                 className="border-red-300 text-red-700"
               >
-                {month.split("-")[1]}/{month.split("-")[0]}
+                {formatMonthBadge(month)}
               </Badge>
             ))}
           </div>
