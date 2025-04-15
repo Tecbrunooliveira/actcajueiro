@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Users, CreditCard, BarChart3, Home, Receipt, Menu, LogOut } from "lucide-react";
+import { Users, CreditCard, BarChart3, Home, Receipt, Menu, LogOut, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth";
@@ -11,9 +10,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 interface MobileLayoutProps {
   children: React.ReactNode;
   title: string;
+  onBackClick?: () => void;
 }
 
-export function MobileLayout({ children, title }: MobileLayoutProps) {
+export function MobileLayout({ children, title, onBackClick }: MobileLayoutProps) {
   const location = useLocation();
   const currentPath = location.pathname;
   const { signOut, user, profile } = useAuth();
@@ -46,6 +46,14 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center">
+            {onBackClick && (
+              <button 
+                onClick={onBackClick} 
+                className="p-1 mr-2"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+            )}
             <Sheet>
               <SheetTrigger asChild>
                 <button className="p-1">

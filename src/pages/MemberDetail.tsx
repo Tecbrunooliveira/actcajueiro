@@ -9,6 +9,7 @@ import { PaymentsList } from "@/components/members/PaymentsList";
 import { MemberActionButtons } from "@/components/members/MemberActionButtons";
 import { StatusChangeDialog } from "@/components/members/StatusChangeDialog";
 import { DeleteConfirmDialog } from "@/components/members/DeleteConfirmDialog";
+import { ChevronLeft } from "lucide-react";
 
 const MemberDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +29,10 @@ const MemberDetail = () => {
 
   if (loading) {
     return (
-      <MobileLayout title="Detalhes do Sócio">
+      <MobileLayout 
+        title="Detalhes do Sócio" 
+        onBackClick={() => navigate('/members')}
+      >
         <div className="flex items-center justify-center h-full py-10">
           <p>Carregando dados...</p>
         </div>
@@ -41,7 +45,10 @@ const MemberDetail = () => {
   }
 
   return (
-    <MobileLayout title="Detalhes do Sócio">
+    <MobileLayout 
+      title="Detalhes do Sócio" 
+      onBackClick={() => navigate('/members')}
+    >
       <div className="space-y-6">
         {/* Member info card */}
         <MemberInfoCard member={member} />
