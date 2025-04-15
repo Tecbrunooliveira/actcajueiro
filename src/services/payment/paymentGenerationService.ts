@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { memberService } from "@/services/memberService";
 
 export const paymentGenerationService = {
-  generatePendingPaymentsForMonth: async (month: string, year: number, amount: number = 100): Promise<number> => {
+  generatePendingPaymentsForMonth: async (month: string, year: number, amount: number = 30): Promise<number> => {
     try {
       const members = await memberService.getAllMembers();
       const activeMembersIds = members
