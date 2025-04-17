@@ -44,7 +44,11 @@ export function MercadoPagoButton({ payment, disabled, showIcon = false }: Merca
       }
 
       // Redireciona para o checkout do Mercado Pago
-      window.location.href = data.init_point;
+      window.open(data.init_point, '_blank');
+      
+      toast.success('Link de pagamento gerado', {
+        description: 'Use o link aberto em nova aba para realizar o pagamento'
+      });
       
     } catch (error) {
       console.error('Error creating payment:', error);
@@ -56,6 +60,8 @@ export function MercadoPagoButton({ payment, disabled, showIcon = false }: Merca
           errorMessage = 'Erro de configuração do Mercado Pago. Por favor, contate o administrador.';
         } else if (error.message.includes('timeout')) {
           errorMessage = 'Tempo esgotado. Verifique sua conexão e tente novamente.';
+        } else if (error.message.includes('same')) {
+          errorMessage = 'Não é possível pagar para você mesmo. Use outro método de pagamento.';
         }
       }
       
