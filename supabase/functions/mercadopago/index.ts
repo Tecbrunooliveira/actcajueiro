@@ -7,8 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Mercado Pago access token
-const MERCADO_PAGO_ACCESS_TOKEN = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN') || 'TEST-1074197040461480-041717-beb14c913921e2b42e8fbbb1bc3e5a9f-602507643'
+// Updated Mercado Pago access token
+const MERCADO_PAGO_ACCESS_TOKEN = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN') || 'APP_USR-1074197040461480-041717-c958cb31d1d19b1d6cf9dec36e4b2398-602507643'
 
 serve(async (req) => {
   // Handle CORS preflight request
