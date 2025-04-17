@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 
 // Import our hooks and components
@@ -12,10 +12,13 @@ import { Report360 } from "@/components/reports/Report360";
 import { LoadingState } from "@/components/reports/LoadingState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { BarChart3, FileBarChart, AlertCircle } from "lucide-react";
+import { BarChart3, FileBarChart, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const Reports = () => {
+  const [retryCount, setRetryCount] = useState(0);
+  
   const {
     selectedMonth,
     selectedYear,
@@ -33,8 +36,9 @@ const Reports = () => {
     handleYearChange,
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
-    formatMonthYear
-  } = useReportsData();
+    formatMonthYear,
+    retry
+  } = useReportsData(retryCount);
 
   // Use our new hook for 360 report data
   const {
@@ -42,12 +46,23 @@ const Reports = () => {
     memberStatusData,
     paymentStatusData,
     expensesData,
-    financialSummary
+    financialSummary,
+    error: error360,
+    retry: retry360
   } = useReport360Data(selectedMonth, selectedYear);
+  
+  const handleRetry = useCallback(() => {
+    setRetryCount(prev => prev + 1);
+    retry && retry();
+  }, [retry]);
+  
+  const handle360Retry = useCallback(() => {
+    retry360 && retry360();
+  }, [retry360]);
 
   const renderContent = () => {
     if (loading) {
-      return <LoadingState />;
+      return <LoadingState error={dataError} onRetry={handleRetry} />;
     }
 
     return (
@@ -67,8 +82,17 @@ const Reports = () => {
           <Alert variant="destructive" className="my-4">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Erro</AlertTitle>
-            <AlertDescription>
-              {dataError}. Tente alterar o período ou recarregar a página.
+            <AlertDescription className="flex flex-col gap-2">
+              <p>{dataError}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRetry}
+                className="self-start mt-2"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Tentar novamente
+              </Button>
             </AlertDescription>
           </Alert>
         )}
@@ -122,7 +146,7 @@ const Reports = () => {
           
           <TabsContent value="advanced" className="pt-6 animate-in fade-in-50 duration-300">
             {loading360 ? (
-              <LoadingState />
+              <LoadingState error={error360} onRetry={handle360Retry} />
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
