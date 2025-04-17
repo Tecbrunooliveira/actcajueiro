@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 interface LoadingStateProps {
   error?: string | null;
   onRetry?: () => void;
+  isRetrying?: boolean;
 }
 
 export const LoadingState: React.FC<LoadingStateProps> = ({ 
   error = null,
-  onRetry
+  onRetry,
+  isRetrying = false
 }) => {
   const isTimeoutError = error?.toLowerCase().includes("tempo limite") || 
                          error?.toLowerCase().includes("timeout");
@@ -77,13 +79,17 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
               className={`h-16 w-16 mx-auto rounded-full flex items-center justify-center shadow-lg ${
                 isTimeoutError 
                   ? "bg-amber-100 dark:bg-amber-900/30" 
-                  : "bg-red-100 dark:bg-red-900/30"
+                  : isServerError
+                    ? "bg-yellow-100 dark:bg-yellow-900/30"
+                    : "bg-red-100 dark:bg-red-900/30"
               }`}
             >
               {isTimeoutError ? (
                 <Clock className="h-8 w-8 text-amber-500 dark:text-amber-400" />
+              ) : isServerError ? (
+                <ServerCrash className="h-8 w-8 text-yellow-500 dark:text-yellow-400" />
               ) : (
-                <ServerCrash className="h-8 w-8 text-red-500 dark:text-red-400" />
+                <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-400" />
               )}
             </motion.div>
             
@@ -97,7 +103,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
               </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {isTimeoutError 
-                  ? "O servidor está demorando para responder. Tente novamente em alguns instantes." 
+                  ? "O servidor está demorando para responder. Tente novamente ou verifique sua conexão." 
                   : isServerError
                     ? "O servidor está sobrecarregado. Tente novamente em alguns instantes."
                     : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
@@ -109,9 +115,19 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                 onClick={onRetry} 
                 variant="outline" 
                 className="mx-auto mt-2 flex items-center gap-2"
+                disabled={isRetrying}
               >
-                <RefreshCw className="h-4 w-4" />
-                Tentar novamente
+                {isRetrying ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-club-600 border-t-transparent rounded-full animate-spin mr-2" />
+                    Carregando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    Tentar novamente
+                  </>
+                )}
               </Button>
             )}
           </>

@@ -43,6 +43,7 @@ const Reports = () => {
   // Use our new hook for 360 report data
   const {
     loading: loading360,
+    isRetrying: isRetrying360,
     memberStatusData,
     paymentStatusData,
     expensesData,
@@ -146,7 +147,11 @@ const Reports = () => {
           
           <TabsContent value="advanced" className="pt-6 animate-in fade-in-50 duration-300">
             {loading360 ? (
-              <LoadingState error={error360} onRetry={handle360Retry} />
+              <LoadingState 
+                error={error360} 
+                onRetry={handle360Retry} 
+                isRetrying={isRetrying360}
+              />
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}

@@ -13,12 +13,46 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
   
   // Increase the timeout for first load
   const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
   
   // Use our smaller hooks with enhanced error handling
-  const { memberStatusData, error: memberError, retry: retryMemberData } = useMemberStatusData();
-  const { paymentStatusData, error: paymentError, retry: retryPaymentData } = usePaymentStatusData(selectedMonth, selectedYear);
-  const { expensesData, error: expensesError, retry: retryExpensesData } = useExpensesData(selectedMonth, selectedYear);
-  const { financialSummary, error: financialError, retry: retryFinancialData } = useFinancialSummary(selectedMonth, selectedYear);
+  const { 
+    memberStatusData, 
+    error: memberError, 
+    retry: retryMemberData,
+    isRetrying: isMemberRetrying
+  } = useMemberStatusData();
+  
+  const { 
+    paymentStatusData, 
+    error: paymentError, 
+    retry: retryPaymentData,
+    isRetrying: isPaymentRetrying
+  } = usePaymentStatusData(selectedMonth, selectedYear);
+  
+  const { 
+    expensesData, 
+    error: expensesError, 
+    retry: retryExpensesData,
+    isRetrying: isExpensesRetrying
+  } = useExpensesData(selectedMonth, selectedYear);
+  
+  const { 
+    financialSummary, 
+    error: financialError, 
+    retry: retryFinancialData,
+    isRetrying: isFinancialRetrying
+  } = useFinancialSummary(selectedMonth, selectedYear);
+
+  // Track if any hook is currently retrying
+  useEffect(() => {
+    setIsRetrying(
+      isMemberRetrying || 
+      isPaymentRetrying || 
+      isExpensesRetrying || 
+      isFinancialRetrying
+    );
+  }, [isMemberRetrying, isPaymentRetrying, isExpensesRetrying, isFinancialRetrying]);
 
   // Combine all errors
   useEffect(() => {
@@ -53,8 +87,12 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
       if (hasPartialData) {
         setLoading(false);
       } else if (!hasPartialData && (memberError || paymentError || expensesError || financialError)) {
-        // If we have errors and no data, stop loading
-        setLoading(false);
+        // If we have errors and no data, stop loading after a short delay
+        const timer = setTimeout(() => {
+          setLoading(false);
+        }, 500);
+        
+        return () => clearTimeout(timer);
       }
       
       // Add safety timeout to prevent infinite loading state
@@ -65,7 +103,7 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
             setError("Tempo limite excedido ao carregar os dados. Tente novamente.");
           }
         }
-      }, 10000); // 10 second safety timeout
+      }, 20000); // 20 second safety timeout (increased from 10s)
       
       return () => clearTimeout(timer);
       
@@ -83,15 +121,20 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
     setError(null);
     setRetryCount(prev => prev + 1);
     
-    // Retry all data fetching
-    retryMemberData();
-    retryPaymentData();
-    retryExpensesData();
-    retryFinancialData();
-    
+    // Show a toast notification
     toast({
       title: "Recarregando dados",
       description: "Tentando buscar os dados novamente...",
+    });
+    
+    // Retry all data fetching
+    Promise.all([
+      retryMemberData(),
+      retryPaymentData(),
+      retryExpensesData(),
+      retryFinancialData()
+    ]).catch(e => {
+      console.error("Error during retry:", e);
     });
     
     // Add safety timeout for retry operation
@@ -99,11 +142,12 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
       if (loading) {
         setLoading(false);
       }
-    }, 15000); // 15 second timeout for retry
+    }, 25000); // 25 second timeout for retry (increased from 15s)
   }, [retryMemberData, retryPaymentData, retryExpensesData, retryFinancialData, toast, loading]);
 
   return {
     loading,
+    isRetrying,
     memberStatusData,
     paymentStatusData,
     expensesData,
