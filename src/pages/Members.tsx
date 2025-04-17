@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserPlus, Search } from "lucide-react";
+import { MemberListSkeleton } from "@/components/members/MemberListSkeleton";
+import { motion } from "framer-motion";
 
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,10 +47,31 @@ const Members = () => {
       member.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <MobileLayout title="Sócios">
       {/* Search and Add button */}
-      <div className="mb-4 flex gap-2">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-4 flex gap-2"
+      >
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
@@ -64,7 +87,7 @@ const Members = () => {
             <UserPlus className="h-4 w-4" />
           </Button>
         </Link>
-      </div>
+      </motion.div>
 
       {/* Tabs for filtering by status */}
       <Tabs defaultValue="all" className="mb-6" onValueChange={(v) => setActiveTab(v as MemberStatus | "all")}>
@@ -74,57 +97,30 @@ const Members = () => {
           <TabsTrigger value="afastado">Afastados</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all">
-          {loading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Carregando sócios...</p>
-            </div>
-          ) : (
-            <MembersList members={filteredMembers} />
-          )}
-        </TabsContent>
-        <TabsContent value="frequentante">
-          {loading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Carregando sócios...</p>
-            </div>
-          ) : (
-            <MembersList members={filteredMembers} />
-          )}
-        </TabsContent>
-        <TabsContent value="afastado">
-          {loading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Carregando sócios...</p>
-            </div>
-          ) : (
-            <MembersList members={filteredMembers} />
-          )}
-        </TabsContent>
+        {loading ? (
+          <MemberListSkeleton />
+        ) : (
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="space-y-2"
+          >
+            {filteredMembers.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Nenhum sócio encontrado</p>
+              </div>
+            ) : (
+              filteredMembers.map((member) => (
+                <motion.div key={member.id} variants={item}>
+                  <MemberCard member={member} />
+                </motion.div>
+              ))
+            )}
+          </motion.div>
+        )}
       </Tabs>
     </MobileLayout>
-  );
-};
-
-interface MembersListProps {
-  members: Member[];
-}
-
-const MembersList = ({ members }: MembersListProps) => {
-  if (members.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Nenhum sócio encontrado</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {members.map((member) => (
-        <MemberCard key={member.id} member={member} />
-      ))}
-    </div>
   );
 };
 

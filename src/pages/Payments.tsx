@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { PaymentCard } from "@/components/payments/PaymentCard";
@@ -10,6 +9,8 @@ import { paymentService, memberService } from "@/services";
 import { Payment, Member } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrentMonthYear } from "@/services/formatters";
+import { PaymentListSkeleton } from "@/components/payments/PaymentListSkeleton";
+import { motion } from "framer-motion";
 
 const Payments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -23,12 +24,16 @@ const Payments = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Get all payments
-        const allPayments = await paymentService.getAllPayments();
+        
+        // Fetch data in parallel
+        const [allPayments, allMembers] = await Promise.all([
+          paymentService.getAllPayments(),
+          memberService.getAllMembers()
+        ]);
+        
         setPayments(allPayments);
 
-        // Get all members and create a lookup map
-        const allMembers = await memberService.getAllMembers();
+        // Create a lookup map
         const membersMap: Record<string, Member> = {};
         allMembers.forEach(member => {
           membersMap[member.id] = member;
@@ -91,10 +96,31 @@ const Payments = () => {
 
   const filteredMembers = getFilteredMembers();
 
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <MobileLayout title="Pagamentos">
       {/* Search and Add button */}
-      <div className="mb-4 flex gap-2">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-4 flex gap-2"
+      >
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
@@ -110,7 +136,7 @@ const Payments = () => {
             <Plus className="h-4 w-4" />
           </Button>
         </Link>
-      </div>
+      </motion.div>
 
       {/* Tabs */}
       <Tabs defaultValue="all" className="mb-6" onValueChange={(v) => setActiveTab(v as "all" | "paid" | "pending")}>
@@ -120,99 +146,58 @@ const Payments = () => {
           <TabsTrigger value="pending">Pendentes</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all">
-          {loading ? (
-            <LoadingState />
-          ) : (
-            <MemberPaymentsList 
-              filteredMembers={filteredMembers} 
-              currentMonth={currentMonth}
-            />
-          )}
-        </TabsContent>
-        <TabsContent value="paid">
-          {loading ? (
-            <LoadingState />
-          ) : (
-            <MemberPaymentsList 
-              filteredMembers={filteredMembers}
-              currentMonth={currentMonth}
-            />
-          )}
-        </TabsContent>
-        <TabsContent value="pending">
-          {loading ? (
-            <LoadingState />
-          ) : (
-            <MemberPaymentsList 
-              filteredMembers={filteredMembers}
-              currentMonth={currentMonth}
-            />
-          )}
-        </TabsContent>
+        {loading ? (
+          <PaymentListSkeleton />
+        ) : (
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="space-y-2"
+          >
+            {filteredMembers.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Nenhum sócio encontrado</p>
+              </div>
+            ) : (
+              filteredMembers
+                .sort((a, b) => a.member.name.localeCompare(b.member.name))
+                .map(({ member, paymentStatus }) => {
+                  // Create a payment object if none exists for the current month
+                  const payment = paymentStatus.payment || {
+                    id: `temp-${member.id}`,
+                    memberId: member.id,
+                    amount: 30,
+                    month: currentMonth,
+                    year: new Date().getFullYear(),
+                    isPaid: false,
+                    date: ""
+                  };
+                  
+                  return (
+                    <motion.div key={member.id} variants={item}>
+                      <PaymentCard
+                        payment={payment}
+                        memberName={member.name}
+                        memberPhoto={member.photo}
+                        memberPhone={member.phone}
+                        onClick={() => {
+                          if (paymentStatus.payment) {
+                            window.location.href = `/payments/${paymentStatus.payment.id}`;
+                          } else {
+                            window.location.href = `/payments/new?memberId=${member.id}`;
+                          }
+                        }}
+                      />
+                    </motion.div>
+                  );
+                })
+            )}
+          </motion.div>
+        )}
       </Tabs>
     </MobileLayout>
   );
 };
-
-interface MemberPaymentsListProps {
-  filteredMembers: Array<{
-    member: Member;
-    paymentStatus: { isPaid: boolean; payment: Payment | null };
-  }>;
-  currentMonth: string;
-}
-
-const MemberPaymentsList = ({ filteredMembers, currentMonth }: MemberPaymentsListProps) => {
-  if (filteredMembers.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Nenhum sócio encontrado</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-2">
-      {filteredMembers
-        .sort((a, b) => a.member.name.localeCompare(b.member.name))
-        .map(({ member, paymentStatus }) => {
-          // Criar um objeto de pagamento fictício se não houver um para o mês atual
-          const payment = paymentStatus.payment || {
-            id: `temp-${member.id}`,
-            memberId: member.id,
-            amount: 30,
-            month: currentMonth,
-            year: new Date().getFullYear(),
-            isPaid: false,
-            date: ""
-          };
-          
-          return (
-            <PaymentCard
-              key={member.id}
-              payment={payment}
-              memberName={member.name}
-              memberPhoto={member.photo}
-              memberPhone={member.phone}
-              onClick={() => {
-                if (paymentStatus.payment) {
-                  window.location.href = `/payments/${paymentStatus.payment.id}`;
-                } else {
-                  window.location.href = `/payments/new?memberId=${member.id}`;
-                }
-              }}
-            />
-          );
-        })}
-    </div>
-  );
-};
-
-const LoadingState = () => (
-  <div className="text-center py-8">
-    <p className="text-gray-500">Carregando pagamentos...</p>
-  </div>
-);
 
 export default Payments;
