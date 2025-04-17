@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Payment } from "@/types";
 import { toast } from "sonner";
-import { DollarSign } from "lucide-react";
+import { DollarSign, AlertTriangle } from "lucide-react";
 
 interface MercadoPagoButtonProps {
   payment: Payment | Partial<Payment>;
@@ -34,14 +34,35 @@ export function MercadoPagoButton({ payment, disabled, showIcon = false }: Merca
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error invoking mercadopago function:', error);
+        throw error;
+      }
+
+      if (!data || !data.init_point) {
+        throw new Error('Resposta inválida do Mercado Pago');
+      }
 
       // Redireciona para o checkout do Mercado Pago
       window.location.href = data.init_point;
       
     } catch (error) {
       console.error('Error creating payment:', error);
-      toast.error('Erro ao processar pagamento');
+      
+      // Mensagem de erro mais amigável
+      let errorMessage = 'Erro ao processar pagamento';
+      if (error instanceof Error) {
+        if (error.message.includes('invalid_token')) {
+          errorMessage = 'Erro de configuração do Mercado Pago. Por favor, contate o administrador.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Tempo esgotado. Verifique sua conexão e tente novamente.';
+        }
+      }
+      
+      toast.error(errorMessage, {
+        description: 'Tente novamente mais tarde ou use outro método de pagamento',
+        icon: <AlertTriangle className="h-5 w-5 text-red-500" />
+      });
     } finally {
       setLoading(false);
     }

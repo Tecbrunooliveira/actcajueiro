@@ -7,9 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const MERCADO_PAGO_ACCESS_TOKEN = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN')
+// Mercado Pago access token
+const MERCADO_PAGO_ACCESS_TOKEN = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN') || 'TEST-1074197040461480-041717-beb14c913921e2b42e8fbbb1bc3e5a9f-602507643'
 
 serve(async (req) => {
+  // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -42,24 +44,25 @@ serve(async (req) => {
     }
 
     console.log('Creating Mercado Pago preference:', JSON.stringify(preference))
+    console.log('Using access token:', MERCADO_PAGO_ACCESS_TOKEN.substring(0, 10) + '...')
 
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
+        "Authorization": `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
       },
       body: JSON.stringify(preference),
     })
 
     if (!response.ok) {
       const errorData = await response.text()
-      console.error('Mercado Pago error:', errorData)
-      throw new Error('Failed to create preference: ' + errorData)
+      console.error('Mercado Pago error response:', response.status, errorData)
+      throw new Error(`Failed to create preference (status ${response.status}): ${errorData}`)
     }
 
     const data = await response.json()
-    console.log('Mercado Pago preference created:', data.id)
+    console.log('Mercado Pago preference created successfully:', data.id)
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -69,7 +72,7 @@ serve(async (req) => {
     console.error('Error in mercadopago function:', error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 500,
     })
   }
 })
