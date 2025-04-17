@@ -15,6 +15,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
 }) => {
   const isTimeoutError = error?.toLowerCase().includes("tempo limite") || 
                          error?.toLowerCase().includes("timeout");
+  
+  const isServerError = error?.toLowerCase().includes("statement") ||
+                        error?.toLowerCase().includes("servidor");
 
   return (
     <div className="flex items-center justify-center h-full py-16">
@@ -88,12 +91,16 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
               <p className="text-club-700 dark:text-club-300 font-medium">
                 {isTimeoutError 
                   ? "Tempo limite excedido" 
-                  : "Erro ao carregar dados"}
+                  : isServerError
+                    ? "Erro no servidor"
+                    : "Erro ao carregar dados"}
               </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {isTimeoutError 
                   ? "O servidor está demorando para responder. Tente novamente em alguns instantes." 
-                  : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
+                  : isServerError
+                    ? "O servidor está sobrecarregado. Tente novamente em alguns instantes."
+                    : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
               </p>
             </div>
             
