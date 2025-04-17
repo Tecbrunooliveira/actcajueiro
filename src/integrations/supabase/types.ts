@@ -148,6 +148,50 @@ export type Database = {
           },
         ]
       }
+      payments_mercadopago: {
+        Row: {
+          amount: number
+          created_at: string | null
+          external_reference: string
+          id: string
+          member_id: string | null
+          payment_id: string
+          payment_method: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          external_reference: string
+          id?: string
+          member_id?: string | null
+          payment_id: string
+          payment_method?: string | null
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          external_reference?: string
+          id?: string
+          member_id?: string | null
+          payment_id?: string
+          payment_method?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_mercadopago_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null

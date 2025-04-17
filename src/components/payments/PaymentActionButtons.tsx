@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +5,7 @@ import { CheckCircle, Edit, Trash2, XCircle, MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { Payment, Member } from "@/types";
 import { openWhatsAppWithTemplate } from "@/services/communicationService";
+import { MercadoPagoButton } from "./MercadoPagoButton";
 
 interface PaymentActionButtonsProps {
   payment: Payment;
@@ -26,7 +26,6 @@ export function PaymentActionButtons({
 
   const handleWhatsAppClick = () => {
     if (member?.phone) {
-      // Se o pagamento não está pago, usar template de lembrete
       if (!payment.isPaid) {
         openWhatsAppWithTemplate(member.phone, "payment_reminder");
       } else {
@@ -37,6 +36,10 @@ export function PaymentActionButtons({
 
   return (
     <div className="space-y-3">
+      {!payment.isPaid && (
+        <MercadoPagoButton payment={payment} disabled={actionLoading} />
+      )}
+
       <Button
         className="w-full bg-club-500 hover:bg-club-600"
         onClick={() => navigate(`/payments/edit/${payment.id}`)}
