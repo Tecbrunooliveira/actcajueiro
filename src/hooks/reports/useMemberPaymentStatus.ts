@@ -1,20 +1,39 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Member } from "@/types";
 import { memberService } from "@/services";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useMemberPaymentStatus = (selectedMonth: string, payments: any[]) => {
   const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [paidMembers, setPaidMembers] = useState<Member[]>([]);
   const [unpaidMembers, setUnpaidMembers] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const fetchedMembers = await memberService.getAllMembers();
-        setAllMembers(fetchedMembers);
-        
-        // Filter members by payment status
+  const fetchMembers = useCallback(async () => {
+    setLoadingMembers(true);
+    try {
+      // Add timeout handling to prevent long operations
+      const fetchPromise = memberService.getAllMembers();
+      const timeoutPromise = new Promise<Member[]>((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout fetching members")), 10000)
+      );
+      
+      // Race the fetch against a timeout
+      const fetchedMembers = await Promise.race([fetchPromise, timeoutPromise]);
+      setAllMembers(fetchedMembers);
+      
+      // Process members in batches to avoid blocking the UI
+      setTimeout(() => {
+        // Filter members by payment status - do filtering client-side
+        if (payments.length === 0) {
+          setPaidMembers([]);
+          setUnpaidMembers(fetchedMembers);
+          setLoadingMembers(false);
+          return;
+        }
+
         const monthPayments = payments.filter(
           (payment) => payment.month === selectedMonth
         );
@@ -30,19 +49,30 @@ export const useMemberPaymentStatus = (selectedMonth: string, payments: any[]) =
           return memberPayments.length === 0 || memberPayments.every(p => !p.isPaid);
         });
         setUnpaidMembers(membersUnpaid);
-      } catch (error) {
-        console.error("Error fetching members data:", error);
-      }
-    };
-    
+        
+        setLoadingMembers(false);
+      }, 0);
+    } catch (error) {
+      console.error("Error fetching members data:", error);
+      toast({
+        title: "Erro ao carregar membros",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive"
+      });
+      setLoadingMembers(false);
+    }
+  }, [selectedMonth, payments, toast]);
+
+  useEffect(() => {
     if (payments.length > 0) {
       fetchMembers();
     }
-  }, [selectedMonth, payments]);
+  }, [fetchMembers, payments]);
 
   return {
     allMembers,
     paidMembers,
-    unpaidMembers
+    unpaidMembers,
+    loadingMembers
   };
 };

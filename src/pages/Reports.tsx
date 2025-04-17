@@ -12,7 +12,8 @@ import { Report360 } from "@/components/reports/Report360";
 import { LoadingState } from "@/components/reports/LoadingState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { BarChart3, FileBarChart } from "lucide-react";
+import { BarChart3, FileBarChart, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Reports = () => {
   const {
@@ -25,6 +26,7 @@ const Reports = () => {
     unpaidMembers,
     paidMembers,
     loading,
+    dataError,
     generatingPayments,
     generatingPdf,
     handleMonthChange,
@@ -43,16 +45,12 @@ const Reports = () => {
     financialSummary
   } = useReport360Data(selectedMonth, selectedYear);
 
-  if (loading || loading360) {
-    return (
-      <MobileLayout title="Relatórios">
-        <LoadingState />
-      </MobileLayout>
-    );
-  }
+  const renderContent = () => {
+    if (loading) {
+      return <LoadingState />;
+    }
 
-  return (
-    <MobileLayout title="Relatórios">
+    return (
       <div className="space-y-6 animate-fade-in pb-12">
         <PeriodSelector 
           selectedMonth={selectedMonth}
@@ -64,6 +62,16 @@ const Reports = () => {
           onGeneratePendingPayments={handleGeneratePendingPayments}
           generatingPayments={generatingPayments}
         />
+
+        {dataError && (
+          <Alert variant="destructive" className="my-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro</AlertTitle>
+            <AlertDescription>
+              {dataError}. Tente alterar o período ou recarregar a página.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Tabs defaultValue="basic" className="mt-8">
           <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-muted border border-club-100 dark:border-club-700 shadow-md">
@@ -113,23 +121,33 @@ const Reports = () => {
           </TabsContent>
           
           <TabsContent value="advanced" className="pt-6 animate-in fade-in-50 duration-300">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Report360 
-                memberStatusData={memberStatusData}
-                paymentStatusData={paymentStatusData}
-                expensesData={expensesData}
-                financialSummary={financialSummary}
-                selectedMonth={selectedMonth}
-                formatMonthYear={formatMonthYear}
-              />
-            </motion.div>
+            {loading360 ? (
+              <LoadingState />
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Report360 
+                  memberStatusData={memberStatusData}
+                  paymentStatusData={paymentStatusData}
+                  expensesData={expensesData}
+                  financialSummary={financialSummary}
+                  selectedMonth={selectedMonth}
+                  formatMonthYear={formatMonthYear}
+                />
+              </motion.div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
+    );
+  };
+
+  return (
+    <MobileLayout title="Relatórios">
+      {renderContent()}
     </MobileLayout>
   );
 };

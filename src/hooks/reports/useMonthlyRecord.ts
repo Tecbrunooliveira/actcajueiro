@@ -1,7 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MonthlyRecord } from "@/types";
 import { paymentService } from "@/services";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useMonthlyRecord = (selectedMonth: string, selectedYear: string) => {
   const [monthlyRecord, setMonthlyRecord] = useState<MonthlyRecord>({
@@ -13,23 +14,40 @@ export const useMonthlyRecord = (selectedMonth: string, selectedYear: string) =>
     totalAmount: 0,
     collectedAmount: 0,
   });
+  const [loadingMonthlyRecord, setLoadingMonthlyRecord] = useState(true);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchMonthlyRecord = async () => {
-      try {
-        const fetchedMonthlyRecord = await paymentService.getMonthlyRecord(
-          selectedMonth,
-          parseInt(selectedYear)
-        );
-        
-        setMonthlyRecord(fetchedMonthlyRecord);
-      } catch (error) {
-        console.error("Error fetching monthly record:", error);
-      }
-    };
+  const fetchMonthlyRecord = useCallback(async () => {
+    try {
+      setLoadingMonthlyRecord(true);
+      // Add timeout handling to prevent long operations
+      const fetchPromise = paymentService.getMonthlyRecord(
+        selectedMonth,
+        parseInt(selectedYear)
+      );
+      
+      const timeoutPromise = new Promise<MonthlyRecord>((_, reject) => 
+        setTimeout(() => reject(new Error("Timeout fetching monthly record")), 8000)
+      );
+      
+      // Race the fetch against a timeout
+      const fetchedMonthlyRecord = await Promise.race([fetchPromise, timeoutPromise]);
+      setMonthlyRecord(fetchedMonthlyRecord);
+    } catch (error) {
+      console.error("Error fetching monthly record:", error);
+      toast({
+        title: "Erro ao carregar estatísticas mensais",
+        description: "Algumas informações podem estar incompletas.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingMonthlyRecord(false);
+    }
+  }, [selectedMonth, selectedYear, toast]);
     
+  useEffect(() => {
     fetchMonthlyRecord();
-  }, [selectedMonth, selectedYear]);
+  }, [fetchMonthlyRecord]);
 
-  return { monthlyRecord };
+  return { monthlyRecord, loadingMonthlyRecord };
 };
