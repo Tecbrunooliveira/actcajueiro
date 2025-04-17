@@ -11,6 +11,7 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
   });
   const [error, setError] = useState<string | null>(null);
   const [fetchAttempted, setFetchAttempted] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const calculateFinancialSummary = useCallback((
     monthlyRecord: { collectedAmount: number } | null,
@@ -52,6 +53,7 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
     try {
       setError(null);
       setFetchAttempted(true);
+      setIsRetrying(true);
       
       // Add timeout for better error handling - increased to 8 seconds
       const monthlyRecordPromise = paymentService.getMonthlyRecord(
@@ -103,6 +105,8 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
         // Still throw the original error for proper error handling
         throw error;
       }
+      
+      setIsRetrying(false);
     } catch (error) {
       console.error("Error fetching financial summary data:", error);
       
@@ -116,6 +120,8 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       } else {
         setError("Erro ao carregar resumo financeiro");
       }
+      
+      setIsRetrying(false);
     }
   }, [selectedMonth, selectedYear, calculateFinancialSummary]);
 
@@ -129,6 +135,7 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
   return { 
     financialSummary,
     error,
-    retry: fetchFinancialSummary
+    retry: fetchFinancialSummary,
+    isRetrying
   };
 };

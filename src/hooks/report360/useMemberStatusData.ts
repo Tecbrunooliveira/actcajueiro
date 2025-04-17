@@ -9,6 +9,7 @@ export const useMemberStatusData = () => {
   const [error, setError] = useState<string | null>(null);
   const [fetchAttempted, setFetchAttempted] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const processMemberStatusData = useCallback((members: Member[]) => {
     // Early exit for empty data
@@ -64,6 +65,7 @@ export const useMemberStatusData = () => {
       
       setError(null);
       setFetchAttempted(true);
+      setIsRetrying(true);
       
       // Add timeout for better error handling
       const fetchPromise = memberService.getAllMembers();
@@ -79,6 +81,7 @@ export const useMemberStatusData = () => {
       
       // Clear the abort controller
       setAbortController(null);
+      setIsRetrying(false);
     } catch (error) {
       console.error("Error fetching member status data:", error);
       
@@ -106,8 +109,9 @@ export const useMemberStatusData = () => {
         }
       }
       
-      // Clear the abort controller
+      // Clear the abort controller and set retrying to false
       setAbortController(null);
+      setIsRetrying(false);
     }
   }, [processMemberStatusData, abortController, memberStatusData.length]);
 
@@ -128,6 +132,7 @@ export const useMemberStatusData = () => {
   return { 
     memberStatusData,
     error,
-    retry: fetchMembers
+    retry: fetchMembers,
+    isRetrying
   };
 };

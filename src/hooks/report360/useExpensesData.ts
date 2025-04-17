@@ -7,6 +7,7 @@ export const useExpensesData = (selectedMonth: string, selectedYear: string) => 
   const [expensesData, setExpensesData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [fetchAttempted, setFetchAttempted] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const processExpensesData = useCallback(async (
     expenses: Expense[] | null, 
@@ -97,6 +98,7 @@ export const useExpensesData = (selectedMonth: string, selectedYear: string) => 
     try {
       setError(null);
       setFetchAttempted(true);
+      setIsRetrying(true);
       
       // Add timeout for better error handling
       const expensesPromise = expenseService.getAllExpenses();
@@ -145,6 +147,8 @@ export const useExpensesData = (selectedMonth: string, selectedYear: string) => 
         // Still throw the original error for proper error handling
         throw error;
       }
+      
+      setIsRetrying(false);
     } catch (error) {
       console.error("Error fetching expenses data:", error);
       
@@ -158,6 +162,8 @@ export const useExpensesData = (selectedMonth: string, selectedYear: string) => 
       } else {
         setError("Erro ao carregar dados de despesas");
       }
+      
+      setIsRetrying(false);
     }
   }, [processExpensesData]);
 
@@ -171,6 +177,7 @@ export const useExpensesData = (selectedMonth: string, selectedYear: string) => 
   return { 
     expensesData,
     error,
-    retry: fetchExpensesData
+    retry: fetchExpensesData,
+    isRetrying
   };
 };
