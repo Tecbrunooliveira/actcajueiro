@@ -17,9 +17,17 @@ serve(async (req) => {
   try {
     const { amount, description, memberId } = await req.json()
 
+    if (!amount || !memberId) {
+      return new Response(JSON.stringify({ error: 'Amount and memberId are required' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      })
+    }
+
+    // Configura a preferência de pagamento
     const preference = {
       items: [{
-        title: description,
+        title: description || 'Pagamento',
         unit_price: Number(amount),
         quantity: 1,
       }],
@@ -30,7 +38,10 @@ serve(async (req) => {
         pending: `${req.headers.get('origin')}/payments/pending`,
       },
       auto_return: "approved",
+      notification_url: `${Deno.env.get('SUPABASE_URL') || req.headers.get('origin')}/mercadopago-webhook`,
     }
+
+    console.log('Creating Mercado Pago preference:', JSON.stringify(preference))
 
     const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
       method: "POST",
@@ -42,16 +53,20 @@ serve(async (req) => {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to create preference')
+      const errorData = await response.text()
+      console.error('Mercado Pago error:', errorData)
+      throw new Error('Failed to create preference: ' + errorData)
     }
 
     const data = await response.json()
+    console.log('Mercado Pago preference created:', data.id)
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
+    console.error('Error in mercadopago function:', error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

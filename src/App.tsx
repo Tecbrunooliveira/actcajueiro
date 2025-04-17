@@ -19,6 +19,7 @@ import ExpenseForm from "./pages/ExpenseForm";
 import ExpenseCategories from "./pages/ExpenseCategories";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import PaymentStatus from "./pages/PaymentStatus";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,9 @@ const App = () => (
           <Route path="/payments/:id" element={<ProtectedRoute><PaymentDetail /></ProtectedRoute>} />
           <Route path="/payments/new" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
           <Route path="/payments/edit/:id" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
+          <Route path="/payments/success" element={<ProtectedRoute><PaymentStatus status="success" /></ProtectedRoute>} />
+          <Route path="/payments/failure" element={<ProtectedRoute><PaymentStatus status="failure" /></ProtectedRoute>} />
+          <Route path="/payments/pending" element={<ProtectedRoute><PaymentStatus status="pending" /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
           <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
           <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetail /></ProtectedRoute>} />

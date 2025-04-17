@@ -24,6 +24,8 @@ import {
 import { Member } from "@/types";
 import { UseFormReturn } from "react-hook-form";
 import { PaymentFormValues } from "@/schemas/paymentSchema";
+import { MercadoPagoButton } from "./MercadoPagoButton";
+import { Card, CardContent, CardTitle, CardHeader } from "@/components/ui/card";
 
 interface PaymentFormComponentProps {
   form: UseFormReturn<PaymentFormValues>;
@@ -43,6 +45,12 @@ export function PaymentFormComponent({
   watchIsPaid,
 }: PaymentFormComponentProps) {
   const navigate = useNavigate();
+  const watchMemberId = form.watch("memberId");
+  const watchAmount = form.watch("amount");
+  const watchMonth = form.watch("month");
+  const watchYear = form.watch("year");
+
+  const canGeneratePaymentLink = watchMemberId && watchAmount && watchAmount > 0;
 
   return (
     <Form {...form}>
@@ -130,6 +138,28 @@ export function PaymentFormComponent({
             )}
           />
         </div>
+
+        {canGeneratePaymentLink && (
+          <Card className="border-[#009ee3] bg-blue-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-md">Link de Pagamento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm mb-3">
+                Gere um link de pagamento para enviar ao sócio. O pagamento será registrado automaticamente quando confirmado.
+              </p>
+              <MercadoPagoButton 
+                payment={{
+                  memberId: watchMemberId,
+                  amount: watchAmount,
+                  month: watchMonth,
+                  year: watchYear
+                }}
+                showIcon
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <FormField
           control={form.control}
