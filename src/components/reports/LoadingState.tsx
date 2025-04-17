@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BarChart3, AlertCircle, RefreshCw } from "lucide-react";
+import { BarChart3, AlertCircle, RefreshCw, ServerCrash, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -13,6 +13,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   error = null,
   onRetry
 }) => {
+  const isTimeoutError = error?.toLowerCase().includes("tempo limite") || 
+                         error?.toLowerCase().includes("timeout");
+
   return (
     <div className="flex items-center justify-center h-full py-16">
       <motion.div
@@ -68,15 +71,29 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                 repeat: Infinity,
                 repeatType: "loop"
               }}
-              className="h-16 w-16 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center shadow-lg"
+              className={`h-16 w-16 mx-auto rounded-full flex items-center justify-center shadow-lg ${
+                isTimeoutError 
+                  ? "bg-amber-100 dark:bg-amber-900/30" 
+                  : "bg-red-100 dark:bg-red-900/30"
+              }`}
             >
-              <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-400" />
+              {isTimeoutError ? (
+                <Clock className="h-8 w-8 text-amber-500 dark:text-amber-400" />
+              ) : (
+                <ServerCrash className="h-8 w-8 text-red-500 dark:text-red-400" />
+              )}
             </motion.div>
             
             <div className="space-y-2">
-              <p className="text-club-700 dark:text-club-300 font-medium">Erro ao carregar dados</p>
+              <p className="text-club-700 dark:text-club-300 font-medium">
+                {isTimeoutError 
+                  ? "Tempo limite excedido" 
+                  : "Erro ao carregar dados"}
+              </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                {error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
+                {isTimeoutError 
+                  ? "O servidor está demorando para responder. Tente novamente em alguns instantes." 
+                  : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
               </p>
             </div>
             
@@ -96,4 +113,3 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     </div>
   );
 };
-

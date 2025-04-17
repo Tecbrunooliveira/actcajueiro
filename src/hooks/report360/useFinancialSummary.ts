@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Expense } from "@/types";
 import { paymentService, expenseService } from "@/services";
 
@@ -9,28 +8,9 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
     totalExpenses: 0,
     balance: 0
   });
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchFinancialSummary = async () => {
-      try {
-        // Fetch data
-        const monthlyRecord = await paymentService.getMonthlyRecord(
-          selectedMonth,
-          parseInt(selectedYear)
-        );
-        const expenses = await expenseService.getAllExpenses();
-        
-        // Calculate financial summary
-        calculateFinancialSummary(monthlyRecord, expenses);
-      } catch (error) {
-        console.error("Error fetching financial summary data:", error);
-      }
-    };
-
-    fetchFinancialSummary();
-  }, [selectedMonth, selectedYear]);
-
-  const calculateFinancialSummary = (
+  const calculateFinancialSummary = useCallback((
     monthlyRecord: { collectedAmount: number },
     expenses: Expense[]
   ) => {
@@ -56,7 +36,50 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       totalExpenses,
       balance
     });
-  };
+  }, [selectedMonth, selectedYear]);
 
-  return { financialSummary };
+  const fetchFinancialSummary = useCallback(async () => {
+    try {
+      setError(null);
+      
+      // Add timeout for better error handling
+      const monthlyRecordPromise = paymentService.getMonthlyRecord(
+        selectedMonth,
+        parseInt(selectedYear)
+      );
+      const expensesPromise = expenseService.getAllExpenses();
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar resumo financeiro.")), 5000)
+      );
+      
+      // Use Promise.race with Promise.all to add a timeout
+      const [monthlyRecord, expenses] = await Promise.race([
+        Promise.all([monthlyRecordPromise, expensesPromise]),
+        timeoutPromise.then(() => { throw new Error("Tempo limite excedido"); })
+      ]);
+      
+      // Calculate financial summary
+      calculateFinancialSummary(monthlyRecord, expenses);
+    } catch (error) {
+      console.error("Error fetching financial summary data:", error);
+      setError(error instanceof Error ? error.message : "Erro ao carregar resumo financeiro");
+      
+      // Keep default values to avoid undefined errors
+      setFinancialSummary({
+        totalIncome: 0,
+        totalExpenses: 0,
+        balance: 0
+      });
+    }
+  }, [selectedMonth, selectedYear, calculateFinancialSummary]);
+
+  useEffect(() => {
+    fetchFinancialSummary();
+  }, [fetchFinancialSummary]);
+
+  return { 
+    financialSummary,
+    error,
+    retry: fetchFinancialSummary
+  };
 };

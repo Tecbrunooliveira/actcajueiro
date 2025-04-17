@@ -1,29 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Expense, ExpenseCategory } from "@/types";
 import { expenseService } from "@/services";
 
 export const useExpensesData = (selectedMonth: string, selectedYear: string) => {
   const [expensesData, setExpensesData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchExpensesData = async () => {
-      try {
-        // Fetch all required data
-        const expenses = await expenseService.getAllExpenses();
-        const categories = await expenseService.getAllCategories();
-        
-        // Process expenses by category
-        await processExpensesData(expenses, categories);
-      } catch (error) {
-        console.error("Error fetching expenses data:", error);
-      }
-    };
-
-    fetchExpensesData();
-  }, [selectedMonth, selectedYear]);
-
-  const processExpensesData = async (
+  const processExpensesData = useCallback(async (
     expenses: Expense[], 
     categories: ExpenseCategory[]
   ) => {
@@ -67,7 +51,43 @@ export const useExpensesData = (selectedMonth: string, selectedYear: string) => 
     });
     
     setExpensesData(data);
-  };
+  }, []);
 
-  return { expensesData };
+  const fetchExpensesData = useCallback(async () => {
+    try {
+      setError(null);
+      
+      // Add timeout for better error handling
+      const expensesPromise = expenseService.getAllExpenses();
+      const categoriesPromise = expenseService.getAllCategories();
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar dados de despesas.")), 5000)
+      );
+      
+      // Use Promise.race with Promise.all to add a timeout
+      const [expenses, categories] = await Promise.race([
+        Promise.all([expensesPromise, categoriesPromise]),
+        timeoutPromise.then(() => { throw new Error("Tempo limite excedido"); })
+      ]);
+      
+      // Process expenses by category
+      await processExpensesData(expenses, categories);
+    } catch (error) {
+      console.error("Error fetching expenses data:", error);
+      setError(error instanceof Error ? error.message : "Erro ao carregar dados de despesas");
+      
+      // Set empty data to avoid undefined errors
+      setExpensesData([]);
+    }
+  }, [selectedMonth, selectedYear, processExpensesData]);
+
+  useEffect(() => {
+    fetchExpensesData();
+  }, [fetchExpensesData]);
+
+  return { 
+    expensesData,
+    error,
+    retry: fetchExpensesData
+  };
 };
