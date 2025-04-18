@@ -1,8 +1,9 @@
 
 import React from "react";
-import { BarChart3, AlertCircle, RefreshCw, ServerCrash, Clock } from "lucide-react";
+import { BarChart3, AlertCircle, RefreshCw, ServerCrash, Clock, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LoadingStateProps {
   error?: string | null;
@@ -16,10 +17,16 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   isRetrying = false
 }) => {
   const isTimeoutError = error?.toLowerCase().includes("tempo limite") || 
-                         error?.toLowerCase().includes("timeout");
+                         error?.toLowerCase().includes("timeout") ||
+                         error?.toLowerCase().includes("demorando");
   
   const isServerError = error?.toLowerCase().includes("statement") ||
-                        error?.toLowerCase().includes("servidor");
+                        error?.toLowerCase().includes("servidor") ||
+                        error?.toLowerCase().includes("sobrecarregado");
+                        
+  const isConnectionError = error?.toLowerCase().includes("conexão") ||
+                           error?.toLowerCase().includes("network") ||
+                           error?.toLowerCase().includes("connection");
 
   return (
     <div className="flex items-center justify-center h-full py-16">
@@ -64,6 +71,11 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                 }}
               />
             </div>
+            
+            <div className="mt-4 space-y-1">
+              <Skeleton className="h-4 w-24 mx-auto" />
+              <Skeleton className="h-4 w-32 mx-auto" />
+            </div>
           </>
         ) : (
           <>
@@ -79,13 +91,17 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
               className={`h-16 w-16 mx-auto rounded-full flex items-center justify-center shadow-lg ${
                 isTimeoutError 
                   ? "bg-amber-100 dark:bg-amber-900/30" 
-                  : isServerError
-                    ? "bg-yellow-100 dark:bg-yellow-900/30"
-                    : "bg-red-100 dark:bg-red-900/30"
+                  : isConnectionError
+                    ? "bg-blue-100 dark:bg-blue-900/30"
+                    : isServerError
+                      ? "bg-yellow-100 dark:bg-yellow-900/30"
+                      : "bg-red-100 dark:bg-red-900/30"
               }`}
             >
               {isTimeoutError ? (
                 <Clock className="h-8 w-8 text-amber-500 dark:text-amber-400" />
+              ) : isConnectionError ? (
+                <Wifi className="h-8 w-8 text-blue-500 dark:text-blue-400" />
               ) : isServerError ? (
                 <ServerCrash className="h-8 w-8 text-yellow-500 dark:text-yellow-400" />
               ) : (
@@ -97,16 +113,20 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
               <p className="text-club-700 dark:text-club-300 font-medium">
                 {isTimeoutError 
                   ? "Tempo limite excedido" 
-                  : isServerError
-                    ? "Servidor sobrecarregado"
-                    : "Erro ao carregar dados"}
+                  : isConnectionError
+                    ? "Problema de conexão"
+                    : isServerError
+                      ? "Servidor sobrecarregado"
+                      : "Erro ao carregar dados"}
               </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {isTimeoutError 
-                  ? "O servidor está demorando para responder. Os dados estão sendo carregados em segundo plano, aguarde um momento." 
-                  : isServerError
-                    ? "O servidor está sobrecarregado. Os dados serão carregados assim que possível."
-                    : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
+                  ? "O servidor está demorando para responder. Tente novamente em alguns instantes ou utilize os dados em cache." 
+                  : isConnectionError
+                    ? "Verifique sua conexão com a internet e tente novamente."
+                    : isServerError
+                      ? "O servidor está sobrecarregado. Os dados serão carregados assim que possível."
+                      : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
               </p>
             </div>
             
