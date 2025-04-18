@@ -2,7 +2,7 @@
 import React, { useState, useCallback, lazy, Suspense } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 
-// Import our hooks and components
+// Importar hooks e componentes
 import { useReportsData } from "@/hooks/useReportsData";
 import { useReport360Data } from "@/hooks/useReport360Data";
 import { PeriodSelector } from "@/components/reports/PeriodSelector";
@@ -15,7 +15,7 @@ import { BarChart3, FileBarChart, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
-// Lazy load the report component to improve initial loading time
+// Carregar o componente do relatório de forma preguiçosa para melhorar o tempo de carregamento inicial
 const Report360 = lazy(() => import("@/components/reports/Report360").then(module => ({
   default: module.Report360
 })));
@@ -45,7 +45,7 @@ const Reports = () => {
     retry
   } = useReportsData(retryCount);
 
-  // Only load 360 data if advanced tab is active
+  // Carregar dados 360° apenas se a aba avançada estiver ativa
   const {
     loading: loading360,
     isRetrying: isRetrying360,
@@ -92,7 +92,7 @@ const Reports = () => {
         />
 
         {dataError && (
-          <Alert variant="destructive" className="my-4">
+          <Alert variant="destructive" className="my-4 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Erro</AlertTitle>
             <AlertDescription className="flex flex-col gap-2">
@@ -110,7 +110,7 @@ const Reports = () => {
           </Alert>
         )}
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
           <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-muted border border-club-100 dark:border-club-700 shadow-md">
             <TabsTrigger 
               value="basic" 
@@ -165,7 +165,12 @@ const Reports = () => {
                 isRetrying={isRetrying360}
               />
             ) : (
-              <Suspense fallback={<div className="py-8 text-center">Carregando dados do relatório...</div>}>
+              <Suspense fallback={
+                <div className="py-8 text-center">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-club-500 border-t-transparent"></div>
+                  <p className="mt-4 text-club-600 dark:text-club-300">Carregando relatório...</p>
+                </div>
+              }>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

@@ -98,14 +98,14 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                 {isTimeoutError 
                   ? "Tempo limite excedido" 
                   : isServerError
-                    ? "Erro no servidor"
+                    ? "Servidor sobrecarregado"
                     : "Erro ao carregar dados"}
               </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {isTimeoutError 
-                  ? "O servidor está demorando para responder. Tente novamente ou verifique sua conexão." 
+                  ? "O servidor está demorando para responder. Os dados estão sendo carregados em segundo plano, aguarde um momento." 
                   : isServerError
-                    ? "O servidor está sobrecarregado. Tente novamente em alguns instantes."
+                    ? "O servidor está sobrecarregado. Os dados serão carregados assim que possível."
                     : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
               </p>
             </div>
