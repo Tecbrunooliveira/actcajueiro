@@ -153,3 +153,6 @@ export const Report360 = ({
     </motion.div>
   );
 };
+
+// Add default export for lazy loading
+export default Report360;

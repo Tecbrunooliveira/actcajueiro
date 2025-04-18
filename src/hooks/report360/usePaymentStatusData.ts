@@ -9,8 +9,8 @@ const dataCache = new Map<string, {
   timestamp: number;
 }>();
 
-// Cache expiration time - 5 minutes
-const CACHE_EXPIRATION = 5 * 60 * 1000;
+// Cache expiration time - 15 minutes (increased from 5 minutes)
+const CACHE_EXPIRATION = 15 * 60 * 1000;
 
 export const usePaymentStatusData = (selectedMonth: string, selectedYear: string) => {
   const [paymentStatusData, setPaymentStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -25,7 +25,6 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
   const fetchPaymentStatusData = useCallback(async (ignoreCache = false) => {
     try {
       setError(null);
-      setFetchAttempted(true);
       
       // First check if we have valid cached data
       const cachedData = dataCache.get(cacheKey);
@@ -37,6 +36,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         return;
       }
       
+      setFetchAttempted(true);
       setIsRetrying(true);
       
       // Show toast when retrying
@@ -53,9 +53,9 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         parseInt(selectedYear)
       );
       
-      // Increase timeout to 15 seconds
+      // Reduce timeout to 8 seconds from 15 seconds
       const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar dados de pagamento.")), 15000)
+        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar dados de pagamento.")), 8000)
       );
       
       // Race the fetch against a timeout

@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, lazy, Suspense } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 
 // Import our hooks and components
@@ -8,7 +8,6 @@ import { useReport360Data } from "@/hooks/useReport360Data";
 import { PeriodSelector } from "@/components/reports/PeriodSelector";
 import { DashboardStats } from "@/components/reports/DashboardStats";
 import { MembersTabView } from "@/components/reports/MembersTabView";
-import { Report360 } from "@/components/reports/Report360";
 import { LoadingState } from "@/components/reports/LoadingState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
@@ -16,8 +15,14 @@ import { BarChart3, FileBarChart, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
+// Lazy load the report component to improve initial loading time
+const Report360 = lazy(() => import("@/components/reports/Report360").then(module => ({
+  default: module.Report360
+})));
+
 const Reports = () => {
   const [retryCount, setRetryCount] = useState(0);
+  const [activeTab, setActiveTab] = useState('basic');
   
   const {
     selectedMonth,
@@ -40,7 +45,7 @@ const Reports = () => {
     retry
   } = useReportsData(retryCount);
 
-  // Use our new hook for 360 report data
+  // Only load 360 data if advanced tab is active
   const {
     loading: loading360,
     isRetrying: isRetrying360,
@@ -50,7 +55,10 @@ const Reports = () => {
     financialSummary,
     error: error360,
     retry: retry360
-  } = useReport360Data(selectedMonth, selectedYear);
+  } = useReport360Data(
+    activeTab === 'advanced' ? selectedMonth : '',
+    activeTab === 'advanced' ? selectedYear : ''
+  );
   
   const handleRetry = useCallback(() => {
     setRetryCount(prev => prev + 1);
@@ -60,6 +68,10 @@ const Reports = () => {
   const handle360Retry = useCallback(() => {
     retry360 && retry360();
   }, [retry360]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
 
   const renderContent = () => {
     if (loading) {
@@ -98,7 +110,7 @@ const Reports = () => {
           </Alert>
         )}
 
-        <Tabs defaultValue="basic" className="mt-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-8">
           <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-muted border border-club-100 dark:border-club-700 shadow-md">
             <TabsTrigger 
               value="basic" 
@@ -153,20 +165,22 @@ const Reports = () => {
                 isRetrying={isRetrying360}
               />
             ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Report360 
-                  memberStatusData={memberStatusData}
-                  paymentStatusData={paymentStatusData}
-                  expensesData={expensesData}
-                  financialSummary={financialSummary}
-                  selectedMonth={selectedMonth}
-                  formatMonthYear={formatMonthYear}
-                />
-              </motion.div>
+              <Suspense fallback={<div className="py-8 text-center">Carregando dados do relatório...</div>}>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Report360 
+                    memberStatusData={memberStatusData}
+                    paymentStatusData={paymentStatusData}
+                    expensesData={expensesData}
+                    financialSummary={financialSummary}
+                    selectedMonth={selectedMonth}
+                    formatMonthYear={formatMonthYear}
+                  />
+                </motion.div>
+              </Suspense>
             )}
           </TabsContent>
         </Tabs>
