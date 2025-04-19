@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useMemberStatusData } from "./useMemberStatusData";
 import { usePaymentStatusData } from "./usePaymentStatusData";
 import { useExpensesData } from "./useExpensesData";
@@ -42,7 +42,7 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
   } = useFinancialSummary(selectedMonth, selectedYear);
 
   // Monitor if any hook is retrying
-  useState(() => {
+  useEffect(() => {
     setIsRetrying(
       isMemberRetrying || 
       isPaymentRetrying || 
@@ -52,7 +52,7 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
   }, [isMemberRetrying, isPaymentRetrying, isExpensesRetrying, isFinancialRetrying]);
 
   // Combine all errors with improved prioritization
-  useState(() => {
+  useEffect(() => {
     const errors = [memberError, paymentError, expensesError, financialError].filter(Boolean);
     
     if (errors.length > 0) {

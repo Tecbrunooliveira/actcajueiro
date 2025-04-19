@@ -4,7 +4,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 
 // Importar hooks e componentes
 import { useReportsData } from "@/hooks/useReportsData";
-import { useReport360Data } from "@/hooks/useReport360Data";
+import { useReport360Data } from "@/hooks/report360/useReport360Data";
 import { PeriodSelector } from "@/components/reports/PeriodSelector";
 import { DashboardStats } from "@/components/reports/DashboardStats";
 import { MembersTabView } from "@/components/reports/MembersTabView";
