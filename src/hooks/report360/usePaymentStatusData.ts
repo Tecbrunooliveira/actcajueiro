@@ -3,17 +3,42 @@ import { useState, useEffect, useCallback } from "react";
 import { paymentService } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
 
-// Create a more robust cache with longer retention
+// Create a more robust cache with longer retention and offline support
 const dataCache = new Map<string, {
   data: { name: string; value: number; color: string }[];
   timestamp: number;
   stale: boolean; // Track if data is stale but usable
 }>();
 
-// Increase cache expiration to 24 hours to significantly reduce API calls
-const CACHE_EXPIRATION = 24 * 60 * 60 * 1000;
-// Use stale data for up to 7 days if fresh fetch fails
-const STALE_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
+// Extend cache expiration to 48 hours for much better offline support
+const CACHE_EXPIRATION = 48 * 60 * 60 * 1000;
+// Use stale data for up to 14 days if fresh fetch fails
+const STALE_EXPIRATION = 14 * 24 * 60 * 60 * 1000;
+
+// Try to persist cache between page reloads
+try {
+  // Attempt to load cached data from localStorage
+  const savedCache = localStorage.getItem('payment-status-cache');
+  if (savedCache) {
+    const parsedCache = JSON.parse(savedCache);
+    Object.entries(parsedCache).forEach(([key, value]) => {
+      dataCache.set(key, value as any);
+    });
+    console.log('Loaded payment status cache from localStorage');
+  }
+} catch (error) {
+  console.error('Failed to load cache from localStorage:', error);
+}
+
+// Function to save cache to localStorage
+const persistCache = () => {
+  try {
+    const cacheObject = Object.fromEntries(dataCache.entries());
+    localStorage.setItem('payment-status-cache', JSON.stringify(cacheObject));
+  } catch (error) {
+    console.error('Failed to save cache to localStorage:', error);
+  }
+};
 
 export const usePaymentStatusData = (selectedMonth: string, selectedYear: string) => {
   const [paymentStatusData, setPaymentStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -23,7 +48,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
   const { toast } = useToast();
   
   // Create cache key based on month and year
-  const cacheKey = `payment-status-${selectedMonth}-${selectedYear}`;
+  const cacheKey = `payment-status-${selectedMonth || 'none'}-${selectedYear || 'none'}`;
   
   const fetchPaymentStatusData = useCallback(async (ignoreCache = false) => {
     // Early exit if no month/year selected - use default data
@@ -53,11 +78,15 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       if (cachedData && (now - cachedData.timestamp < STALE_EXPIRATION)) {
         console.log(`Using stale cached payment status data for ${selectedMonth}-${selectedYear}`);
         setPaymentStatusData(cachedData.data);
+        
         // Mark as stale
         dataCache.set(cacheKey, {
           ...cachedData,
           stale: true
         });
+        
+        // Persist the updated cache
+        persistCache();
       } else if (!cachedData) {
         // Set default data if no cache exists while loading
         setPaymentStatusData([
@@ -76,17 +105,63 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         });
       }
       
-      // Increase timeout to 15 seconds for more reliable loading
+      // Increase timeout to 20 seconds for more reliable loading
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
       
       try {
-        // Check for valid year input to prevent NaN errors
+        // Enhanced validation for year input
         const yearValue = parseInt(selectedYear);
-        if (isNaN(yearValue)) {
+        if (isNaN(yearValue) || yearValue < 2000 || yearValue > 2100) {
           throw new Error("Ano inválido selecionado");
         }
         
+        // First try the new optimized method with retry logic
+        const allPayments = await paymentService.paymentQueryService.getAllPaymentsWithRetry();
+        
+        // If we got payments, calculate the metrics ourselves instead of making another request
+        if (allPayments && allPayments.length > 0) {
+          // Filter payments for the selected month/year
+          const filteredPayments = allPayments.filter(
+            payment => payment.month === selectedMonth && payment.year === yearValue
+          );
+          
+          // Get unique member IDs
+          const memberIds = [...new Set(filteredPayments.map(p => p.memberId))];
+          
+          // Count paid vs unpaid members
+          const paidMemberIds = new Set(
+            filteredPayments
+              .filter(p => p.isPaid)
+              .map(p => p.memberId)
+          );
+          
+          const paidMembers = paidMemberIds.size;
+          const unpaidMembers = memberIds.length - paidMembers;
+          
+          clearTimeout(timeoutId);
+          
+          const data = [
+            { name: 'Em Dia', value: paidMembers, color: '#10b981' },
+            { name: 'Inadimplentes', value: unpaidMembers, color: '#ef4444' }
+          ];
+          
+          // Store data in cache
+          dataCache.set(cacheKey, {
+            data,
+            timestamp: Date.now(),
+            stale: false
+          });
+          
+          // Persist the cache
+          persistCache();
+          
+          setPaymentStatusData(data);
+          setIsRetrying(false);
+          return;
+        }
+        
+        // Fallback to the original method if the optimized approach didn't return data
         // Use the abort controller for the fetch operation
         const monthlyRecord = await paymentService.getMonthlyRecord(
           selectedMonth,
@@ -116,6 +191,9 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
           stale: false
         });
         
+        // Persist the cache
+        persistCache();
+        
         setPaymentStatusData(data);
       } catch (error) {
         clearTimeout(timeoutId);
@@ -132,7 +210,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       // Set more specific error messages
       if (error instanceof Error) {
         if (error.message.includes("tempo limite") || error.message.includes("timeout")) {
-          setError("Erro de tempo limite ao carregar dados de pagamento.");
+          setError("Erro de tempo limite ao carregar dados de pagamento. Usando dados em cache quando disponíveis.");
         } else if (error.message.includes("statement timeout")) {
           setError("O servidor está sobrecarregado. Tente novamente mais tarde.");
         } else if (error.message.includes("invalid input")) {
