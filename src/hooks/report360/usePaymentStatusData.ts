@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { paymentService } from "@/services";
+import { paymentService, paymentQueryService } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
 
 // Create a more robust cache with longer retention and offline support
@@ -117,7 +117,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         }
         
         // First try the new optimized method with retry logic
-        const allPayments = await paymentService.paymentQueryService.getAllPaymentsWithRetry();
+        const allPayments = await paymentQueryService.getAllPaymentsWithRetry();
         
         // If we got payments, calculate the metrics ourselves instead of making another request
         if (allPayments && allPayments.length > 0) {
@@ -285,3 +285,4 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
     retry
   };
 };
+
