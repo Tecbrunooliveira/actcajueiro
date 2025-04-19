@@ -3,14 +3,17 @@ import { useState, useEffect, useCallback } from "react";
 import { paymentService } from "@/services";
 import { useToast } from "@/components/ui/use-toast";
 
-// Improve cache with a longer retention time
+// Create a more robust cache with longer retention
 const dataCache = new Map<string, {
   data: { name: string; value: number; color: string }[];
   timestamp: number;
+  stale: boolean; // Track if data is stale but usable
 }>();
 
-// Increase cache expiration to 2 hours
-const CACHE_EXPIRATION = 2 * 60 * 60 * 1000;
+// Increase cache expiration to 4 hours to reduce API calls
+const CACHE_EXPIRATION = 4 * 60 * 60 * 1000;
+// Use stale data for up to 24 hours if fresh fetch fails
+const STALE_EXPIRATION = 24 * 60 * 60 * 1000;
 
 export const usePaymentStatusData = (selectedMonth: string, selectedYear: string) => {
   const [paymentStatusData, setPaymentStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -23,7 +26,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
   const cacheKey = `payment-status-${selectedMonth}-${selectedYear}`;
   
   const fetchPaymentStatusData = useCallback(async (ignoreCache = false) => {
-    // If we don't have month or year selected, return default data
+    // Early exit if no month/year selected
     if (!selectedMonth || !selectedYear) {
       setPaymentStatusData([
         { name: 'Em Dia', value: 0, color: '#10b981' },
@@ -35,20 +38,31 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
     try {
       setError(null);
       
-      // First check if we have valid cached data
+      // Check if we have valid cached data
       const cachedData = dataCache.get(cacheKey);
       const now = Date.now();
       
+      // Use fresh cache if available and not explicitly bypassing
       if (!ignoreCache && cachedData && (now - cachedData.timestamp < CACHE_EXPIRATION)) {
-        console.log("Using cached data for payment status");
+        console.log("Using fresh cached payment status data");
         setPaymentStatusData(cachedData.data);
         return;
+      }
+      
+      // Use stale cache data while fetching fresh data in background
+      if (cachedData && (now - cachedData.timestamp < STALE_EXPIRATION)) {
+        console.log("Using stale cached payment status data while refreshing");
+        setPaymentStatusData(cachedData.data);
+        // Mark as stale
+        dataCache.set(cacheKey, {
+          ...cachedData,
+          stale: true
+        });
       }
       
       setFetchAttempted(true);
       setIsRetrying(true);
       
-      // Show toast when retrying
       if (ignoreCache) {
         toast({
           title: "Tentando novamente",
@@ -56,19 +70,18 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         });
       }
       
-      // Reduce timeout to 3 seconds to improve user experience
-      const fetchPromise = paymentService.getMonthlyRecord(
-        selectedMonth,
-        parseInt(selectedYear)
-      );
-      
-      const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar dados de pagamento.")), 3000)
-      );
+      // Increase timeout to 10 seconds for more reliable loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       
       try {
-        // Race the fetch against a timeout
-        const monthlyRecord = await Promise.race([fetchPromise, timeoutPromise]);
+        // Use the abort controller for the fetch operation
+        const monthlyRecord = await paymentService.getMonthlyRecord(
+          selectedMonth,
+          parseInt(selectedYear)
+        );
+        
+        clearTimeout(timeoutId);
         
         // Add fallback for invalid response
         if (!monthlyRecord || typeof monthlyRecord !== 'object') {
@@ -87,12 +100,18 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         // Store data in cache
         dataCache.set(cacheKey, {
           data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          stale: false
         });
         
         setPaymentStatusData(data);
       } catch (error) {
+        clearTimeout(timeoutId);
+        
         // Handle timeout or other errors
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          throw new Error("Erro de tempo limite ao carregar dados de pagamento.");
+        }
         throw error;
       }
     } catch (error) {
@@ -102,6 +121,8 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       if (error instanceof Error) {
         if (error.message.includes("tempo limite") || error.message.includes("timeout")) {
           setError("Erro de tempo limite ao carregar dados de pagamento.");
+        } else if (error.message.includes("statement timeout")) {
+          setError("O servidor está sobrecarregado. Tente novamente mais tarde.");
         } else {
           setError(error.message);
         }
@@ -109,15 +130,16 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         setError("Erro ao carregar dados de pagamento");
       }
       
-      // Use cached data if available, even if expired
+      // Use ANY cached data if available, even if stale
       const cachedData = dataCache.get(cacheKey);
       if (cachedData) {
-        console.log("Using expired cached data as fallback");
+        console.log("Using cached data as fallback due to error");
         setPaymentStatusData(cachedData.data);
         
         toast({
           title: "Usando dados em cache",
           description: "Mostrando os últimos dados disponíveis devido a problemas de conexão.",
+          duration: 5000,
         });
       } else {
         // Set default data for a better fallback experience
@@ -137,23 +159,22 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
   }, [fetchPaymentStatusData]);
 
   useEffect(() => {
-    // Cancel previous request if it exists
-    const controller = new AbortController();
-    
-    // Only fetch if we have month and year selected
-    if (selectedMonth && selectedYear) {
-      fetchPaymentStatusData();
-    } else {
-      // Set default data if we don't have selection
+    // Skip fetch if no selection
+    if (!selectedMonth || !selectedYear) {
       setPaymentStatusData([
         { name: 'Em Dia', value: 0, color: '#10b981' },
         { name: 'Inadimplentes', value: 0, color: '#ef4444' }
       ]);
+      return;
     }
     
+    // Add debouncing to avoid multiple rapid API calls
+    const debounceTimer = setTimeout(() => {
+      fetchPaymentStatusData();
+    }, 200);
+    
     return () => {
-      // Clean up request on unmount
-      controller.abort();
+      clearTimeout(debounceTimer);
     };
   }, [fetchPaymentStatusData, selectedMonth, selectedYear]);
 

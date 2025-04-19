@@ -6,12 +6,13 @@ import { useExpensesData } from "./report360/useExpensesData";
 import { useFinancialSummary } from "./report360/useFinancialSummary";
 import { useToast } from "@/components/ui/use-toast";
 
-// Persistent cache between page renderings
+// Robust persistent cache between page loads
 const globalCachedData = {
   memberStatus: null,
   paymentStatus: null,
   expenses: null,
-  financialSummary: null
+  financialSummary: null,
+  lastUpdated: Date.now()
 };
 
 export const useReport360Data = (selectedMonth: string, selectedYear: string) => {
@@ -22,7 +23,7 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
   const [isRetrying, setIsRetrying] = useState(false);
   
   // Only load data if tab is active to improve performance
-  const isActiveTab = selectedMonth && selectedYear;
+  const isActiveTab = !!(selectedMonth && selectedYear);
   
   // Use smaller hooks with optimized loading
   const { 
@@ -55,10 +56,34 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
 
   // Update global cache when data is available
   useEffect(() => {
-    if (memberStatusData.length > 0) globalCachedData.memberStatus = memberStatusData;
-    if (paymentStatusData.length > 0) globalCachedData.paymentStatus = paymentStatusData;
-    if (expensesData.length > 0) globalCachedData.expenses = expensesData;
-    if (financialSummary.totalIncome !== undefined) globalCachedData.financialSummary = financialSummary;
+    // Only update cache if we have valid data
+    let cacheUpdated = false;
+    
+    if (memberStatusData.length > 0) {
+      globalCachedData.memberStatus = memberStatusData;
+      cacheUpdated = true;
+    }
+    
+    if (paymentStatusData.length > 0) {
+      globalCachedData.paymentStatus = paymentStatusData;
+      cacheUpdated = true;
+    }
+    
+    if (expensesData.length > 0) {
+      globalCachedData.expenses = expensesData;
+      cacheUpdated = true;
+    }
+    
+    if (financialSummary.totalIncome !== undefined) {
+      globalCachedData.financialSummary = financialSummary;
+      cacheUpdated = true;
+    }
+    
+    // Update last updated timestamp if any data was cached
+    if (cacheUpdated) {
+      globalCachedData.lastUpdated = Date.now();
+    }
+    
   }, [memberStatusData, paymentStatusData, expensesData, financialSummary]);
 
   // Monitor if any hook is retrying
@@ -71,7 +96,7 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
     );
   }, [isMemberRetrying, isPaymentRetrying, isExpensesRetrying, isFinancialRetrying]);
 
-  // Combine all errors
+  // Combine all errors with improved prioritization
   useEffect(() => {
     // If not on active tab, clear errors
     if (!isActiveTab) {
@@ -82,23 +107,38 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
     const errors = [memberError, paymentError, expensesError, financialError].filter(Boolean);
     
     if (errors.length > 0) {
-      // Prioritize showing timeout errors
+      // First prioritize DB errors
+      const dbError = errors.find(err => 
+        err?.toLowerCase().includes("database") || 
+        err?.toLowerCase().includes("syntax") ||
+        err?.toLowerCase().includes("statement")
+      );
+      
+      if (dbError) {
+        setError(dbError);
+        return;
+      }
+      
+      // Then prioritize timeout errors
       const timeoutError = errors.find(err => 
         err?.toLowerCase().includes("tempo limite") || 
-        err?.toLowerCase().includes("timeout")
+        err?.toLowerCase().includes("timeout") ||
+        err?.toLowerCase().includes("demorando")
       );
       
       if (timeoutError) {
         setError("Tempo limite excedido. O servidor está demorando para responder.");
-      } else {
-        setError(errors[0] || "Erro ao carregar dados do relatório 360°");
+        return;
       }
+      
+      // Finally, use the first error
+      setError(errors[0] || "Erro ao carregar dados do relatório 360°");
     } else {
       setError(null);
     }
   }, [memberError, paymentError, expensesError, financialError, isActiveTab]);
 
-  // Improve loading state management
+  // Improve loading state management with progressive loading
   useEffect(() => {
     // If not on active tab, set as not loading
     if (!isActiveTab) {
@@ -110,36 +150,45 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
       // Use cached data if available while waiting for new data
       if (globalCachedData.memberStatus && globalCachedData.paymentStatus && 
           globalCachedData.expenses && globalCachedData.financialSummary) {
-        // If we have cached data, show immediately and continue loading in background
+        // Show cached data immediately while loading in background
         setLoading(false);
       }
       
-      // Update to handle partial data loading
+      // Check if we have partial data available to show
       const hasPartialData = 
         (memberStatusData.length > 0 || expensesData.length > 0 || 
          paymentStatusData.length > 0 || financialSummary.totalIncome !== undefined);
       
-      // Set loading to false after timeout or when we have some data to show
+      // Stop loading if we have partial data or errors
       if (hasPartialData) {
         setLoading(false);
       } else if (!hasPartialData && (memberError || paymentError || expensesError || financialError)) {
-        // If we have errors and no data, stop loading after a short delay
+        // Show error state after a short delay
         const timer = setTimeout(() => {
           setLoading(false);
-        }, 200); // Reduced from 300ms
+        }, 200);
         
         return () => clearTimeout(timer);
       }
       
-      // Add safety timeout to avoid infinite loading state
+      // Add safety timeout to avoid infinite loading state - reduced to 7 seconds
       const timer = setTimeout(() => {
         if (loading) {
           setLoading(false);
-          if (!error) {
+          
+          // If we have cached data but no new data, show a toast
+          if ((globalCachedData.memberStatus || globalCachedData.paymentStatus || 
+               globalCachedData.expenses || globalCachedData.financialSummary) && !error) {
+            toast({
+              title: "Usando dados em cache",
+              description: "Mostrando dados anteriores enquanto tentamos obter novos dados.",
+              duration: 5000,
+            });
+          } else if (!error) {
             setError("Tempo limite excedido ao carregar os dados. Tente novamente.");
           }
         }
-      }, 5000); // Reduced from 7 seconds to 5 seconds
+      }, 7000);
       
       return () => clearTimeout(timer);
       
@@ -149,9 +198,9 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
       setLoading(false);
     }
   }, [memberStatusData, paymentStatusData, expensesData, financialSummary, 
-      memberError, paymentError, expensesError, financialError, loading, error, isActiveTab]);
+      memberError, paymentError, expensesError, financialError, loading, error, isActiveTab, toast]);
 
-  // Retry function with better performance
+  // Enhanced retry function with better error handling and parallel requests
   const retry = useCallback(() => {
     if (!isActiveTab) return;
     
@@ -163,26 +212,37 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
     toast({
       title: "Recarregando dados",
       description: "Tentando buscar os dados novamente...",
+      duration: 3000,
     });
     
-    // Try to fetch all data again in parallel
-    Promise.all([
-      retryMemberData(),
-      retryPaymentData(),
-      retryExpensesData(),
-      retryFinancialData()
-    ]).catch(e => {
-      console.error("Error during retry:", e);
+    // Try to fetch all data again in parallel with individual error handling
+    Promise.allSettled([
+      retryMemberData().catch(e => console.error("Member retry error:", e)),
+      retryPaymentData().catch(e => console.error("Payment retry error:", e)),
+      retryExpensesData().catch(e => console.error("Expenses retry error:", e)),
+      retryFinancialData().catch(e => console.error("Financial retry error:", e))
+    ]).then(results => {
+      // Check if any requests succeeded
+      const anySuccess = results.some(r => r.status === 'fulfilled');
+      
+      if (!anySuccess) {
+        toast({
+          title: "Falha ao recuperar dados",
+          description: "Não foi possível obter dados atualizados. Usando dados em cache quando disponíveis.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
     }).finally(() => {
       setIsRetrying(false);
     });
     
-    // Add shorter safety timeout for retry operation
+    // Safety timeout for retry operation - 8 seconds
     setTimeout(() => {
       if (loading) {
         setLoading(false);
       }
-    }, 5000); // Reduced to 5 seconds
+    }, 8000);
   }, [retryMemberData, retryPaymentData, retryExpensesData, retryFinancialData, 
       toast, loading, isActiveTab]);
 

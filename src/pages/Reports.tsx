@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { BarChart3, FileBarChart, AlertCircle, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 // Carregar o componente do relatório de forma preguiçosa para melhorar o tempo de carregamento inicial
 const Report360 = lazy(() => import("@/components/reports/Report360").then(module => ({
@@ -23,6 +24,7 @@ const Report360 = lazy(() => import("@/components/reports/Report360").then(modul
 const Reports = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [activeTab, setActiveTab] = useState('basic');
+  const { toast } = useToast();
   
   const {
     selectedMonth,
@@ -45,7 +47,7 @@ const Reports = () => {
     retry
   } = useReportsData(retryCount);
 
-  // Carregar dados 360° apenas se a aba avançada estiver ativa
+  // Carregar dados 360° apenas se a aba avançada estiver ativa para melhorar performance
   const {
     loading: loading360,
     isRetrying: isRetrying360,
@@ -62,12 +64,22 @@ const Reports = () => {
   
   const handleRetry = useCallback(() => {
     setRetryCount(prev => prev + 1);
+    toast({
+      title: "Tentando novamente",
+      description: "Tentando carregar os dados de relatórios novamente...",
+      duration: 3000,
+    });
     retry && retry();
-  }, [retry]);
+  }, [retry, toast]);
   
   const handle360Retry = useCallback(() => {
+    toast({
+      title: "Tentando novamente",
+      description: "Tentando carregar o relatório 360° novamente...",
+      duration: 3000,
+    });
     retry360 && retry360();
-  }, [retry360]);
+  }, [retry360, toast]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);

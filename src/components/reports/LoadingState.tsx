@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BarChart3, AlertCircle, RefreshCw, ServerCrash, Clock, Wifi } from "lucide-react";
+import { BarChart3, AlertCircle, RefreshCw, ServerCrash, Clock, Wifi, Database } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +27,10 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
   const isConnectionError = error?.toLowerCase().includes("conexão") ||
                            error?.toLowerCase().includes("network") ||
                            error?.toLowerCase().includes("connection");
+                           
+  const isDatabaseError = error?.toLowerCase().includes("database") ||
+                          error?.toLowerCase().includes("banco de dados") ||
+                          error?.toLowerCase().includes("syntax");
 
   return (
     <div className="flex items-center justify-center h-full py-16">
@@ -95,7 +99,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                     ? "bg-blue-100 dark:bg-blue-900/30"
                     : isServerError
                       ? "bg-yellow-100 dark:bg-yellow-900/30"
-                      : "bg-red-100 dark:bg-red-900/30"
+                      : isDatabaseError
+                        ? "bg-purple-100 dark:bg-purple-900/30"
+                        : "bg-red-100 dark:bg-red-900/30"
               }`}
             >
               {isTimeoutError ? (
@@ -104,6 +110,8 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                 <Wifi className="h-8 w-8 text-blue-500 dark:text-blue-400" />
               ) : isServerError ? (
                 <ServerCrash className="h-8 w-8 text-yellow-500 dark:text-yellow-400" />
+              ) : isDatabaseError ? (
+                <Database className="h-8 w-8 text-purple-500 dark:text-purple-400" />
               ) : (
                 <AlertCircle className="h-8 w-8 text-red-500 dark:text-red-400" />
               )}
@@ -117,16 +125,20 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
                     ? "Problema de conexão"
                     : isServerError
                       ? "Servidor sobrecarregado"
-                      : "Erro ao carregar dados"}
+                      : isDatabaseError
+                        ? "Erro no banco de dados"
+                        : "Erro ao carregar dados"}
               </p>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {isTimeoutError 
-                  ? "O servidor está demorando para responder. Tente novamente em alguns instantes ou utilize os dados em cache." 
+                  ? "O servidor está demorando para responder. Utilizando dados em cache quando disponíveis. Tente atualizar a página ou voltar mais tarde." 
                   : isConnectionError
                     ? "Verifique sua conexão com a internet e tente novamente."
                     : isServerError
-                      ? "O servidor está sobrecarregado. Os dados serão carregados assim que possível."
-                      : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
+                      ? "O servidor está sobrecarregado. Os dados serão carregados quando o servidor estiver disponível."
+                      : isDatabaseError
+                        ? "Erro ao consultar o banco de dados. Tente novamente ou contate o suporte."
+                        : error || "Ocorreu um erro ao carregar os relatórios. Tente novamente em alguns instantes."}
               </p>
             </div>
             
