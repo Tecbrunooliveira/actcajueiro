@@ -50,7 +50,6 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
     handleRetry,
     activeTab,
     handleTabChange,
-    // Extract all the props needed for ReportTabs
     monthlyRecord,
     allMembers,
     unpaidMembers,
