@@ -1,6 +1,6 @@
 
 import React from "react";
-import { CalendarRange, PlusCircle, TrendingUp } from "lucide-react";
+import { CalendarRange, PlusCircle, SearchCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ interface PeriodSelectorProps {
   yearOptions: string[];
   onGeneratePendingPayments: () => void;
   generatingPayments: boolean;
+  onSearch: () => void;
+  isSearching: boolean;
 }
 
 export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
@@ -33,6 +35,8 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   yearOptions,
   onGeneratePendingPayments,
   generatingPayments,
+  onSearch,
+  isSearching,
 }) => {
   return (
     <motion.div
@@ -46,7 +50,7 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
             <CalendarRange className="h-5 w-5 mr-2" />
             <h3 className="font-medium text-lg">Período de Análise</h3>
           </div>
-          <p className="text-white/80 text-sm mt-1">Selecione o período para visualizar os relatórios</p>
+          <p className="text-white/80 text-sm mt-1">Selecione o período e clique em buscar para visualizar os relatórios</p>
         </div>
         <CardContent className="p-6 space-y-5">
           <div className="grid grid-cols-2 gap-5">
@@ -89,23 +93,44 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
             </div>
           </div>
           
-          <Button
-            onClick={onGeneratePendingPayments}
-            disabled={generatingPayments}
-            className="w-full gradient-bg hover:bg-gradient-to-r hover:from-club-600 hover:via-club-500 hover:to-club-400 rounded-lg font-medium p-4 h-auto shadow-md hover:shadow-lg transition-all"
-          >
-            {generatingPayments ? (
-              <>
-                <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Gerando pagamentos...
-              </>
-            ) : (
-              <>
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Gerar Pagamentos Pendentes
-              </>
-            )}
-          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={onSearch}
+              disabled={isSearching}
+              className="w-full gradient-bg hover:bg-gradient-to-r hover:from-club-600 hover:via-club-500 hover:to-club-400 rounded-lg font-medium p-4 h-auto shadow-md hover:shadow-lg transition-all"
+            >
+              {isSearching ? (
+                <>
+                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                  Buscando...
+                </>
+              ) : (
+                <>
+                  <SearchCheck className="mr-2 h-5 w-5" />
+                  Buscar Dados
+                </>
+              )}
+            </Button>
+            
+            <Button
+              onClick={onGeneratePendingPayments}
+              disabled={generatingPayments}
+              variant="outline"
+              className="w-full rounded-lg font-medium p-4 h-auto shadow-md hover:shadow-lg transition-all"
+            >
+              {generatingPayments ? (
+                <>
+                  <div className="animate-spin mr-2 h-4 w-4 border-2 border-club-600 border-t-transparent rounded-full" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Gerar Pendentes
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </motion.div>
