@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Payment } from "@/types";
 import { paymentService } from "@/services";
@@ -14,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 export const useReportsData = (retryTrigger = 0) => {
   const [allPayments, setAllPayments] = useState<Payment[]>([]);
   const [monthlyPayments, setMonthlyPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -88,9 +87,11 @@ export const useReportsData = (retryTrigger = 0) => {
     retry: retryMembers
   } = useMemberPaymentStatus(selectedMonth, allPayments);
 
-  // Handle payments data loading with optimized approach
+  // Remove automatic data loading on period change
   useEffect(() => {
-    refreshData();
+    if (retryTrigger > 0) {
+      refreshData();
+    }
   }, [refreshData, retryTrigger]);
 
   // Combine errors
@@ -120,27 +121,20 @@ export const useReportsData = (retryTrigger = 0) => {
   }, [refreshData, retryMonthlyRecord, retryMembers]);
 
   return {
-    // Period selection
     selectedMonth,
     selectedYear,
     monthOptions,
     yearOptions,
     handleMonthChange,
     handleYearChange,
-    
-    // Data
     monthlyRecord,
     allMembers,
     unpaidMembers,
     paidMembers,
-    
-    // State
     loading: isLoading,
     dataError,
     generatingPayments,
     generatingPdf,
-    
-    // Actions
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
