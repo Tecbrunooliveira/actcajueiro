@@ -10,10 +10,10 @@ const dataCache = new Map<string, {
   stale: boolean; // Track if data is stale but usable
 }>();
 
-// Increase cache expiration to 4 hours to reduce API calls
-const CACHE_EXPIRATION = 4 * 60 * 60 * 1000;
-// Use stale data for up to 24 hours if fresh fetch fails
-const STALE_EXPIRATION = 24 * 60 * 60 * 1000;
+// Increase cache expiration to 24 hours to significantly reduce API calls
+const CACHE_EXPIRATION = 24 * 60 * 60 * 1000;
+// Use stale data for up to 7 days if fresh fetch fails
+const STALE_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
 export const usePaymentStatusData = (selectedMonth: string, selectedYear: string) => {
   const [paymentStatusData, setPaymentStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
@@ -26,7 +26,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
   const cacheKey = `payment-status-${selectedMonth}-${selectedYear}`;
   
   const fetchPaymentStatusData = useCallback(async (ignoreCache = false) => {
-    // Early exit if no month/year selected
+    // Early exit if no month/year selected - use default data
     if (!selectedMonth || !selectedYear) {
       setPaymentStatusData([
         { name: 'Em Dia', value: 0, color: '#10b981' },
@@ -44,20 +44,26 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       
       // Use fresh cache if available and not explicitly bypassing
       if (!ignoreCache && cachedData && (now - cachedData.timestamp < CACHE_EXPIRATION)) {
-        console.log("Using fresh cached payment status data");
+        console.log(`Using fresh cached payment status data for ${selectedMonth}-${selectedYear}`);
         setPaymentStatusData(cachedData.data);
         return;
       }
       
       // Use stale cache data while fetching fresh data in background
       if (cachedData && (now - cachedData.timestamp < STALE_EXPIRATION)) {
-        console.log("Using stale cached payment status data while refreshing");
+        console.log(`Using stale cached payment status data for ${selectedMonth}-${selectedYear}`);
         setPaymentStatusData(cachedData.data);
         // Mark as stale
         dataCache.set(cacheKey, {
           ...cachedData,
           stale: true
         });
+      } else if (!cachedData) {
+        // Set default data if no cache exists while loading
+        setPaymentStatusData([
+          { name: 'Em Dia', value: 0, color: '#10b981' },
+          { name: 'Inadimplentes', value: 0, color: '#ef4444' }
+        ]);
       }
       
       setFetchAttempted(true);
@@ -70,15 +76,21 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         });
       }
       
-      // Increase timeout to 10 seconds for more reliable loading
+      // Increase timeout to 15 seconds for more reliable loading
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       
       try {
+        // Check for valid year input to prevent NaN errors
+        const yearValue = parseInt(selectedYear);
+        if (isNaN(yearValue)) {
+          throw new Error("Ano inválido selecionado");
+        }
+        
         // Use the abort controller for the fetch operation
         const monthlyRecord = await paymentService.getMonthlyRecord(
           selectedMonth,
-          parseInt(selectedYear)
+          yearValue
         );
         
         clearTimeout(timeoutId);
@@ -123,6 +135,8 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
           setError("Erro de tempo limite ao carregar dados de pagamento.");
         } else if (error.message.includes("statement timeout")) {
           setError("O servidor está sobrecarregado. Tente novamente mais tarde.");
+        } else if (error.message.includes("invalid input")) {
+          setError("Erro de formato de dados. Verifique os valores selecionados.");
         } else {
           setError(error.message);
         }
@@ -168,10 +182,18 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       return;
     }
     
+    // Check for valid year input
+    const yearValue = parseInt(selectedYear);
+    if (isNaN(yearValue)) {
+      console.error("Invalid year value:", selectedYear);
+      setError("Ano inválido selecionado");
+      return;
+    }
+    
     // Add debouncing to avoid multiple rapid API calls
     const debounceTimer = setTimeout(() => {
       fetchPaymentStatusData();
-    }, 200);
+    }, 300);
     
     return () => {
       clearTimeout(debounceTimer);
