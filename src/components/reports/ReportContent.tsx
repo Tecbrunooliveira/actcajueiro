@@ -48,7 +48,24 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
     handleGeneratePendingPayments,
     generatingPayments,
     handleRetry,
-    ...tabsProps
+    activeTab,
+    handleTabChange,
+    // Extract all the props needed for ReportTabs
+    monthlyRecord,
+    allMembers,
+    unpaidMembers,
+    paidMembers,
+    handleGeneratePdfReport,
+    generatingPdf,
+    loading360,
+    isRetrying360,
+    error360,
+    onRetry360,
+    memberStatusData,
+    paymentStatusData,
+    expensesData,
+    financialSummary,
+    formatMonthYear
   } = props;
 
   return (
@@ -68,7 +85,26 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
         <ErrorAlert error={dataError} onRetry={handleRetry} />
       )}
 
-      <ReportTabs {...tabsProps} />
+      <ReportTabs 
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        selectedMonth={selectedMonth}
+        monthlyRecord={monthlyRecord}
+        allMembers={allMembers}
+        unpaidMembers={unpaidMembers}
+        paidMembers={paidMembers}
+        handleGeneratePdfReport={handleGeneratePdfReport}
+        generatingPdf={generatingPdf}
+        loading360={loading360}
+        isRetrying360={isRetrying360}
+        error360={error360}
+        onRetry360={onRetry360}
+        memberStatusData={memberStatusData}
+        paymentStatusData={paymentStatusData}
+        expensesData={expensesData}
+        financialSummary={financialSummary}
+        formatMonthYear={formatMonthYear}
+      />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { Report360View } from "./Report360View";
 interface ReportTabsProps {
   activeTab: string;
   onTabChange: (value: string) => void;
+  selectedMonth: string;
   monthlyRecord: any;
   allMembers: any[];
   unpaidMembers: any[];
@@ -22,13 +23,13 @@ interface ReportTabsProps {
   paymentStatusData: any;
   expensesData: any;
   financialSummary: any;
-  selectedMonth: string;
   formatMonthYear: (month: string) => string;
 }
 
 export const ReportTabs: React.FC<ReportTabsProps> = ({
   activeTab,
   onTabChange,
+  selectedMonth,
   monthlyRecord,
   allMembers,
   unpaidMembers,
@@ -43,7 +44,6 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
   paymentStatusData,
   expensesData,
   financialSummary,
-  selectedMonth,
   formatMonthYear
 }) => {
   return (
