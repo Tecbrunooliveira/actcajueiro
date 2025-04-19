@@ -1,21 +1,13 @@
 
-import React, { Suspense } from "react";
+import React from "react";
 import { BarChart3, FileBarChart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LoadingState } from "./LoadingState";
-import { motion } from "framer-motion";
-import { DashboardStats } from "./DashboardStats";
-import { MembersTabView } from "./MembersTabView";
-
-// Lazy load Report360
-const Report360 = React.lazy(() => import("./Report360"));
+import { BasicReport } from "./BasicReport";
+import { Report360View } from "./Report360View";
 
 interface ReportTabsProps {
   activeTab: string;
   onTabChange: (value: string) => void;
-  loading: boolean;
-  dataError: string | null;
-  onRetry: () => void;
   monthlyRecord: any;
   allMembers: any[];
   unpaidMembers: any[];
@@ -37,9 +29,6 @@ interface ReportTabsProps {
 export const ReportTabs: React.FC<ReportTabsProps> = ({
   activeTab,
   onTabChange,
-  loading,
-  dataError,
-  onRetry,
   monthlyRecord,
   allMembers,
   unpaidMembers,
@@ -76,65 +65,32 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
         </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="basic" className="space-y-6 pt-6 animate-in fade-in-50 duration-300">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <DashboardStats 
-            monthlyRecord={monthlyRecord}
-            allMembers={allMembers.length}
-            unpaidMembersCount={unpaidMembers.length}
-            selectedMonth={selectedMonth}
-            formatMonthYear={formatMonthYear}
-          />
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <MembersTabView 
-            paidMembers={paidMembers}
-            unpaidMembers={unpaidMembers}
-            handleGeneratePdfReport={handleGeneratePdfReport}
-            generatingPdf={generatingPdf}
-          />
-        </motion.div>
+      <TabsContent value="basic">
+        <BasicReport 
+          monthlyRecord={monthlyRecord}
+          allMembers={allMembers}
+          unpaidMembers={unpaidMembers}
+          paidMembers={paidMembers}
+          handleGeneratePdfReport={handleGeneratePdfReport}
+          generatingPdf={generatingPdf}
+          selectedMonth={selectedMonth}
+          formatMonthYear={formatMonthYear}
+        />
       </TabsContent>
       
-      <TabsContent value="advanced" className="pt-6 animate-in fade-in-50 duration-300">
-        {loading360 ? (
-          <LoadingState 
-            error={error360} 
-            onRetry={onRetry360} 
-            isRetrying={isRetrying360}
-          />
-        ) : (
-          <Suspense fallback={
-            <div className="py-8 text-center">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-club-500 border-t-transparent"></div>
-              <p className="mt-4 text-club-600 dark:text-club-300">Carregando relatório...</p>
-            </div>
-          }>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Report360 
-                memberStatusData={memberStatusData}
-                paymentStatusData={paymentStatusData}
-                expensesData={expensesData}
-                financialSummary={financialSummary}
-                selectedMonth={selectedMonth}
-                formatMonthYear={formatMonthYear}
-              />
-            </motion.div>
-          </Suspense>
-        )}
+      <TabsContent value="advanced">
+        <Report360View 
+          loading360={loading360}
+          isRetrying360={isRetrying360}
+          error360={error360}
+          onRetry360={onRetry360}
+          memberStatusData={memberStatusData}
+          paymentStatusData={paymentStatusData}
+          expensesData={expensesData}
+          financialSummary={financialSummary}
+          selectedMonth={selectedMonth}
+          formatMonthYear={formatMonthYear}
+        />
       </TabsContent>
     </Tabs>
   );
