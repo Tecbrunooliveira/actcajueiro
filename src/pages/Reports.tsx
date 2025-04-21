@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useReportsData } from "@/hooks/useReportsData";
 import { useReport360Data } from "@/hooks/report360/useReport360Data";
@@ -43,8 +43,8 @@ const Reports = () => {
     error: error360,
     retry: retry360
   } = useReport360Data(
-    activeTab === 'advanced' ? selectedMonth : '',
-    activeTab === 'advanced' ? selectedYear : ''
+    activeTab === 'advanced' && retryCount > 0 ? selectedMonth : '',
+    activeTab === 'advanced' && retryCount > 0 ? selectedYear : ''
   );
   
   const handleRetry = () => {
@@ -66,7 +66,10 @@ const Reports = () => {
     retry360 && retry360();
   };
 
-  if (loading) {
+  // Only show main loading state on initial load, not when waiting for search results
+  const isInitialLoading = loading && retryCount === 0;
+
+  if (isInitialLoading) {
     return (
       <MobileLayout title="Relatórios">
         <LoadingState error={dataError} onRetry={handleRetry} />

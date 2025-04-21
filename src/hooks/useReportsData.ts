@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Payment } from "@/types";
 import { paymentService } from "@/services";
@@ -28,16 +29,21 @@ export const useReportsData = (retryTrigger = 0) => {
     formatMonthYear
   } = usePeriodSelection();
 
-  // Get monthly record with optimized loading
+  // Get monthly record with optimized loading but only when explicitly triggered
   const { 
     monthlyRecord, 
     loadingMonthlyRecord, 
     error: monthlyRecordError,
     retry: retryMonthlyRecord
-  } = useMonthlyRecord(selectedMonth, selectedYear);
+  } = useMonthlyRecord(selectedMonth, selectedYear, retryTrigger > 0);
 
   // Define the data refresh function with error handling and optimized loading
   const refreshData = useCallback(async () => {
+    if (!selectedMonth) {
+      console.log("No month selected, skipping data refresh");
+      return;
+    }
+    
     try {
       setLoading(true);
       setDataError(null);
@@ -87,9 +93,10 @@ export const useReportsData = (retryTrigger = 0) => {
     retry: retryMembers
   } = useMemberPaymentStatus(selectedMonth, allPayments);
 
-  // Remove automatic data loading on period change
+  // Only load data when retryTrigger changes (search button clicked)
   useEffect(() => {
     if (retryTrigger > 0) {
+      console.log("Loading data due to retry trigger:", retryTrigger);
       refreshData();
     }
   }, [refreshData, retryTrigger]);

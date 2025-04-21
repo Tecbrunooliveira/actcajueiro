@@ -1,84 +1,71 @@
-import { useState, useEffect, useCallback } from "react";
-import { Member } from "@/types";
-import { memberService } from "@/services";
-import { useToast } from "@/components/ui/use-toast";
 
-export const useMemberPaymentStatus = (selectedMonth: string, payments: any[]) => {
+import { useState, useEffect, useCallback } from "react";
+import { Member, Payment } from "@/types";
+import { memberService } from "@/services";
+
+export const useMemberPaymentStatus = (month: string, payments: Payment[]) => {
   const [allMembers, setAllMembers] = useState<Member[]>([]);
   const [paidMembers, setPaidMembers] = useState<Member[]>([]);
   const [unpaidMembers, setUnpaidMembers] = useState<Member[]>([]);
-  const [loadingMembers, setLoadingMembers] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchMembers = useCallback(async () => {
-    setLoadingMembers(true);
-    setError(null);
+  // Calculate paid and unpaid members whenever payments or all members change
+  useEffect(() => {
+    if (!month || !payments.length || !allMembers.length) return;
+
+    const paidMemberIds = payments
+      .filter(payment => payment.month === month && payment.status === "PAID")
+      .map(payment => payment.memberId);
+
+    const paid = allMembers.filter(member => 
+      paidMemberIds.includes(member.id) && member.status === "ACTIVE"
+    );
+    
+    const unpaid = allMembers.filter(member => 
+      !paidMemberIds.includes(member.id) && member.status === "ACTIVE"
+    );
+    
+    setPaidMembers(paid);
+    setUnpaidMembers(unpaid);
+  }, [month, payments, allMembers]);
+
+  // Load all members when payments change
+  const loadMembers = useCallback(async () => {
+    if (!payments.length) return;
     
     try {
-      const fetchPromise = memberService.getAllMembers();
-      const timeoutPromise = new Promise<Member[]>((_, reject) => 
-        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar membros.")), 5000)
-      );
+      setLoading(true);
+      setError(null);
       
-      const fetchedMembers = await Promise.race([fetchPromise, timeoutPromise]);
-      setAllMembers(fetchedMembers);
-      
-      setTimeout(() => {
-        if (payments.length === 0) {
-          setPaidMembers([]);
-          setUnpaidMembers(fetchedMembers);
-          setLoadingMembers(false);
-          return;
-        }
-
-        const monthPayments = payments.filter(
-          (payment) => payment.month === selectedMonth
-        );
-        
-        const membersPaid = fetchedMembers.filter((member) => {
-          const memberPayments = monthPayments.filter(p => p.memberId === member.id);
-          return memberPayments.some(p => p.isPaid);
-        });
-        setPaidMembers(membersPaid);
-        
-        const membersUnpaid = fetchedMembers.filter((member) => {
-          const memberPayments = monthPayments.filter(p => p.memberId === member.id);
-          return memberPayments.length === 0 || memberPayments.every(p => !p.isPaid);
-        });
-        setUnpaidMembers(membersUnpaid);
-        
-        setLoadingMembers(false);
-      }, 0);
-    } catch (error) {
-      console.error("Error fetching members data:", error);
-      
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Erro ao carregar dados dos membros. Tente novamente.";
-      
-      setError(errorMessage);
-      
-      toast({
-        title: "Erro ao carregar membros",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive"
-      });
-      
-      setLoadingMembers(false);
+      const members = await memberService.getAllMembers();
+      setAllMembers(members);
+    } catch (err) {
+      console.error("Error loading members:", err);
+      setError("Erro ao carregar dados dos sócios.");
+    } finally {
+      setLoading(false);
     }
-  }, [selectedMonth, payments, toast]);
+  }, [payments]);
 
+  // Load members when payments change or retry is triggered
   useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
+    if (payments.length > 0) {
+      loadMembers();
+    }
+  }, [loadMembers, retryCount, payments]);
+
+  const retry = useCallback(() => {
+    setRetryCount(prev => prev + 1);
+  }, []);
 
   return {
     allMembers,
     paidMembers,
     unpaidMembers,
-    loadingMembers,
+    loadingMembers: loading,
     error,
-    retry: fetchMembers
+    retry
   };
 };

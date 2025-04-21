@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PeriodSelector } from "./PeriodSelector";
 import { ErrorAlert } from "./ErrorAlert";
 import { ReportTabs } from "./ReportTabs";
@@ -39,6 +39,7 @@ interface ReportContentProps {
 export const ReportContent: React.FC<ReportContentProps> = (props) => {
   const [isSearching, setIsSearching] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(true);
   
   const {
     loading,
@@ -71,15 +72,27 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
     formatMonthYear
   } = props;
 
+  // Handle search button click - triggers data loading
   const handleSearch = () => {
     setIsSearching(true);
     setShowContent(true);
+    setFirstLoad(false);
     
-    // Simulate loading time for visual feedback
+    // Initiate data refresh
+    handleRetry();
+    
+    // Provide visual feedback during loading
     setTimeout(() => {
       setIsSearching(false);
     }, 1000);
   };
+
+  // Show appropriate content based on search status
+  useEffect(() => {
+    if (!firstLoad && !loading && !isSearching) {
+      setShowContent(true);
+    }
+  }, [loading, isSearching, firstLoad]);
 
   return (
     <div className="space-y-6 animate-fade-in pb-12">
@@ -93,7 +106,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
         onGeneratePendingPayments={handleGeneratePendingPayments}
         generatingPayments={generatingPayments}
         onSearch={handleSearch}
-        isSearching={isSearching}
+        isSearching={isSearching || loading}
       />
 
       {dataError && (
@@ -102,7 +115,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
 
       {showContent && (
         <>
-          {loading ? (
+          {(loading || isSearching) ? (
             <LoadingState />
           ) : (
             <ReportTabs 
