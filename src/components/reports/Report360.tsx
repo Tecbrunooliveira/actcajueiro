@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,7 +124,46 @@ export const Report360 = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <MemberStatusChart data={memberStatusData} />
+                {/* Removido gráfico de status de sócios. Exibe somente detalhes: */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div />
+                  <div>
+                    <h3 className="text-md font-semibold mb-2">Detalhes por Status</h3>
+                    {/* Usar apenas tabela detalhada idêntica ao MemberStatusChart */}
+                    <div className="bg-club-50 dark:bg-club-900/60 rounded-lg p-4 shadow-sm">
+                      <table className="min-w-full text-xs">
+                        <thead>
+                          <tr>
+                            <th className="text-left font-semibold">Status</th>
+                            <th className="text-right font-semibold">Quantidade</th>
+                            <th className="text-right font-semibold">Percentual</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {memberStatusData.map((item, idx, arr) => {
+                            const total = arr.reduce((sum, el) => sum + el.value, 0);
+                            return (
+                              <tr key={item.name}>
+                                <td className="font-medium">{item.name}</td>
+                                <td className="text-right">{item.value}</td>
+                                <td className="text-right">
+                                  {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          <tr className="font-medium">
+                            <td>Total</td>
+                            <td className="text-right">
+                              {memberStatusData.reduce((sum, el) => sum + el.value, 0)}
+                            </td>
+                            <td className="text-right">100%</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </TabsContent>
             
@@ -133,7 +173,45 @@ export const Report360 = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <PaymentStatusChart data={paymentStatusData} />
+                {/* Removido gráfico de pagamentos. Exibe somente detalhes: */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div />
+                  <div>
+                    <h3 className="text-md font-semibold mb-2">Detalhes de Pagamento</h3>
+                    <div className="bg-club-50 dark:bg-club-900/60 rounded-lg p-4 shadow-sm">
+                      <table className="min-w-full text-xs">
+                        <thead>
+                          <tr>
+                            <th className="text-left font-semibold">Status</th>
+                            <th className="text-right font-semibold">Quantidade</th>
+                            <th className="text-right font-semibold">Percentual</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paymentStatusData.map((item, idx, arr) => {
+                            const total = arr.reduce((sum, el) => sum + el.value, 0);
+                            return (
+                              <tr key={item.name}>
+                                <td className="font-medium">{item.name}</td>
+                                <td className="text-right">{item.value}</td>
+                                <td className="text-right">
+                                  {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          <tr className="font-medium">
+                            <td>Total</td>
+                            <td className="text-right">
+                              {paymentStatusData.reduce((sum, el) => sum + el.value, 0)}
+                            </td>
+                            <td className="text-right">100%</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </TabsContent>
             
@@ -143,7 +221,53 @@ export const Report360 = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <ExpenseCategoryChart data={expensesData} />
+                {/* Removido gráfico de despesas. Exibe somente detalhes: */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div />
+                  <div>
+                    <h3 className="text-md font-semibold mb-2">Despesas por Categoria</h3>
+                    <div className="bg-club-50 dark:bg-club-900/60 rounded-lg p-4 shadow-sm">
+                      <table className="min-w-full text-xs">
+                        <thead>
+                          <tr>
+                            <th className="text-left font-semibold">Categoria</th>
+                            <th className="text-right font-semibold">Total</th>
+                            <th className="text-right font-semibold">Percentual</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {expensesData.length === 0 ? (
+                            <tr>
+                              <td colSpan={3} className="text-center italic py-4">Nenhuma despesa registrada para este período</td>
+                            </tr>
+                          ) : (
+                            expensesData.map((item, idx, arr) => {
+                              const total = arr.reduce((sum, el) => sum + el.value, 0);
+                              return (
+                                <tr key={item.name}>
+                                  <td className="font-medium">{item.name}</td>
+                                  <td className="text-right">{item.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                                  <td className="text-right">
+                                    {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                          {expensesData.length > 0 && (
+                            <tr className="font-medium">
+                              <td>Total</td>
+                              <td className="text-right">
+                                {expensesData.reduce((sum, el) => sum + el.value, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              </td>
+                              <td className="text-right">100%</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </TabsContent>
           </Tabs>
@@ -154,3 +278,4 @@ export const Report360 = ({
 };
 
 export default Report360;
+
