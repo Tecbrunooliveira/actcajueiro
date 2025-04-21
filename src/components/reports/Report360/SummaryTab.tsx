@@ -17,12 +17,17 @@ export const SummaryTab: React.FC<SummaryTabProps> = ({
   financialSummary,
   paidMembersCount,
   unpaidMembersCount,
-}) => (
-  <div>
-    <FinancialSummary data={financialSummary} />
-    <MemberStatusCards
-      paidMembersCount={paidMembersCount}
-      unpaidMembersCount={unpaidMembersCount}
-    />
-  </div>
-);
+}) => {
+  // Add console logs for debugging
+  console.log("SummaryTab received values:", { paidMembersCount, unpaidMembersCount });
+  
+  return (
+    <div>
+      <FinancialSummary data={financialSummary} />
+      <MemberStatusCards
+        paidMembersCount={paidMembersCount}
+        unpaidMembersCount={unpaidMembersCount}
+      />
+    </div>
+  );
+};

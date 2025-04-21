@@ -19,7 +19,7 @@ export const paymentMetricsService = {
     // Get unique member IDs
     const memberIds = [...new Set(payments.map(p => p.memberId))];
     
-    // Count paid vs unpaid members
+    // Count members as paid if they have at least one paid payment
     const paidMemberIds = new Set(
       payments
         .filter(p => p.isPaid)
@@ -29,7 +29,9 @@ export const paymentMetricsService = {
     const paidMembers = paidMemberIds.size;
     const unpaidMembers = memberIds.length - paidMembers;
     
-    console.log(`Payment metrics: ${paidMembers} paid, ${unpaidMembers} unpaid, total: ${memberIds.length}`);
+    console.log(`Payment metrics calculation: ${paidMembers} paid, ${unpaidMembers} unpaid, total: ${memberIds.length}`);
+    console.log("Member IDs found:", memberIds);
+    console.log("Paid member IDs:", [...paidMemberIds]);
     
     return [
       { name: 'Em Dia', value: paidMembers, color: '#10b981' },

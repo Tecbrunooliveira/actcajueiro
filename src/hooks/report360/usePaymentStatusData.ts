@@ -81,6 +81,9 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         
         console.log(`Filtered to ${filteredPayments.length} payments for ${selectedMonth}-${yearValue}`);
         
+        // Debug the filtered payments
+        console.log("Filtered payments:", JSON.stringify(filteredPayments, null, 2));
+        
         const data = paymentMetricsService.calculatePaymentStatusMetrics(filteredPayments);
         console.log("Payment status data calculated:", data);
         
@@ -151,6 +154,14 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       setIsRetrying(false);
     }
   }, [selectedMonth, selectedYear, cacheKey, toast]);
+
+  // Trigger fetch when hook is initialized
+  useCallback(() => {
+    if (!fetchAttempted && selectedMonth && selectedYear) {
+      console.log("Initial fetch of payment data");
+      fetchPaymentStatusData(false);
+    }
+  }, [fetchAttempted, selectedMonth, selectedYear, fetchPaymentStatusData])();
 
   // Return values
   return { 
