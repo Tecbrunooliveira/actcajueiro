@@ -1,15 +1,20 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileDown, BarChart2, Users, CreditCard, Wallet } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MemberStatusChart } from "./charts/MemberStatusChart";
-import { PaymentStatusChart } from "./charts/PaymentStatusChart";
-import { ExpenseCategoryChart } from "./charts/ExpenseCategoryChart";
 import { FinancialSummary } from "./charts/FinancialSummary";
 import { useReport360PdfGeneration } from "@/hooks/reports/useReport360PdfGeneration";
 import { motion } from "framer-motion";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table";
 
 export const Report360 = ({
   memberStatusData,
@@ -37,6 +42,9 @@ export const Report360 = ({
     expensesData,
     financialSummary
   );
+
+  const getTableTotal = (list: { value: number }[]) =>
+    list.reduce((sum, el) => sum + el.value, 0);
 
   return (
     <motion.div
@@ -124,45 +132,38 @@ export const Report360 = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Removido gráfico de status de sócios. Exibe somente detalhes: */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div />
-                  <div>
-                    <h3 className="text-md font-semibold mb-2">Detalhes por Status</h3>
-                    {/* Usar apenas tabela detalhada idêntica ao MemberStatusChart */}
-                    <div className="bg-club-50 dark:bg-club-900/60 rounded-lg p-4 shadow-sm">
-                      <table className="min-w-full text-xs">
-                        <thead>
-                          <tr>
-                            <th className="text-left font-semibold">Status</th>
-                            <th className="text-right font-semibold">Quantidade</th>
-                            <th className="text-right font-semibold">Percentual</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {memberStatusData.map((item, idx, arr) => {
-                            const total = arr.reduce((sum, el) => sum + el.value, 0);
-                            return (
-                              <tr key={item.name}>
-                                <td className="font-medium">{item.name}</td>
-                                <td className="text-right">{item.value}</td>
-                                <td className="text-right">
-                                  {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          <tr className="font-medium">
-                            <td>Total</td>
-                            <td className="text-right">
-                              {memberStatusData.reduce((sum, el) => sum + el.value, 0)}
-                            </td>
-                            <td className="text-right">100%</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                <div className="max-w-lg mx-auto">
+                  <h3 className="text-md font-semibold mb-4">Detalhes por Status</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Quantidade</TableHead>
+                        <TableHead className="text-right">Percentual</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {memberStatusData.map((item, idx, arr) => {
+                        const total = getTableTotal(arr);
+                        return (
+                          <TableRow key={item.name}>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell className="text-right">{item.value}</TableCell>
+                            <TableCell className="text-right">
+                              {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      <TableRow className="font-medium">
+                        <TableCell>Total</TableCell>
+                        <TableCell className="text-right">
+                          {getTableTotal(memberStatusData)}
+                        </TableCell>
+                        <TableCell className="text-right">100%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
               </motion.div>
             </TabsContent>
@@ -173,44 +174,38 @@ export const Report360 = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Removido gráfico de pagamentos. Exibe somente detalhes: */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div />
-                  <div>
-                    <h3 className="text-md font-semibold mb-2">Detalhes de Pagamento</h3>
-                    <div className="bg-club-50 dark:bg-club-900/60 rounded-lg p-4 shadow-sm">
-                      <table className="min-w-full text-xs">
-                        <thead>
-                          <tr>
-                            <th className="text-left font-semibold">Status</th>
-                            <th className="text-right font-semibold">Quantidade</th>
-                            <th className="text-right font-semibold">Percentual</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {paymentStatusData.map((item, idx, arr) => {
-                            const total = arr.reduce((sum, el) => sum + el.value, 0);
-                            return (
-                              <tr key={item.name}>
-                                <td className="font-medium">{item.name}</td>
-                                <td className="text-right">{item.value}</td>
-                                <td className="text-right">
-                                  {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          <tr className="font-medium">
-                            <td>Total</td>
-                            <td className="text-right">
-                              {paymentStatusData.reduce((sum, el) => sum + el.value, 0)}
-                            </td>
-                            <td className="text-right">100%</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                <div className="max-w-lg mx-auto">
+                  <h3 className="text-md font-semibold mb-4">Detalhes de Pagamento</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Quantidade</TableHead>
+                        <TableHead className="text-right">Percentual</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paymentStatusData.map((item, idx, arr) => {
+                        const total = getTableTotal(arr);
+                        return (
+                          <TableRow key={item.name}>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell className="text-right">{item.value}</TableCell>
+                            <TableCell className="text-right">
+                              {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      <TableRow className="font-medium">
+                        <TableCell>Total</TableCell>
+                        <TableCell className="text-right">
+                          {getTableTotal(paymentStatusData)}
+                        </TableCell>
+                        <TableCell className="text-right">100%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
               </motion.div>
             </TabsContent>
@@ -221,52 +216,58 @@ export const Report360 = ({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {/* Removido gráfico de despesas. Exibe somente detalhes: */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div />
-                  <div>
-                    <h3 className="text-md font-semibold mb-2">Despesas por Categoria</h3>
-                    <div className="bg-club-50 dark:bg-club-900/60 rounded-lg p-4 shadow-sm">
-                      <table className="min-w-full text-xs">
-                        <thead>
-                          <tr>
-                            <th className="text-left font-semibold">Categoria</th>
-                            <th className="text-right font-semibold">Total</th>
-                            <th className="text-right font-semibold">Percentual</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {expensesData.length === 0 ? (
-                            <tr>
-                              <td colSpan={3} className="text-center italic py-4">Nenhuma despesa registrada para este período</td>
-                            </tr>
-                          ) : (
-                            expensesData.map((item, idx, arr) => {
-                              const total = arr.reduce((sum, el) => sum + el.value, 0);
-                              return (
-                                <tr key={item.name}>
-                                  <td className="font-medium">{item.name}</td>
-                                  <td className="text-right">{item.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                                  <td className="text-right">
-                                    {total > 0 ? `${((item.value / total) * 100).toFixed(1)}%` : "0%"}
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          )}
-                          {expensesData.length > 0 && (
-                            <tr className="font-medium">
-                              <td>Total</td>
-                              <td className="text-right">
-                                {expensesData.reduce((sum, el) => sum + el.value, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                              </td>
-                              <td className="text-right">100%</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                <div className="max-w-lg mx-auto">
+                  <h3 className="text-md font-semibold mb-4">Despesas por Categoria</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="text-right">Percentual</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {expensesData.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center italic py-4">
+                            Nenhuma despesa registrada para este período
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        expensesData.map((item, idx, arr) => {
+                          const total = getTableTotal(arr);
+                          return (
+                            <TableRow key={item.name}>
+                              <TableCell>{item.name}</TableCell>
+                              <TableCell className="text-right">
+                                {item.value.toLocaleString("pt-BR", {
+                                  style: "currency",
+                                  currency: "BRL",
+                                })}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {total > 0
+                                  ? `${((item.value / total) * 100).toFixed(1)}%`
+                                  : "0%"}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                      {expensesData.length > 0 && (
+                        <TableRow className="font-medium">
+                          <TableCell>Total</TableCell>
+                          <TableCell className="text-right">
+                            {getTableTotal(expensesData).toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </TableCell>
+                          <TableCell className="text-right">100%</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </motion.div>
             </TabsContent>
@@ -278,4 +279,3 @@ export const Report360 = ({
 };
 
 export default Report360;
-
