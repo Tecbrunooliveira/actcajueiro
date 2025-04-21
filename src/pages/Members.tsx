@@ -5,12 +5,12 @@ import { memberService } from "@/services/memberService";
 import { Member } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import MemberCard from "@/components/members/MemberCard";
+import { MemberCard } from "@/components/members/MemberCard";
 import { PlusCircle, Users, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import MemberListSkeleton from "@/components/members/MemberListSkeleton";
+import { MemberListSkeleton } from "@/components/members/MemberListSkeleton";
 import { useAuth } from "@/contexts/auth";
 
 const Members = () => {

@@ -3,6 +3,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { SideMenu } from "./SideMenu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { List } from "lucide-react";
 
 interface HeaderProps {
   title: string;
@@ -30,7 +32,14 @@ export const Header = ({ title, onBackClick, user }: HeaderProps) => {
               <ChevronLeft className="h-6 w-6" />
             </button>
           )}
-          <SideMenu />
+          <Sheet>
+            <SheetTrigger className="p-1 mr-2">
+              <List className="h-6 w-6" />
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0">
+              <SideMenu onClose={() => document.body.click()} />
+            </SheetContent>
+          </Sheet>
           <h1 className="text-xl font-semibold">{title}</h1>
         </div>
         <div className="h-8 w-8 rounded-full bg-club-400/30 backdrop-blur-sm flex items-center justify-center">

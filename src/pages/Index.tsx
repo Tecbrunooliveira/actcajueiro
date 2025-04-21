@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { memberService, paymentService } from "@/services";
@@ -10,9 +11,9 @@ import { PaymentAlerts } from "@/components/home/PaymentAlerts";
 import { QuickActions } from "@/components/home/QuickActions";
 import { NavigationLinks } from "@/components/home/NavigationLinks";
 import { HomeLoading } from "@/components/home/HomeLoading";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/auth";
 import { Link } from "react-router-dom";
-import { UserPlus } from "@/components/icons/UserPlus";
+import { UserPlus } from "lucide-react";
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
