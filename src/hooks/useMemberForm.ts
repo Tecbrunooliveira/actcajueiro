@@ -41,6 +41,7 @@ export const useMemberForm = (memberId?: string) => {
               notes: member.notes || "",
               photo: member.photo || "",
               warnings: formattedWarnings,
+              user_id: member.user_id || "", // Added user_id field
             });
           }
         } catch (error) {
@@ -80,6 +81,7 @@ export const useMemberForm = (memberId?: string) => {
           notes: data.notes || undefined,
           photo: data.photo || undefined,
           warnings: formattedWarnings,
+          user_id: data.user_id || undefined, // Added user_id field
         });
         
         toast({
@@ -96,6 +98,7 @@ export const useMemberForm = (memberId?: string) => {
           notes: data.notes || undefined,
           photo: data.photo || undefined,
           warnings: formattedWarnings,
+          user_id: data.user_id || undefined, // Added user_id field
         });
         
         toast({

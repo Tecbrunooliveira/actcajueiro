@@ -22,6 +22,7 @@ export const memberService = {
       notes: member.notes || undefined,
       photo: member.photo || undefined,
       warnings: member.warnings as Array<{text: string, date: string}> || [],
+      user_id: member.user_id || undefined,
     })) || [];
   },
 
@@ -49,6 +50,7 @@ export const memberService = {
       notes: data.notes || undefined,
       photo: data.photo || undefined,
       warnings: data.warnings as Array<{text: string, date: string}> || [],
+      user_id: data.user_id || undefined,
     };
   },
 
@@ -64,6 +66,7 @@ export const memberService = {
         notes: member.notes,
         photo: member.photo,
         warnings: member.warnings || [],
+        user_id: member.user_id,
       })
       .select()
       .single();
@@ -85,6 +88,7 @@ export const memberService = {
       notes: data.notes || undefined,
       photo: data.photo || undefined,
       warnings: data.warnings as Array<{text: string, date: string}> || [],
+      user_id: data.user_id || undefined,
     };
   },
 
@@ -100,6 +104,7 @@ export const memberService = {
         notes: member.notes,
         photo: member.photo,
         warnings: member.warnings || [],
+        user_id: member.user_id,
       })
       .eq('id', member.id)
       .select()
@@ -122,6 +127,7 @@ export const memberService = {
       notes: data.notes || undefined,
       photo: data.photo || undefined,
       warnings: data.warnings as Array<{text: string, date: string}> || [],
+      user_id: data.user_id || undefined,
     };
   },
 
@@ -158,6 +164,21 @@ export const memberService = {
       notes: member.notes || undefined,
       photo: member.photo || undefined,
       warnings: member.warnings as Array<{text: string, date: string}> || [],
+      user_id: member.user_id || undefined,
     })) || [];
+  },
+
+  associateUserWithMember: async (memberId: string, userId: string): Promise<boolean> => {
+    const { error } = await supabase
+      .from('members')
+      .update({ user_id: userId })
+      .eq('id', memberId);
+    
+    if (error) {
+      console.error('Error associating user with member:', error);
+      return false;
+    }
+    
+    return true;
   },
 };
