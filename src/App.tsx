@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,6 +21,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PaymentStatus from "./pages/PaymentStatus";
 import UserProfile from "./pages/UserProfile";
+import AdminUsers from "./pages/AdminUsers"; // Importação correta
 
 const queryClient = new QueryClient();
 
@@ -38,16 +40,13 @@ const App = () => (
             path="/admin/users"
             element={
               <ProtectedRoute>
-                <UserAdminPage />
+                <AdminUsers />
               </ProtectedRoute>
             }
           />
 
-          {/* Adicione esta linha após importar o componente */}
-          {/* <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} /> */}
           {/* Protected routes */}
           <Route path="/me" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
           <Route path="/members/:id" element={<ProtectedRoute><MemberDetail /></ProtectedRoute>} />
@@ -72,8 +71,5 @@ const App = () => (
     </BrowserRouter>
   </QueryClientProvider>
 );
-
-import AdminUsers from "@/pages/AdminUsers"; // adicione este import no topo
-import UserAdminPage from "./pages/AdminUsers";
 
 export default App;

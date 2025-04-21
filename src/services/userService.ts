@@ -1,18 +1,43 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Função para criar usuário pelo admin (server role)
+// Função para criar usuário usando uma Edge Function 
+// que executa com permissões de service role
 export const userService = {
   createUser: async (email: string, password: string): Promise<{ userId: string | null, error: any }> => {
-    // Usa rpc da Edge Function se necessário; aqui vamos direto (pode requerer service role token/back-end, depende do projeto)
-    const { data, error } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-    });
-    return {
-      userId: data?.user?.id || null,
-      error,
-    };
+    try {
+      // Chama a edge function criada para criar usuários
+      const response = await fetch(
+        `${supabase.auth.url}/functions/v1/create-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          userId: null,
+          error: { message: result.error || 'Erro ao criar usuário' },
+        };
+      }
+
+      return {
+        userId: result.userId,
+        error: null,
+      };
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return {
+        userId: null,
+        error: { message: error.message || 'Erro ao criar usuário' },
+      };
+    }
   }
 };
