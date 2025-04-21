@@ -4,16 +4,18 @@ import { useLocation } from "react-router-dom";
 import { Users, CreditCard, BarChart3, Home, Receipt } from "lucide-react";
 import { motion } from "framer-motion";
 import { NavigationItem } from "./NavigationItem";
+import { useAuth } from "@/contexts/auth";
 
 export const BottomNavigation = () => {
   const location = useLocation();
   const currentPath = location.pathname;
+  const { isAdmin } = useAuth();
 
   const navItems = [
     { icon: Home, label: "Início", path: "/" },
     { icon: Users, label: "Sócios", path: "/members" },
-    { icon: CreditCard, label: "Pagamentos", path: "/payments" },
-    { icon: Receipt, label: "Despesas", path: "/expenses" },
+    ...(isAdmin ? [{ icon: CreditCard, label: "Pagamentos", path: "/payments" }] : []),
+    ...(isAdmin ? [{ icon: Receipt, label: "Despesas", path: "/expenses" }] : []),
     { icon: BarChart3, label: "Relatórios", path: "/reports" },
   ];
 

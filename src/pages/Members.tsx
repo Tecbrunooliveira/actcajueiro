@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { memberService } from "@/services/memberService";
@@ -20,10 +19,8 @@ const Members = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   
-  const isAdmin = user?.email === "admin@example.com";
-
   useEffect(() => {
     loadMembers();
   }, []);
@@ -114,7 +111,13 @@ const Members = () => {
               <MemberListSkeleton />
             ) : filteredMembers.length > 0 ? (
               filteredMembers.map((member) => (
-                <MemberCard key={member.id} member={member} />
+                isAdmin ? (
+                  <MemberCard key={member.id} member={member} />
+                ) : (
+                  <div key={member.id} className="pointer-events-none opacity-80">
+                    <MemberCard member={member} />
+                  </div>
+                )
               ))
             ) : (
               <div className="text-center py-10">

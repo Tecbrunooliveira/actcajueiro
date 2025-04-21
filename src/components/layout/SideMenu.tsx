@@ -18,8 +18,7 @@ interface SideMenuProps {
 }
 
 export function SideMenu({ onClose }: SideMenuProps) {
-  const { signOut, user } = useAuth();
-  const isAdmin = user?.email === "admin@example.com";
+  const { signOut, user, isAdmin } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -65,35 +64,38 @@ export function SideMenu({ onClose }: SideMenuProps) {
             Sócios
           </NavLink>
           
-          <NavLink
-            to="/payments"
-            className={({ isActive }) =>
-              `flex items-center px-3 py-2 rounded-md text-sm ${
-                isActive
-                  ? "bg-club-50 text-club-700 font-medium"
-                  : "text-gray-700 hover:bg-club-50 hover:text-club-700"
-              }`
-            }
-            onClick={onClose}
-          >
-            <CreditCard className="mr-3 h-5 w-5" />
-            Mensalidades
-          </NavLink>
-          
-          <NavLink
-            to="/expenses"
-            className={({ isActive }) =>
-              `flex items-center px-3 py-2 rounded-md text-sm ${
-                isActive
-                  ? "bg-club-50 text-club-700 font-medium"
-                  : "text-gray-700 hover:bg-club-50 hover:text-club-700"
-              }`
-            }
-            onClick={onClose}
-          >
-            <FileText className="mr-3 h-5 w-5" />
-            Despesas
-          </NavLink>
+          {isAdmin && (
+            <>
+              <NavLink
+                to="/payments"
+                className={({ isActive }) =>
+                  `flex items-center px-3 py-2 rounded-md text-sm ${
+                    isActive
+                      ? "bg-club-50 text-club-700 font-medium"
+                      : "text-gray-700 hover:bg-club-50 hover:text-club-700"
+                  }`
+                }
+                onClick={onClose}
+              >
+                <CreditCard className="mr-3 h-5 w-5" />
+                Mensalidades
+              </NavLink>
+              <NavLink
+                to="/expenses"
+                className={({ isActive }) =>
+                  `flex items-center px-3 py-2 rounded-md text-sm ${
+                    isActive
+                      ? "bg-club-50 text-club-700 font-medium"
+                      : "text-gray-700 hover:bg-club-50 hover:text-club-700"
+                  }`
+                }
+                onClick={onClose}
+              >
+                <FileText className="mr-3 h-5 w-5" />
+                Despesas
+              </NavLink>
+            </>
+          )}
           
           <NavLink
             to="/reports"

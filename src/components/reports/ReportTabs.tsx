@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BarChart3, FileBarChart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +23,7 @@ interface ReportTabsProps {
   expensesData: any;
   financialSummary: any;
   formatMonthYear: (month: string) => string;
+  hideMemberTabs?: boolean;
 }
 
 export const ReportTabs: React.FC<ReportTabsProps> = ({
@@ -44,7 +44,8 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
   paymentStatusData,
   expensesData,
   financialSummary,
-  formatMonthYear
+  formatMonthYear,
+  hideMemberTabs
 }) => {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="mt-6">
@@ -66,16 +67,18 @@ export const ReportTabs: React.FC<ReportTabsProps> = ({
       </TabsList>
       
       <TabsContent value="basic">
-        <BasicReport 
-          monthlyRecord={monthlyRecord}
-          allMembers={allMembers}
-          unpaidMembers={unpaidMembers}
-          paidMembers={paidMembers}
-          handleGeneratePdfReport={handleGeneratePdfReport}
-          generatingPdf={generatingPdf}
-          selectedMonth={selectedMonth}
-          formatMonthYear={formatMonthYear}
-        />
+        {!hideMemberTabs && (
+          <BasicReport 
+            monthlyRecord={monthlyRecord}
+            allMembers={allMembers}
+            unpaidMembers={unpaidMembers}
+            paidMembers={paidMembers}
+            handleGeneratePdfReport={handleGeneratePdfReport}
+            generatingPdf={generatingPdf}
+            selectedMonth={selectedMonth}
+            formatMonthYear={formatMonthYear}
+          />
+        )}
       </TabsContent>
       
       <TabsContent value="advanced">

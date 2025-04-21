@@ -4,6 +4,7 @@ import { PeriodSelector } from "./PeriodSelector";
 import { ErrorAlert } from "./ErrorAlert";
 import { ReportTabs } from "./ReportTabs";
 import { LoadingState } from "./LoadingState";
+import { useAuth } from "@/contexts/auth";
 
 interface ReportContentProps {
   loading: boolean;
@@ -40,6 +41,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
   const [isSearching, setIsSearching] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const { isAdmin } = useAuth();
   
   const {
     loading,
@@ -103,8 +105,8 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
         onYearChange={handleYearChange}
         monthOptions={monthOptions}
         yearOptions={yearOptions}
-        onGeneratePendingPayments={handleGeneratePendingPayments}
-        generatingPayments={generatingPayments}
+        onGeneratePendingPayments={isAdmin ? handleGeneratePendingPayments : undefined}
+        generatingPayments={isAdmin ? generatingPayments : false}
         onSearch={handleSearch}
         isSearching={isSearching || loading}
       />
@@ -123,11 +125,11 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
               onTabChange={handleTabChange}
               selectedMonth={selectedMonth}
               monthlyRecord={monthlyRecord}
-              allMembers={allMembers}
-              unpaidMembers={unpaidMembers}
-              paidMembers={paidMembers}
-              handleGeneratePdfReport={handleGeneratePdfReport}
-              generatingPdf={generatingPdf}
+              allMembers={isAdmin ? allMembers : []}
+              unpaidMembers={isAdmin ? unpaidMembers : []}
+              paidMembers={isAdmin ? paidMembers : []}
+              handleGeneratePdfReport={isAdmin ? handleGeneratePdfReport : () => {}}
+              generatingPdf={isAdmin ? generatingPdf : false}
               loading360={loading360}
               isRetrying360={isRetrying360}
               error360={error360}
@@ -137,6 +139,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
               expensesData={expensesData}
               financialSummary={financialSummary}
               formatMonthYear={formatMonthYear}
+              hideMemberTabs={!isAdmin}
             />
           )}
         </>

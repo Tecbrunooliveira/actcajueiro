@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCurrentMonthYear } from "@/services/formatters";
 import { PaymentListSkeleton } from "@/components/payments/PaymentListSkeleton";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/auth";
 
 const Payments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -19,6 +20,7 @@ const Payments = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "paid" | "pending">("all");
   const { month: currentMonth } = getCurrentMonthYear();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,11 +133,13 @@ const Payments = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Link to="/payments/new">
-          <Button size="icon" className="bg-club-500 hover:bg-club-600">
-            <Plus className="h-4 w-4" />
-          </Button>
-        </Link>
+        {isAdmin && (
+          <Link to="/payments/new">
+            <Button size="icon" className="bg-club-500 hover:bg-club-600">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </Link>
+        )}
       </motion.div>
 
       {/* Tabs */}

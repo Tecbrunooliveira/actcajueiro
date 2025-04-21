@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/auth";
+import { AuthProvider, useAuth } from "@/contexts/auth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Members from "./pages/Members";
@@ -24,6 +24,11 @@ import UserProfile from "./pages/UserProfile";
 import AdminUsers from "./pages/AdminUsers"; // Importação correta
 
 const queryClient = new QueryClient();
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAdmin } = useAuth();
+  return isAdmin ? <>{children}</> : <NotFound />;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -52,19 +57,22 @@ const App = () => (
           <Route path="/members/:id" element={<ProtectedRoute><MemberDetail /></ProtectedRoute>} />
           <Route path="/members/new" element={<ProtectedRoute><MemberForm /></ProtectedRoute>} />
           <Route path="/members/edit/:id" element={<ProtectedRoute><MemberForm /></ProtectedRoute>} />
-          <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
-          <Route path="/payments/:id" element={<ProtectedRoute><PaymentDetail /></ProtectedRoute>} />
-          <Route path="/payments/new" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
-          <Route path="/payments/edit/:id" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
-          <Route path="/payments/success" element={<ProtectedRoute><PaymentStatus status="success" /></ProtectedRoute>} />
-          <Route path="/payments/failure" element={<ProtectedRoute><PaymentStatus status="failure" /></ProtectedRoute>} />
-          <Route path="/payments/pending" element={<ProtectedRoute><PaymentStatus status="pending" /></ProtectedRoute>} />
+
+          {/* Rotas de pagamentos/despesas só para admin */}
+          <Route path="/payments" element={<ProtectedRoute><AdminRoute><Payments /></AdminRoute></ProtectedRoute>} />
+          <Route path="/payments/:id" element={<ProtectedRoute><AdminRoute><PaymentDetail /></AdminRoute></ProtectedRoute>} />
+          <Route path="/payments/new" element={<ProtectedRoute><AdminRoute><PaymentForm /></AdminRoute></ProtectedRoute>} />
+          <Route path="/payments/edit/:id" element={<ProtectedRoute><AdminRoute><PaymentForm /></AdminRoute></ProtectedRoute>} />
+          <Route path="/payments/success" element={<ProtectedRoute><AdminRoute><PaymentStatus status="success" /></AdminRoute></ProtectedRoute>} />
+          <Route path="/payments/failure" element={<ProtectedRoute><AdminRoute><PaymentStatus status="failure" /></AdminRoute></ProtectedRoute>} />
+          <Route path="/payments/pending" element={<ProtectedRoute><AdminRoute><PaymentStatus status="pending" /></AdminRoute></ProtectedRoute>} />
+
           <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-          <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
-          <Route path="/expenses/:id" element={<ProtectedRoute><ExpenseDetail /></ProtectedRoute>} />
-          <Route path="/expenses/new" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
-          <Route path="/expenses/edit/:id" element={<ProtectedRoute><ExpenseForm /></ProtectedRoute>} />
-          <Route path="/expense-categories" element={<ProtectedRoute><ExpenseCategories /></ProtectedRoute>} />
+          <Route path="/expenses" element={<ProtectedRoute><AdminRoute><Expenses /></AdminRoute></ProtectedRoute>} />
+          <Route path="/expenses/:id" element={<ProtectedRoute><AdminRoute><ExpenseDetail /></AdminRoute></ProtectedRoute>} />
+          <Route path="/expenses/new" element={<ProtectedRoute><AdminRoute><ExpenseForm /></AdminRoute></ProtectedRoute>} />
+          <Route path="/expenses/edit/:id" element={<ProtectedRoute><AdminRoute><ExpenseForm /></AdminRoute></ProtectedRoute>} />
+          <Route path="/expense-categories" element={<ProtectedRoute><AdminRoute><ExpenseCategories /></AdminRoute></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
