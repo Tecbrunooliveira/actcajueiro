@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { paymentQueryService } from "@/services/payment";
 import { paymentStatusCache, CACHE_EXPIRATION } from "@/services/cache/paymentStatusCache";
 import { paymentMetricsService } from "@/services/payment/paymentMetricsService";
@@ -155,13 +155,14 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
     }
   }, [selectedMonth, selectedYear, cacheKey, toast]);
 
-  // Trigger fetch when hook is initialized
-  useCallback(() => {
+  // FIX: Replaced immediately invoked useCallback with useEffect
+  // This prevents the infinite re-rendering issue
+  useEffect(() => {
     if (!fetchAttempted && selectedMonth && selectedYear) {
       console.log("Initial fetch of payment data");
       fetchPaymentStatusData(false);
     }
-  }, [fetchAttempted, selectedMonth, selectedYear, fetchPaymentStatusData])();
+  }, [fetchAttempted, selectedMonth, selectedYear, fetchPaymentStatusData]);
 
   // Return values
   return { 

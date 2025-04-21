@@ -39,13 +39,21 @@ export const Report360 = ({
     financialSummary
   );
 
-  const getTableTotal = (list: { value: number }[]) =>
-    list.reduce((sum, el) => sum + el.value, 0);
-
-  const paidMembersCount =
+  // Calculate static values outside the render loop to prevent re-renders
+  const paidMembersCount = 
     paymentStatusData.find((item) => item.name === "Em Dia")?.value || 0;
   const unpaidMembersCount =
     paymentStatusData.find((item) => item.name === "Inadimplentes")?.value || 0;
+  
+  // For debugging
+  console.log("Report360 rendering with payment status data:", { 
+    paymentStatusData,
+    paidMembersCount,
+    unpaidMembersCount
+  });
+
+  const getTableTotal = (list: { value: number }[]) =>
+    list.reduce((sum, el) => sum + el.value, 0);
 
   return (
     <motion.div
