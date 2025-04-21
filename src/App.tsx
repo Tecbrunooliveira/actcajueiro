@@ -33,10 +33,21 @@ const App = () => (
           {/* Public route */}
           <Route path="/login" element={<Login />} />
 
-          {/* Add route for user profile */}
+          {/* Rota para admin criar usuário e associar */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <UserAdminPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Adicione esta linha após importar o componente */}
+          {/* <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} /> */}
+          {/* Protected routes */}
           <Route path="/me" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
 
-          {/* Protected routes */}
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
           <Route path="/members/:id" element={<ProtectedRoute><MemberDetail /></ProtectedRoute>} />
@@ -61,5 +72,8 @@ const App = () => (
     </BrowserRouter>
   </QueryClientProvider>
 );
+
+import AdminUsers from "@/pages/AdminUsers"; // adicione este import no topo
+import UserAdminPage from "./pages/AdminUsers";
 
 export default App;
