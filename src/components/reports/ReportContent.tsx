@@ -113,7 +113,8 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
         onYearChange={handleYearChange}
         monthOptions={monthOptions}
         yearOptions={yearOptions}
-        onGeneratePendingPayments={isAdmin ? handleGeneratePendingPayments : undefined} {/* omit for user */}
+        {/* Only provide the generate payments function for admins */}
+        onGeneratePendingPayments={isAdmin ? handleGeneratePendingPayments : undefined}
         generatingPayments={isAdmin ? generatingPayments : false}
         onSearch={handleSearch}
         isSearching={isSearching || loading}
@@ -148,7 +149,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
               financialSummary={financialSummary}
               formatMonthYear={formatMonthYear}
               hideMemberTabs={!isAdmin}
-              isAdmin={isAdmin} // PASS TO TAB CONTROL
+              isAdmin={isAdmin}
             />
           )}
         </>
