@@ -12,4 +12,5 @@ export type AuthContextType = {
   }>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 };

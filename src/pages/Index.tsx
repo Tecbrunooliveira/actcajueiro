@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { memberService, paymentService } from "@/services";
@@ -11,8 +10,12 @@ import { PaymentAlerts } from "@/components/home/PaymentAlerts";
 import { QuickActions } from "@/components/home/QuickActions";
 import { NavigationLinks } from "@/components/home/NavigationLinks";
 import { HomeLoading } from "@/components/home/HomeLoading";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+import { UserPlus } from "@/components/icons/UserPlus";
 
 const Index = () => {
+  const { user, isAdmin } = useAuth();
   const [members, setMembers] = useState([]);
   const [unpaidPayments, setUnpaidPayments] = useState<Payment[]>([]);
   const [monthlyRecord, setMonthlyRecord] = useState<MonthlyRecord>({
@@ -81,6 +84,25 @@ const Index = () => {
         <PaymentAlerts unpaidPayments={unpaidPayments} />
         <QuickActions />
         <NavigationLinks />
+        {isAdmin && (
+          <div className="mt-6">
+            <h2 className="font-semibold text-gray-700 mb-3">Administração</h2>
+            <div className="grid grid-cols-1 gap-3">
+              <Link
+                to="/admin/users"
+                className="flex items-center p-3 rounded-lg border border-indigo-100 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+              >
+                <div className="rounded-md bg-indigo-500 p-2 mr-3">
+                  <UserPlus className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Gerenciar Usuários</h3>
+                  <p className="text-sm text-gray-500">Criar e associar usuários a sócios</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        )}
       </motion.div>
     </MobileLayout>
   );

@@ -11,6 +11,7 @@ export const useAuthState = (): AuthContextType => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +21,13 @@ export const useAuthState = (): AuthContextType => {
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Check if user is admin
+        if (session?.user?.email === "admin@example.com") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
         
         // Fetch profile data if user is logged in
         if (session?.user) {
@@ -37,6 +45,11 @@ export const useAuthState = (): AuthContextType => {
       console.log('Existing session:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Check if user is admin
+      if (session?.user?.email === "admin@example.com") {
+        setIsAdmin(true);
+      }
       
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -107,5 +120,6 @@ export const useAuthState = (): AuthContextType => {
     signIn,
     signOut,
     isAuthenticated: !!session,
+    isAdmin,
   };
 };

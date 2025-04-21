@@ -1,125 +1,146 @@
 
 import React, { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
-import { MemberCard } from "@/components/members/MemberCard";
-import { Member, MemberStatus } from "@/types";
 import { memberService } from "@/services/memberService";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Member } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPlus, Search } from "lucide-react";
-import { MemberListSkeleton } from "@/components/members/MemberListSkeleton";
-import { motion } from "framer-motion";
+import MemberCard from "@/components/members/MemberCard";
+import { PlusCircle, Users, UserPlus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import MemberListSkeleton from "@/components/members/MemberListSkeleton";
+import { useAuth } from "@/contexts/auth";
 
 const Members = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<MemberStatus | "all">("all");
   const [members, setMembers] = useState<Member[]>([]);
+  const [filteredMembers, setFilteredMembers] = useState<Member[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const isAdmin = user?.email === "admin@example.com";
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        setLoading(true);
-        const allMembers = await memberService.getAllMembers();
-        // Sort members alphabetically by name
-        const sortedMembers = allMembers.sort((a, b) => 
-          a.name.localeCompare(b.name)
-        );
-        setMembers(sortedMembers);
-      } catch (error) {
-        console.error("Error fetching members:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMembers();
+    loadMembers();
   }, []);
 
-  // Filter by status and search term
-  const filteredMembers = members
-    .filter((member) => 
-      activeTab === "all" ? true : member.status === activeTab
-    )
-    .filter((member) =>
-      member.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  useEffect(() => {
+    filterMembers();
+  }, [searchTerm, members, activeTab]);
 
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05
-      }
+  const loadMembers = async () => {
+    setLoading(true);
+    try {
+      const data = await memberService.getAllMembers();
+      setMembers(data);
+    } catch (error) {
+      console.error("Error loading members:", error);
+      toast.error("Erro ao carregar sócios");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const item = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0 }
+  const filterMembers = () => {
+    let result = members;
+
+    // Filter by status
+    if (activeTab !== "all") {
+      result = result.filter((member) => member.status === activeTab);
+    }
+
+    // Filter by search term
+    if (searchTerm.trim() !== "") {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        (member) =>
+          member.name.toLowerCase().includes(term) ||
+          (member.email && member.email.toLowerCase().includes(term))
+      );
+    }
+
+    setFilteredMembers(result);
+  };
+
+  const handleNewMember = () => {
+    navigate("/members/new");
+  };
+
+  const handleAdminUsersPage = () => {
+    navigate("/admin/users");
   };
 
   return (
     <MobileLayout title="Sócios">
-      {/* Search and Add button */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="mb-4 flex gap-2"
-      >
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
           <Input
-            type="text"
             placeholder="Buscar sócio..."
-            className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="flex-1"
           />
-        </div>
-        <Link to="/members/new">
-          <Button size="icon" className="bg-club-500 hover:bg-club-600">
-            <UserPlus className="h-4 w-4" />
-          </Button>
-        </Link>
-      </motion.div>
-
-      {/* Tabs for filtering by status */}
-      <Tabs defaultValue="all" className="mb-6" onValueChange={(v) => setActiveTab(v as MemberStatus | "all")}>
-        <TabsList className="grid grid-cols-3 mb-2">
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="frequentante">Frequentantes</TabsTrigger>
-          <TabsTrigger value="afastado">Afastados</TabsTrigger>
-        </TabsList>
-
-        {loading ? (
-          <MemberListSkeleton />
-        ) : (
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="space-y-2"
+          <Button 
+            onClick={handleNewMember} 
+            className="bg-club-500 hover:bg-club-600"
           >
-            {filteredMembers.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Nenhum sócio encontrado</p>
-              </div>
-            ) : (
+            <PlusCircle className="w-5 h-5" />
+          </Button>
+          
+          {isAdmin && (
+            <Button 
+              onClick={handleAdminUsersPage} 
+              className="bg-indigo-500 hover:bg-indigo-600"
+              title="Gerenciar usuários do sistema"
+            >
+              <UserPlus className="w-5 h-5" />
+            </Button>
+          )}
+        </div>
+
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid grid-cols-3 mb-4">
+            <TabsTrigger value="all">Todos</TabsTrigger>
+            <TabsTrigger value="active">Ativos</TabsTrigger>
+            <TabsTrigger value="inactive">Inativos</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="space-y-4">
+            {loading ? (
+              <MemberListSkeleton />
+            ) : filteredMembers.length > 0 ? (
               filteredMembers.map((member) => (
-                <motion.div key={member.id} variants={item}>
-                  <MemberCard member={member} />
-                </motion.div>
+                <MemberCard key={member.id} member={member} />
               ))
+            ) : (
+              <div className="text-center py-10">
+                <Users className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nenhum sócio encontrado
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {searchTerm
+                    ? "Tente outro termo de busca"
+                    : "Comece adicionando um novo sócio"}
+                </p>
+                <div className="mt-6">
+                  <Button
+                    onClick={handleNewMember}
+                    className="bg-club-500 hover:bg-club-600"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Novo Sócio
+                  </Button>
+                </div>
+              </div>
             )}
-          </motion.div>
-        )}
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
     </MobileLayout>
   );
 };
