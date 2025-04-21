@@ -106,6 +106,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
 
   return (
     <div className="space-y-6 animate-fade-in pb-12">
+      {/* Only provide the generate payments function for admins */}
       <PeriodSelector 
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
@@ -113,7 +114,6 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
         onYearChange={handleYearChange}
         monthOptions={monthOptions}
         yearOptions={yearOptions}
-        {/* Only provide the generate payments function for admins */}
         onGeneratePendingPayments={isAdmin ? handleGeneratePendingPayments : undefined}
         generatingPayments={isAdmin ? generatingPayments : false}
         onSearch={handleSearch}
@@ -157,3 +157,4 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
     </div>
   );
 };
+
