@@ -81,13 +81,14 @@ const Members = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1"
           />
-          <Button 
-            onClick={handleNewMember} 
-            className="bg-club-500 hover:bg-club-600"
-          >
-            <PlusCircle className="w-5 h-5" />
-          </Button>
-          
+          {isAdmin && (
+            <Button 
+              onClick={handleNewMember} 
+              className="bg-club-500 hover:bg-club-600"
+            >
+              <PlusCircle className="w-5 h-5" />
+            </Button>
+          )}
           {isAdmin && (
             <Button 
               onClick={handleAdminUsersPage} 
@@ -130,15 +131,17 @@ const Members = () => {
                     ? "Tente outro termo de busca"
                     : "Comece adicionando um novo sócio"}
                 </p>
-                <div className="mt-6">
-                  <Button
-                    onClick={handleNewMember}
-                    className="bg-club-500 hover:bg-club-600"
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Novo Sócio
-                  </Button>
-                </div>
+                {isAdmin && (
+                  <div className="mt-6">
+                    <Button
+                      onClick={handleNewMember}
+                      className="bg-club-500 hover:bg-club-600"
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Novo Sócio
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>

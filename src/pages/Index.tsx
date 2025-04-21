@@ -83,8 +83,8 @@ const Index = () => {
         <WelcomeCard />
         <StatsSummary membersCount={members.length} monthlyRecord={monthlyRecord} />
         <PaymentAlerts unpaidPayments={unpaidPayments} />
-        <QuickActions />
-        <NavigationLinks />
+        {isAdmin && <QuickActions />}
+        {isAdmin && <NavigationLinks />}
         {isAdmin && (
           <div className="mt-6">
             <h2 className="font-semibold text-gray-700 mb-3">Administração</h2>
