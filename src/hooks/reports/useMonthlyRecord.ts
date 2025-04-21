@@ -9,8 +9,9 @@ export const useMonthlyRecord = (month: string, year: string, shouldLoad = false
   const [retryCount, setRetryCount] = useState(0);
 
   const loadMonthlyRecord = useCallback(async () => {
-    if (!month) {
-      console.log("Month parameter is empty, skipping load");
+    // Não tenta carregar sem mês ou ano
+    if (!month || !year) {
+      console.log("Month or year parameter is empty, skipping load");
       return;
     }
 
@@ -21,22 +22,40 @@ export const useMonthlyRecord = (month: string, year: string, shouldLoad = false
       
       // Convert year string to number to match the expected type
       const yearNumber = parseInt(year, 10);
+      
+      // Validação extra para evitar chamadas com valores inválidos
+      if (isNaN(yearNumber)) {
+        throw new Error("Ano inválido");
+      }
+      
       const record = await paymentService.getMonthlyRecord(month, yearNumber);
       setMonthlyRecord(record);
     } catch (err) {
       console.error("Error fetching monthly record:", err);
-      setError("Erro de tempo limite. O servidor está demorando para responder.");
+      
+      if (err instanceof Error) {
+        // Mensagens de erro mais detalhadas
+        if (err.message.includes("tempo limite") || err.message.includes("timeout")) {
+          setError("Erro de tempo limite. O servidor está demorando para responder.");
+        } else if (err.message.includes("statement")) {
+          setError("Erro do banco de dados. Tente novamente mais tarde.");
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("Erro de tempo limite. O servidor está demorando para responder.");
+      }
     } finally {
       setLoading(false);
     }
   }, [month, year]);
 
-  // Only load data when explicitly triggered
+  // Only load data when explicitly triggered and when month/year are valid
   useEffect(() => {
-    if (shouldLoad && month) {
+    if (shouldLoad && month && year) {
       loadMonthlyRecord();
     }
-  }, [loadMonthlyRecord, month, shouldLoad, retryCount]);
+  }, [loadMonthlyRecord, month, year, shouldLoad, retryCount]);
 
   const retry = useCallback(() => {
     setRetryCount(prev => prev + 1);

@@ -24,19 +24,22 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
     let totalExpenses = 0;
     
     if (expenses && expenses.length > 0) {
-      const year = parseInt(selectedYear);
-      const month = parseInt(selectedMonth.split('-')[1]);
+      // Garante que temos valores válidos
+      const year = parseInt(selectedYear || "0");
+      const month = selectedMonth ? parseInt(selectedMonth.split('-')[1]) : 0;
       
-      totalExpenses = expenses
-        .filter(expense => {
-          try {
-            const expenseDate = new Date(expense.date);
-            return expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
-          } catch (e) {
-            return false; // Skip invalid dates
-          }
-        })
-        .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      if (year && month) {
+        totalExpenses = expenses
+          .filter(expense => {
+            try {
+              const expenseDate = new Date(expense.date);
+              return expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
+            } catch (e) {
+              return false; // Skip invalid dates
+            }
+          })
+          .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      }
     }
     
     // Calculate balance
@@ -50,15 +53,31 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
   }, [selectedMonth, selectedYear]);
 
   const fetchFinancialSummary = useCallback(async () => {
+    // Só busca se houver mês e ano selecionados
+    if (!selectedMonth || !selectedYear) {
+      setFinancialSummary({
+        totalIncome: 0, 
+        totalExpenses: 0, 
+        balance: 0
+      });
+      return;
+    }
+  
     try {
       setError(null);
       setFetchAttempted(true);
       setIsRetrying(true);
       
+      // Parse year para verificar se é válido
+      const yearNumber = parseInt(selectedYear);
+      if (isNaN(yearNumber)) {
+        throw new Error("Ano inválido selecionado");
+      }
+      
       // Add timeout for better error handling - increased to 8 seconds
       const monthlyRecordPromise = paymentService.getMonthlyRecord(
         selectedMonth,
-        parseInt(selectedYear)
+        yearNumber
       );
       const expensesPromise = expenseService.getAllExpenses();
       const timeoutPromise = new Promise<never>((_, reject) => 
@@ -126,8 +145,14 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
   }, [selectedMonth, selectedYear, calculateFinancialSummary]);
 
   useEffect(() => {
-    // Only fetch if we haven't tried yet or if month/year changes
-    if (!fetchAttempted || selectedMonth || selectedYear) {
+    // Garantir que temos valores válidos para fetchAttempted quando alterarmos mês/ano
+    if (selectedMonth && selectedYear) {
+      setFetchAttempted(false);
+    }
+    
+    // Só faz o fetch se não tivermos tentado ainda ou se alterarmos mês/ano
+    if ((!fetchAttempted && selectedMonth && selectedYear) || 
+        (selectedMonth && selectedYear && fetchAttempted)) {
       fetchFinancialSummary();
     }
   }, [fetchFinancialSummary, fetchAttempted, selectedMonth, selectedYear]);

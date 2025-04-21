@@ -1,6 +1,9 @@
 
 import React, { Suspense } from 'react';
 import { LoadingState } from "./LoadingState";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const Report360 = React.lazy(() => import("./Report360"));
 
@@ -29,6 +32,20 @@ export const Report360View: React.FC<Report360ViewProps> = ({
   selectedMonth,
   formatMonthYear
 }) => {
+  // Se não houver mês selecionado, mostre uma mensagem informativa
+  if (!selectedMonth) {
+    return (
+      <Alert className="mb-4 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700">
+        <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <AlertTitle className="text-amber-800 dark:text-amber-300">Selecione um período</AlertTitle>
+        <AlertDescription className="text-amber-700 dark:text-amber-400">
+          Para visualizar o relatório 360°, selecione um mês e ano e clique em "Buscar".
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  // Mostra o estado de carregamento
   if (loading360) {
     return (
       <LoadingState 

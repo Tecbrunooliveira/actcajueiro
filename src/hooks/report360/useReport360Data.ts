@@ -12,6 +12,9 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
   const { toast } = useToast();
   const [isRetrying, setIsRetrying] = useState(false);
   
+  // Verifica se temos mês e ano válidos antes de prosseguir
+  const hasValidSelection = selectedMonth && selectedYear;
+  
   // Use smaller hooks with optimized loading
   const { 
     memberStatusData, 
@@ -40,6 +43,15 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
     retry: retryFinancialData,
     isRetrying: isFinancialRetrying
   } = useFinancialSummary(selectedMonth, selectedYear);
+
+  // Set loading state to false once initial data fetch is complete
+  useEffect(() => {
+    if (!hasValidSelection) {
+      setLoading(false);
+    } else if (!isPaymentRetrying && !isExpensesRetrying && !isFinancialRetrying) {
+      setLoading(false);
+    }
+  }, [hasValidSelection, isPaymentRetrying, isExpensesRetrying, isFinancialRetrying]);
 
   // Monitor if any hook is retrying
   useEffect(() => {
@@ -89,6 +101,15 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
 
   // Enhance retry function with better error handling and parallel requests
   const retry = useCallback(() => {
+    if (!hasValidSelection) {
+      toast({
+        title: "Informação necessária",
+        description: "Selecione um mês e ano antes de carregar o relatório.",
+        duration: 3000,
+      });
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     setIsRetrying(true);
@@ -122,7 +143,7 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
       setIsRetrying(false);
       setLoading(false);
     });
-  }, [retryMemberData, retryPaymentData, retryExpensesData, retryFinancialData, toast]);
+  }, [retryMemberData, retryPaymentData, retryExpensesData, retryFinancialData, toast, hasValidSelection]);
 
   return {
     loading,
