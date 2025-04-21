@@ -96,6 +96,14 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
     }
   }, [loading, isSearching, firstLoad]);
 
+  // For non-admins, always force activeTab to "advanced"
+  useEffect(() => {
+    if (!isAdmin && activeTab !== "advanced") {
+      handleTabChange("advanced");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, activeTab, handleTabChange]);
+
   return (
     <div className="space-y-6 animate-fade-in pb-12">
       <PeriodSelector 
@@ -105,7 +113,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
         onYearChange={handleYearChange}
         monthOptions={monthOptions}
         yearOptions={yearOptions}
-        onGeneratePendingPayments={isAdmin ? handleGeneratePendingPayments : undefined}
+        onGeneratePendingPayments={isAdmin ? handleGeneratePendingPayments : undefined} {/* omit for user */}
         generatingPayments={isAdmin ? generatingPayments : false}
         onSearch={handleSearch}
         isSearching={isSearching || loading}
@@ -140,6 +148,7 @@ export const ReportContent: React.FC<ReportContentProps> = (props) => {
               financialSummary={financialSummary}
               formatMonthYear={formatMonthYear}
               hideMemberTabs={!isAdmin}
+              isAdmin={isAdmin} // PASS TO TAB CONTROL
             />
           )}
         </>
