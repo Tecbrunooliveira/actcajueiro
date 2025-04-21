@@ -8,7 +8,7 @@ export const userService = {
     try {
       // Chama a edge function criada para criar usuários
       const response = await fetch(
-        `${supabase.auth.url}/functions/v1/create-user`,
+        `${process.env.SUPABASE_URL || 'https://vamcxqpesqfnobqpbjaz.supabase.co'}/functions/v1/create-user`,
         {
           method: 'POST',
           headers: {
