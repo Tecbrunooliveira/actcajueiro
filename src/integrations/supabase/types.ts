@@ -78,6 +78,7 @@ export type Database = {
           phone: string | null
           photo: string | null
           status: string
+          user_id: string | null
           warnings: Json | null
         }
         Insert: {
@@ -89,6 +90,7 @@ export type Database = {
           phone?: string | null
           photo?: string | null
           status: string
+          user_id?: string | null
           warnings?: Json | null
         }
         Update: {
@@ -100,6 +102,7 @@ export type Database = {
           phone?: string | null
           photo?: string | null
           status?: string
+          user_id?: string | null
           warnings?: Json | null
         }
         Relationships: []
@@ -196,18 +199,21 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          member_role: string | null
           role: string | null
           username: string | null
         }
         Insert: {
           created_at?: string | null
           id: string
+          member_role?: string | null
           role?: string | null
           username?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
+          member_role?: string | null
           role?: string | null
           username?: string | null
         }
@@ -218,7 +224,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_member_id_from_user: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

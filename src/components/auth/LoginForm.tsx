@@ -27,10 +27,8 @@ const LoginForm = ({ defaultEmail = "admin@example.com", defaultPassword = "admi
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage("");
-
     try {
-      const { error } = await signIn(email, password);
-      
+      const { error, data } = await signIn(email, password);
       if (error) {
         console.error("Login error:", error);
         if (error.message === "Invalid login credentials") {
@@ -48,7 +46,13 @@ const LoginForm = ({ defaultEmail = "admin@example.com", defaultPassword = "admi
           title: "Login bem-sucedido",
           description: "Bem-vindo de volta!",
         });
-        navigate("/");
+        // Check if logged in user is admin
+        const profile = data?.user?.user_metadata || {};
+        if (profile.role === "admin" || email === "admin@example.com") {
+          navigate("/");
+        } else {
+          navigate("/me");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

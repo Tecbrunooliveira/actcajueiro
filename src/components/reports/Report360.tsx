@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -154,5 +153,4 @@ export const Report360 = ({
   );
 };
 
-// Add default export for lazy loading
 export default Report360;

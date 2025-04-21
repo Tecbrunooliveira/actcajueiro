@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import ExpenseCategories from "./pages/ExpenseCategories";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PaymentStatus from "./pages/PaymentStatus";
+import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +32,10 @@ const App = () => (
         <Routes>
           {/* Public route */}
           <Route path="/login" element={<Login />} />
-          
+
+          {/* Add route for user profile */}
+          <Route path="/me" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+
           {/* Protected routes */}
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
