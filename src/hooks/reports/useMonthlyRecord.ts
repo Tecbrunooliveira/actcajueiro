@@ -19,7 +19,9 @@ export const useMonthlyRecord = (month: string, year: string, shouldLoad = false
       setError(null);
       console.log(`Loading monthly record for: ${month}`);
       
-      const record = await paymentService.getMonthlyRecord(month, year);
+      // Convert year string to number to match the expected type
+      const yearNumber = parseInt(year, 10);
+      const record = await paymentService.getMonthlyRecord(month, yearNumber);
       setMonthlyRecord(record);
     } catch (err) {
       console.error("Error fetching monthly record:", err);
