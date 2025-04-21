@@ -50,7 +50,7 @@ export function PaymentCard({
         </div>
         
         <div className="flex flex-col items-end gap-1">
-          <span className="font-medium px-0 mx-[96px]">{formatCurrency(payment.amount)}</span>
+          <span className="font-medium px-0 mx-[40px]">{formatCurrency(payment.amount)}</span>
           <Badge variant="outline" className={payment.isPaid ? "bg-green-50 text-green-600 border-green-200" : "bg-red-50 text-red-600 border-red-200"}>
             {payment.isPaid ? <CheckCircle className="h-3 w-3 mr-1" /> : <AlertCircle className="h-3 w-3 mr-1" />}
             {payment.isPaid ? "Pago" : "Pendente"}
