@@ -27,7 +27,10 @@ export function MemberFormComponent({ memberId }: MemberFormComponentProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-6">
-          <PhotoUpload form={form} />
+          <PhotoUpload 
+            value={form.watch("photo") || ""} 
+            onChange={(url) => form.setValue("photo", url)} 
+          />
           <BasicInfoFields form={form} />
           
           {/* User ID field (visible only to admins) */}
@@ -71,7 +74,10 @@ export function MemberFormComponent({ memberId }: MemberFormComponentProps) {
           <WarningsSection form={form} />
         </div>
 
-        <FormButtons isEditMode={isEditMode} isSubmitting={submitLoading} />
+        <FormButtons 
+          isEditMode={isEditMode} 
+          submitLoading={submitLoading} 
+        />
       </form>
     </Form>
   );
