@@ -11,6 +11,7 @@ export interface Member {
   notes?: string;
   photo?: string;
   warnings?: Array<{text: string, date: string}>;
+  user_id?: string; // Added user_id property
 }
 
 export interface Payment {
