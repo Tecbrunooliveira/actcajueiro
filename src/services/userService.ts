@@ -6,9 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 export const userService = {
   createUser: async (email: string, password: string): Promise<{ userId: string | null, error: any }> => {
     try {
+      // Use hardcoded Supabase URL instead of process.env
+      const supabaseUrl = "https://vamcxqpesqfnobqpbjaz.supabase.co";
+      
       // Chama a edge function criada para criar usuários
       const response = await fetch(
-        `${process.env.SUPABASE_URL || 'https://vamcxqpesqfnobqpbjaz.supabase.co'}/functions/v1/create-user`,
+        `${supabaseUrl}/functions/v1/create-user`,
         {
           method: 'POST',
           headers: {
