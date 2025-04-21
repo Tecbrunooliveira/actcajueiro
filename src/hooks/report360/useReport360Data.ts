@@ -44,6 +44,11 @@ export const useReport360Data = (selectedMonth: string, selectedYear: string) =>
     isRetrying: isFinancialRetrying
   } = useFinancialSummary(selectedMonth, selectedYear);
 
+  // Log financial summary to debug
+  useEffect(() => {
+    console.log("useReport360Data - Current financial summary:", financialSummary);
+  }, [financialSummary]);
+
   // Set loading state to false once initial data fetch is complete
   useEffect(() => {
     if (!hasValidSelection) {

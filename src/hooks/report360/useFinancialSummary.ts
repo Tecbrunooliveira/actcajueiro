@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Expense } from "@/types";
 import { paymentService, expenseService } from "@/services";
+import { paymentQueryService } from "@/services/payment/paymentQueryService";
 
 export const useFinancialSummary = (selectedMonth: string, selectedYear: string) => {
   const [financialSummary, setFinancialSummary] = useState({
@@ -13,43 +14,74 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
   const [fetchAttempted, setFetchAttempted] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
 
-  const calculateFinancialSummary = useCallback((
-    monthlyRecord: { collectedAmount: number } | null,
-    expenses: Expense[] | null
-  ) => {
-    // Provide default values if data is missing
-    const totalIncome = monthlyRecord?.collectedAmount || 0;
-    
-    // Calculate total expenses with fallback
-    let totalExpenses = 0;
-    
-    if (expenses && expenses.length > 0) {
-      // Garante que temos valores válidos
-      const year = parseInt(selectedYear || "0");
-      const month = selectedMonth ? parseInt(selectedMonth.split('-')[1]) : 0;
-      
-      if (year && month) {
-        totalExpenses = expenses
-          .filter(expense => {
-            try {
-              const expenseDate = new Date(expense.date);
-              return expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
-            } catch (e) {
-              return false; // Skip invalid dates
-            }
-          })
-          .reduce((sum, expense) => sum + (expense.amount || 0), 0);
-      }
+  const calculateFinancialSummary = useCallback(async () => {
+    // Only calculate if we have month and year selected
+    if (!selectedMonth || !selectedYear) {
+      console.log("No month/year selected, using default financial summary");
+      return {
+        totalIncome: 0,
+        totalExpenses: 0,
+        balance: 0
+      };
     }
     
-    // Calculate balance
-    const balance = totalIncome - totalExpenses;
-    
-    setFinancialSummary({
-      totalIncome,
-      totalExpenses,
-      balance
-    });
+    try {
+      console.log(`Calculating financial summary for ${selectedMonth}-${selectedYear}`);
+      
+      // Get the payment data directly from paymentQueryService
+      const yearNumber = parseInt(selectedYear);
+      const payments = await paymentQueryService.getPaymentsByMonth(selectedMonth, yearNumber);
+      
+      // Sum up paid payments to calculate total income
+      const totalIncome = payments
+        .filter(payment => payment.isPaid)
+        .reduce((sum, payment) => sum + payment.amount, 0);
+      
+      console.log(`Calculated totalIncome: ${totalIncome} from ${payments.length} payments`);
+      
+      // Get expenses for the selected month/year
+      const allExpenses = await expenseService.getAllExpenses();
+      
+      // Filter expenses by month and year
+      let totalExpenses = 0;
+      
+      if (allExpenses && allExpenses.length > 0) {
+        const year = parseInt(selectedYear);
+        const month = selectedMonth ? parseInt(selectedMonth.split('-')[1]) : 0;
+        
+        if (year && month) {
+          totalExpenses = allExpenses
+            .filter(expense => {
+              try {
+                const expenseDate = new Date(expense.date);
+                return expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
+              } catch (e) {
+                return false; // Skip invalid dates
+              }
+            })
+            .reduce((sum, expense) => sum + (expense.amount || 0), 0);
+        }
+      }
+      
+      // Calculate balance
+      const balance = totalIncome - totalExpenses;
+      
+      console.log(`Financial summary calculated: Income: ${totalIncome}, Expenses: ${totalExpenses}, Balance: ${balance}`);
+      
+      return {
+        totalIncome,
+        totalExpenses,
+        balance
+      };
+    } catch (error) {
+      console.error("Error in calculateFinancialSummary:", error);
+      // Return default values on error
+      return {
+        totalIncome: 0,
+        totalExpenses: 0,
+        balance: 0
+      };
+    }
   }, [selectedMonth, selectedYear]);
 
   const fetchFinancialSummary = useCallback(async () => {
@@ -68,62 +100,9 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       setFetchAttempted(true);
       setIsRetrying(true);
       
-      // Parse year para verificar se é válido
-      const yearNumber = parseInt(selectedYear);
-      if (isNaN(yearNumber)) {
-        throw new Error("Ano inválido selecionado");
-      }
-      
-      // Add timeout for better error handling - increased to 8 seconds
-      const monthlyRecordPromise = paymentService.getMonthlyRecord(
-        selectedMonth,
-        yearNumber
-      );
-      const expensesPromise = expenseService.getAllExpenses();
-      const timeoutPromise = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error("Erro de tempo limite ao carregar resumo financeiro.")), 8000)
-      );
-      
-      // Use Promise.race with Promise.all to add a timeout
-      try {
-        const [monthlyRecord, expenses] = await Promise.race([
-          Promise.all([monthlyRecordPromise, expensesPromise]),
-          timeoutPromise.then(() => { throw new Error("Tempo limite excedido"); })
-        ]);
-        
-        // Calculate financial summary
-        calculateFinancialSummary(monthlyRecord, expenses);
-      } catch (error) {
-        // If the combined request fails, try to get at least partial data
-        console.warn("Falling back to partial data loading for financial summary");
-        
-        let monthlyRecord = null;
-        let expenses = null;
-        
-        try {
-          monthlyRecord = await Promise.race([
-            monthlyRecordPromise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
-          ]);
-        } catch (e) {
-          console.error("Failed to fetch monthly record:", e);
-        }
-        
-        try {
-          expenses = await Promise.race([
-            expensesPromise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000))
-          ]);
-        } catch (e) {
-          console.error("Failed to fetch expenses:", e);
-        }
-        
-        // Use whatever data we got
-        calculateFinancialSummary(monthlyRecord, expenses);
-        
-        // Still throw the original error for proper error handling
-        throw error;
-      }
+      // Calculate the financial summary
+      const summary = await calculateFinancialSummary();
+      setFinancialSummary(summary);
       
       setIsRetrying(false);
     } catch (error) {

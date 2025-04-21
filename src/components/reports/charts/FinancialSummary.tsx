@@ -15,6 +15,10 @@ export const FinancialSummary = ({
   } 
 }) => {
   const { totalIncome, totalExpenses, balance } = data;
+  
+  // Add console logging to debug the values
+  console.log("FinancialSummary rendering with data:", { totalIncome, totalExpenses, balance });
+  
   const isPositiveBalance = balance >= 0;
 
   const cardVariants = {

@@ -46,10 +46,11 @@ export const Report360 = ({
     paymentStatusData.find((item) => item.name === "Inadimplentes")?.value || 0;
   
   // For debugging
-  console.log("Report360 rendering with payment status data:", { 
+  console.log("Report360 rendering with data:", { 
     paymentStatusData,
     paidMembersCount,
-    unpaidMembersCount
+    unpaidMembersCount,
+    financialSummary
   });
 
   const getTableTotal = (list: { value: number }[]) =>
