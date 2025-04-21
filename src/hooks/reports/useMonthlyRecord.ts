@@ -19,7 +19,7 @@ export const useMonthlyRecord = (month: string, year: string, shouldLoad = false
       setError(null);
       console.log(`Loading monthly record for: ${month}`);
       
-      const record = await paymentService.getMonthlyRecord(month);
+      const record = await paymentService.getMonthlyRecord(month, year);
       setMonthlyRecord(record);
     } catch (err) {
       console.error("Error fetching monthly record:", err);
@@ -27,7 +27,7 @@ export const useMonthlyRecord = (month: string, year: string, shouldLoad = false
     } finally {
       setLoading(false);
     }
-  }, [month]);
+  }, [month, year]);
 
   // Only load data when explicitly triggered
   useEffect(() => {

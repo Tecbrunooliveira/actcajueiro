@@ -16,15 +16,15 @@ export const useMemberPaymentStatus = (month: string, payments: Payment[]) => {
     if (!month || !payments.length || !allMembers.length) return;
 
     const paidMemberIds = payments
-      .filter(payment => payment.month === month && payment.status === "PAID")
+      .filter(payment => payment.month === month && payment.isPaid)
       .map(payment => payment.memberId);
 
     const paid = allMembers.filter(member => 
-      paidMemberIds.includes(member.id) && member.status === "ACTIVE"
+      paidMemberIds.includes(member.id) && member.status === "frequentante"
     );
     
     const unpaid = allMembers.filter(member => 
-      !paidMemberIds.includes(member.id) && member.status === "ACTIVE"
+      !paidMemberIds.includes(member.id) && member.status === "frequentante"
     );
     
     setPaidMembers(paid);
