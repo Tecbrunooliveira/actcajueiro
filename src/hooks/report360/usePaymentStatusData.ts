@@ -6,7 +6,10 @@ import { paymentMetricsService } from "@/services/payment/paymentMetricsService"
 import { useToast } from "@/components/ui/use-toast";
 
 export const usePaymentStatusData = (selectedMonth: string, selectedYear: string) => {
-  const [paymentStatusData, setPaymentStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [paymentStatusData, setPaymentStatusData] = useState<{ name: string; value: number; color: string }[]>([
+    { name: 'Em Dia', value: 0, color: '#10b981' },
+    { name: 'Inadimplentes', value: 0, color: '#ef4444' }
+  ]);
   const [error, setError] = useState<string | null>(null);
   const [fetchAttempted, setFetchAttempted] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -16,6 +19,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
   
   const fetchPaymentStatusData = useCallback(async (ignoreCache = false) => {
     if (!selectedMonth || !selectedYear) {
+      console.log("No month/year selected, using default payment status data");
       setPaymentStatusData([
         { name: 'Em Dia', value: 0, color: '#10b981' },
         { name: 'Inadimplentes', value: 0, color: '#ef4444' }
@@ -31,17 +35,18 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       
       // Use fresh cache if available and not explicitly bypassing
       if (!ignoreCache && paymentStatusCache.isValidCache(cachedData)) {
-        console.log(`Using fresh cached payment status data for ${selectedMonth}-${selectedYear}`);
+        console.log(`Using fresh cached payment status data for ${selectedMonth}-${selectedYear}:`, cachedData.data);
         setPaymentStatusData(cachedData.data);
         return;
       }
       
       // Use stale cache data while fetching fresh data
       if (paymentStatusCache.isStaleButUsable(cachedData)) {
-        console.log(`Using stale cached payment status data for ${selectedMonth}-${selectedYear}`);
+        console.log(`Using stale cached payment status data for ${selectedMonth}-${selectedYear}:`, cachedData.data);
         setPaymentStatusData(cachedData.data);
       } else {
         // Set default data if no cache exists
+        console.log("No usable cache, setting default payment status data");
         setPaymentStatusData([
           { name: 'Em Dia', value: 0, color: '#10b981' },
           { name: 'Inadimplentes', value: 0, color: '#ef4444' }
@@ -64,7 +69,9 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         throw new Error("Ano inválido selecionado");
       }
       
+      console.log(`Fetching all payments for ${selectedMonth}-${yearValue}`);
       const allPayments = await paymentQueryService.getAllPaymentsWithRetry();
+      console.log(`Received ${allPayments?.length || 0} payments from service`);
       
       if (allPayments && allPayments.length > 0) {
         // Filter payments for the selected month/year
@@ -72,7 +79,10 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
           payment => payment.month === selectedMonth && payment.year === yearValue
         );
         
+        console.log(`Filtered to ${filteredPayments.length} payments for ${selectedMonth}-${yearValue}`);
+        
         const data = paymentMetricsService.calculatePaymentStatusMetrics(filteredPayments);
+        console.log("Payment status data calculated:", data);
         
         // Store data in cache
         paymentStatusCache.set(cacheKey, {
@@ -83,6 +93,22 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
         
         setPaymentStatusData(data);
         setIsRetrying(false);
+      } else {
+        console.warn("No payments received from service");
+        // Ensure we have default data even when no payments are found
+        const defaultData = [
+          { name: 'Em Dia', value: 0, color: '#10b981' },
+          { name: 'Inadimplentes', value: 0, color: '#ef4444' }
+        ];
+        
+        setPaymentStatusData(defaultData);
+        
+        // Store default data in cache to prevent repeated failed requests
+        paymentStatusCache.set(cacheKey, {
+          data: defaultData,
+          timestamp: Date.now(),
+          stale: true
+        });
       }
       
     } catch (error) {
@@ -105,7 +131,7 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
       // Use ANY cached data if available
       const cachedData = paymentStatusCache.get(cacheKey);
       if (cachedData) {
-        console.log("Using cached data as fallback due to error");
+        console.log("Using cached data as fallback due to error:", cachedData.data);
         setPaymentStatusData(cachedData.data);
         
         toast({
@@ -113,6 +139,13 @@ export const usePaymentStatusData = (selectedMonth: string, selectedYear: string
           description: "Mostrando os últimos dados disponíveis devido a problemas de conexão.",
           duration: 5000,
         });
+      } else {
+        // Ensure we have default data even on error
+        console.log("No cache available, using default data on error");
+        setPaymentStatusData([
+          { name: 'Em Dia', value: 0, color: '#10b981' },
+          { name: 'Inadimplentes', value: 0, color: '#ef4444' }
+        ]);
       }
     } finally {
       setIsRetrying(false);

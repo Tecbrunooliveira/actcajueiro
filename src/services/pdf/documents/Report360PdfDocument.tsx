@@ -24,9 +24,14 @@ export const Report360PdfDocument = ({
     balance: number;
   };
 }) => {
-  // Extract the payment status values
+  // Extract the payment status values - ensure we handle undefined gracefully
   const paidMembersCount = paymentStatusData.find(item => item.name === 'Em Dia')?.value || 0;
   const unpaidMembersCount = paymentStatusData.find(item => item.name === 'Inadimplentes')?.value || 0;
+  
+  // For debugging
+  console.log("PDF Payment Status Data:", JSON.stringify(paymentStatusData));
+  console.log("Paid members count:", paidMembersCount);
+  console.log("Unpaid members count:", unpaidMembersCount);
   
   return (
     <Document>
