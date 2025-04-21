@@ -11,22 +11,26 @@ export const useMemberPaymentStatus = (month: string, payments: Payment[]) => {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // Calculate paid and unpaid members whenever payments or all members change
   useEffect(() => {
     if (!month || !payments.length || !allMembers.length) return;
 
+    // IDs dos sócios que pagaram no mês
     const paidMemberIds = payments
       .filter(payment => payment.month === month && payment.isPaid)
       .map(payment => payment.memberId);
 
-    const paid = allMembers.filter(member => 
-      paidMemberIds.includes(member.id) && member.status === "frequentante"
+    // Sócios "frequentante" ou "afastado" que PAGARAM
+    const paid = allMembers.filter(member =>
+      paidMemberIds.includes(member.id) &&
+      (member.status === "frequentante" || member.status === "afastado")
     );
-    
-    const unpaid = allMembers.filter(member => 
-      !paidMemberIds.includes(member.id) && member.status === "frequentante"
+
+    // Sócios "frequentante" ou "afastado" que NÃO PAGARAM
+    const unpaid = allMembers.filter(member =>
+      !paidMemberIds.includes(member.id) &&
+      (member.status === "frequentante" || member.status === "afastado")
     );
-    
+
     setPaidMembers(paid);
     setUnpaidMembers(unpaid);
   }, [month, payments, allMembers]);
@@ -34,11 +38,11 @@ export const useMemberPaymentStatus = (month: string, payments: Payment[]) => {
   // Load all members when payments change
   const loadMembers = useCallback(async () => {
     if (!payments.length) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const members = await memberService.getAllMembers();
       setAllMembers(members);
     } catch (err) {
