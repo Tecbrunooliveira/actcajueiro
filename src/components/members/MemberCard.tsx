@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/services/communicationService";
+import { useAuth } from "@/contexts/auth"; // ADDED
 
 interface MemberCardProps {
   member: Member;
@@ -20,6 +21,8 @@ export function MemberCard({ member }: MemberCardProps) {
       openWhatsApp(member.phone);
     }
   };
+
+  const { isAdmin } = useAuth(); // NEW
 
   return (
     <Link
@@ -53,8 +56,9 @@ export function MemberCard({ member }: MemberCardProps) {
             <ChevronRight className="h-5 w-5 text-gray-400" />
           </div>
 
+          {/* Só mostra telefone e email se for admin */}
           <div className="mt-3 space-y-1">
-            {member.phone && (
+            {isAdmin && member.phone && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center text-sm text-gray-600">
                   <Phone className="h-4 w-4 mr-2" />
@@ -69,7 +73,7 @@ export function MemberCard({ member }: MemberCardProps) {
                 </Button>
               </div>
             )}
-            {member.email && (
+            {isAdmin && member.email && (
               <div className="flex items-center text-sm text-gray-600">
                 <Mail className="h-4 w-4 mr-2" />
                 <span>{member.email}</span>
@@ -81,3 +85,4 @@ export function MemberCard({ member }: MemberCardProps) {
     </Link>
   );
 }
+
