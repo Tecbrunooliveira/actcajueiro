@@ -10,23 +10,26 @@ interface PaymentsListProps {
   memberId: string;
   memberName: string;
   memberPhoto?: string;
+  isAdmin?: boolean;
 }
 
-export function PaymentsList({ payments, memberId, memberName, memberPhoto }: PaymentsListProps) {
+export function PaymentsList({ payments, memberId, memberName, memberPhoto, isAdmin = false }: PaymentsListProps) {
   const navigate = useNavigate();
   
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium">Histórico de Pagamentos</h3>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-club-500 border-club-500 hover:bg-club-50"
-          onClick={() => navigate(`/payments/new?memberId=${memberId}`)}
-        >
-          Novo Pagamento
-        </Button>
+        {isAdmin && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-club-500 border-club-500 hover:bg-club-50"
+            onClick={() => navigate(`/payments/new?memberId=${memberId}`)}
+          >
+            Novo Pagamento
+          </Button>
+        )}
       </div>
 
       {payments.length === 0 ? (

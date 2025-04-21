@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const UserProfile = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [member, setMember] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,13 @@ const UserProfile = () => {
     <MobileLayout title="Meu Perfil">
       <MemberInfoCard member={member} />
       <div className="mt-6">
-        <PaymentsList payments={payments} memberId={member.id} memberName={member.name} memberPhoto={member.photo} />
+        <PaymentsList 
+          payments={payments} 
+          memberId={member.id} 
+          memberName={member.name} 
+          memberPhoto={member.photo}
+          isAdmin={isAdmin}
+        />
       </div>
     </MobileLayout>
   );
