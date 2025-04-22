@@ -8,17 +8,17 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export function AnnouncementModal() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isAuthenticated } = useAuth();
   const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Só carrega, não exibe para admin
+  // Só carrega, não exibe para admin e apenas para usuários autenticados
   useEffect(() => {
-    if (!isAdmin) {
+    if (isAuthenticated && !isAdmin) {
       load();
     }
     // eslint-disable-next-line
-  }, []);
+  }, [isAuthenticated, isAdmin]);
 
   async function load() {
     setLoading(true);
@@ -43,7 +43,8 @@ export function AnnouncementModal() {
     setLoading(false);
   };
 
-  if (isAdmin || !pending.length) return null;
+  // Não mostra para usuários não autenticados, admin, ou se não houver comunicados pendentes
+  if (!isAuthenticated || isAdmin || !pending.length) return null;
 
   // Exibe o comunicado mais recente não lido (1 por vez)
   const current = pending[0];
