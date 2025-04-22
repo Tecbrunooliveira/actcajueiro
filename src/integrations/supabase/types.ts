@@ -79,6 +79,7 @@ export type Database = {
           phone: string | null
           photo: string | null
           position: string | null
+          position_id: string | null
           status: string
           user_id: string | null
           warnings: Json | null
@@ -93,6 +94,7 @@ export type Database = {
           phone?: string | null
           photo?: string | null
           position?: string | null
+          position_id?: string | null
           status: string
           user_id?: string | null
           warnings?: Json | null
@@ -107,11 +109,20 @@ export type Database = {
           phone?: string | null
           photo?: string | null
           position?: string | null
+          position_id?: string | null
           status?: string
           user_id?: string | null
           warnings?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "members_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -200,6 +211,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      positions: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

@@ -1,17 +1,19 @@
-import { Member, MemberStatus } from "@/types";
+
+import { Member, MemberStatus, Position } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const memberService = {
   getAllMembers: async (): Promise<Member[]> => {
     const { data, error } = await supabase
       .from('members')
-      .select('*');
+      .select('*, position:positions(id, name)');
     
     if (error) {
       console.error('Error fetching members:', error);
       return [];
     }
     
+    // Transform: member.position becomes object or undefined
     return data?.map(member => ({
       id: member.id,
       name: member.name,
@@ -21,9 +23,10 @@ export const memberService = {
       joinDate: member.join_date,
       notes: member.notes || undefined,
       photo: member.photo || undefined,
-      warnings: member.warnings as Array<{text: string, date: string}> || [],
+      warnings: member.warnings as Array<{ text: string; date: string }> || [],
       user_id: member.user_id || undefined,
       level: member.level,
+      position_id: member.position_id || undefined,
       position: member.position || undefined,
     })) || [];
   },
@@ -31,9 +34,9 @@ export const memberService = {
   getMemberById: async (id: string): Promise<Member | null> => {
     const { data, error } = await supabase
       .from('members')
-      .select('*')
+      .select('*, position:positions(id, name)')
       .eq('id', id)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error fetching member:', error);
@@ -51,9 +54,10 @@ export const memberService = {
       joinDate: data.join_date,
       notes: data.notes || undefined,
       photo: data.photo || undefined,
-      warnings: data.warnings as Array<{text: string, date: string}> || [],
+      warnings: data.warnings as Array<{ text: string; date: string }> || [],
       user_id: data.user_id || undefined,
       level: data.level,
+      position_id: data.position_id || undefined,
       position: data.position || undefined,
     };
   },
@@ -72,10 +76,10 @@ export const memberService = {
         warnings: member.warnings || [],
         user_id: member.user_id,
         level: member.level,
-        position: member.position,
+        position_id: member.position_id,
       })
-      .select()
-      .single();
+      .select('*, position:positions(id, name)')
+      .maybeSingle();
     
     if (error) {
       console.error('Error creating member:', error);
@@ -93,10 +97,11 @@ export const memberService = {
       joinDate: data.join_date,
       notes: data.notes || undefined,
       photo: data.photo || undefined,
-      warnings: data.warnings as Array<{text: string, date: string}> || [],
+      warnings: data.warnings as Array<{ text: string; date: string }> || [],
       user_id: data.user_id || undefined,
       level: data.level,
-      position: data.position,
+      position_id: data.position_id || undefined,
+      position: data.position || undefined,
     };
   },
 
@@ -114,12 +119,12 @@ export const memberService = {
         warnings: member.warnings || [],
         user_id: member.user_id,
         level: member.level,
-        position: member.position,
+        position_id: member.position_id,
       })
       .eq('id', member.id)
-      .select()
-      .single();
-    
+      .select('*, position:positions(id, name)')
+      .maybeSingle();
+
     if (error) {
       console.error('Error updating member:', error);
       throw error;
@@ -136,10 +141,11 @@ export const memberService = {
       joinDate: data.join_date,
       notes: data.notes || undefined,
       photo: data.photo || undefined,
-      warnings: data.warnings as Array<{text: string, date: string}> || [],
+      warnings: data.warnings as Array<{ text: string; date: string }> || [],
       user_id: data.user_id || undefined,
       level: data.level,
-      position: data.position,
+      position_id: data.position_id || undefined,
+      position: data.position || undefined,
     };
   },
 
@@ -158,7 +164,7 @@ export const memberService = {
   getMembersByStatus: async (status: MemberStatus): Promise<Member[]> => {
     const { data, error } = await supabase
       .from('members')
-      .select('*')
+      .select('*, position:positions(id, name)')
       .eq('status', status);
     
     if (error) {
@@ -175,9 +181,10 @@ export const memberService = {
       joinDate: member.join_date,
       notes: member.notes || undefined,
       photo: member.photo || undefined,
-      warnings: member.warnings as Array<{text: string, date: string}> || [],
+      warnings: member.warnings as Array<{ text: string; date: string }> || [],
       user_id: member.user_id || undefined,
       level: member.level,
+      position_id: member.position_id || undefined,
       position: member.position || undefined,
     })) || [];
   },
@@ -195,4 +202,19 @@ export const memberService = {
     
     return true;
   },
+};
+
+export const positionService = {
+  getAll: async (): Promise<Position[]> => {
+    const { data, error } = await supabase
+      .from('positions')
+      .select('id, name')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching positions:', error);
+      return [];
+    }
+    return data || [];
+  }
 };

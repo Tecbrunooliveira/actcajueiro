@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/services/communicationService";
 import { useAuth } from "@/contexts/auth";
-import { StarRatingInput } from "./StarRatingInput"; // Importa componente de estrelas
+import { StarRatingInput } from "./StarRatingInput";
 
 interface MemberCardProps {
   member: Member;
@@ -17,7 +17,7 @@ interface MemberCardProps {
 
 export function MemberCard({ member }: MemberCardProps) {
   const handleWhatsAppClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation to member detail
+    e.preventDefault();
     if (member.phone) {
       openWhatsApp(member.phone);
     }
@@ -37,14 +37,14 @@ export function MemberCard({ member }: MemberCardProps) {
             <User className="h-5 w-5 text-gray-400" />
           </AvatarFallback>
         </Avatar>
-        
+
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-medium text-lg">{member.name}</h3>
               {/* Posição abaixo do nome */}
-              {member.position && (
-                <div className="text-xs text-gray-500 mt-0.5">{member.position}</div>
+              {member.position?.name && (
+                <div className="text-xs text-gray-500 mt-0.5">{member.position.name}</div>
               )}
               <div className="flex items-center space-x-1 mt-1">
                 <span
@@ -75,8 +75,8 @@ export function MemberCard({ member }: MemberCardProps) {
                   <Phone className="h-4 w-4 mr-2" />
                   <span>{member.phone}</span>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="h-8 bg-green-500 hover:bg-green-600"
                   onClick={handleWhatsAppClick}
                 >

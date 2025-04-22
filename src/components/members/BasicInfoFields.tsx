@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useEffect, useState } from "react";
 import {
   FormField,
   FormItem,
@@ -16,17 +17,24 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { getStatusLabel } from "@/services/formatters";
-import { MemberStatus } from "@/types";
+import { MemberStatus, Position } from "@/types";
 import { UseFormReturn } from "react-hook-form";
 import { MemberFormValues } from "@/schemas/memberSchema";
 import { PhoneInput } from "./PhoneInput";
 import { StarRatingInput } from "./StarRatingInput";
+import { positionService } from "@/services/memberService";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<MemberFormValues>;
 }
 
 export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  useEffect(() => {
+    positionService.getAll().then(setPositions);
+  }, []);
+
   return (
     <>
       <FormField
@@ -57,15 +65,30 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
         )}
       />
 
+      {/* Use Select with options from positions */}
       <FormField
         control={form.control}
-        name="position"
+        name="position_id"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Posição</FormLabel>
-            <FormControl>
-              <Input placeholder="Exemplo: Goleiro, Atacante..." {...field} />
-            </FormControl>
+            <Select
+              onValueChange={field.onChange}
+              value={field.value || ""}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a posição" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {positions.map(pos => (
+                  <SelectItem key={pos.id} value={pos.id}>
+                    {pos.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}

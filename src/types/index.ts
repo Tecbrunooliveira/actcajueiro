@@ -1,4 +1,10 @@
+
 export type MemberStatus = 'frequentante' | 'afastado';
+
+export interface Position {
+  id: string;
+  name: string;
+}
 
 export interface Member {
   id: string;
@@ -9,10 +15,11 @@ export interface Member {
   joinDate: string;
   notes?: string;
   photo?: string;
-  warnings?: Array<{text: string, date: string}>;
+  warnings?: Array<{ text: string; date: string }>;
   user_id?: string;
   level?: number;
-  position?: string;
+  position_id?: string;
+  position?: Position; // The full object including the id and name
 }
 
 export interface Payment {

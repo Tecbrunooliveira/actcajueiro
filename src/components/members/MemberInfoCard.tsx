@@ -7,7 +7,7 @@ import { User, Mail, Phone, Calendar, AlertCircle } from "lucide-react";
 import { Member } from "@/types";
 import { getStatusLabel } from "@/services/formatters";
 import { cn } from "@/lib/utils";
-import { StarRatingInput } from "./StarRatingInput"; // Importa estrelas
+import { StarRatingInput } from "./StarRatingInput";
 
 interface MemberInfoCardProps {
   member: Member;
@@ -24,14 +24,14 @@ export function MemberInfoCard({ member }: MemberInfoCardProps) {
               <User className="h-8 w-8 text-gray-400" />
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-bold">{member.name}</h2>
                 {/* Exibe posição em destaque */}
-                {member.position && (
-                  <div className="text-sm text-gray-500 font-medium mt-1">{member.position}</div>
+                {member.position?.name && (
+                  <div className="text-sm text-gray-500 font-medium mt-1">{member.position.name}</div>
                 )}
                 {/* Exibe nível em estrelas */}
                 {typeof member.level === "number" && (
@@ -84,7 +84,7 @@ export function MemberInfoCard({ member }: MemberInfoCardProps) {
             {member.notes}
           </div>
         )}
-        
+
         {/* Warnings Section */}
         {member.warnings && member.warnings.length > 0 && (
           <div className="mt-6">

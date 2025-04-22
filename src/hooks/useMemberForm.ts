@@ -31,7 +31,7 @@ export const useMemberForm = (memberId?: string) => {
               text: warning.text || '',
               date: warning.date || new Date().toISOString().split('T')[0]
             }));
-            
+
             form.reset({
               name: member.name,
               status: member.status,
@@ -41,7 +41,9 @@ export const useMemberForm = (memberId?: string) => {
               notes: member.notes || "",
               photo: member.photo || "",
               warnings: formattedWarnings,
-              user_id: member.user_id || "", // Added user_id field
+              user_id: member.user_id || "",
+              level: member.level ?? 0,
+              position_id: member.position_id || "",
             });
           }
         } catch (error) {
@@ -63,16 +65,16 @@ export const useMemberForm = (memberId?: string) => {
   const onSubmit = async (data: MemberFormValues) => {
     try {
       setSubmitLoading(true);
-      
+
       // Ensure warnings are properly formatted
       const formattedWarnings = (data.warnings || []).map(warning => ({
         text: warning.text,
         date: warning.date
       }));
-      
+
       if (isEditMode && memberId) {
-        await memberService.updateMember({ 
-          id: memberId, 
+        await memberService.updateMember({
+          id: memberId,
           name: data.name,
           status: data.status,
           email: data.email || undefined,
@@ -81,9 +83,11 @@ export const useMemberForm = (memberId?: string) => {
           notes: data.notes || undefined,
           photo: data.photo || undefined,
           warnings: formattedWarnings,
-          user_id: data.user_id || undefined, // Added user_id field
+          user_id: data.user_id || undefined,
+          level: data.level ?? 0,
+          position_id: data.position_id || undefined,
         });
-        
+
         toast({
           title: "Sócio atualizado",
           description: "As informações do sócio foram atualizadas com sucesso",
@@ -98,15 +102,17 @@ export const useMemberForm = (memberId?: string) => {
           notes: data.notes || undefined,
           photo: data.photo || undefined,
           warnings: formattedWarnings,
-          user_id: data.user_id || undefined, // Added user_id field
+          user_id: data.user_id || undefined,
+          level: data.level ?? 0,
+          position_id: data.position_id || undefined,
         });
-        
+
         toast({
           title: "Sócio criado",
           description: "O novo sócio foi criado com sucesso",
         });
       }
-      
+
       navigate("/members");
     } catch (error) {
       console.error("Error saving member:", error);
