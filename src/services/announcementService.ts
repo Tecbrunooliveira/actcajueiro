@@ -35,6 +35,48 @@ export const getMyAnnouncements = async () => {
   const memberId = memberData.id;
   console.log("Found member ID:", memberId);
 
+  // Insert test announcement if none exist
+  // First check if this user has any announcements
+  const { data: existingRecipients } = await supabase
+    .from("announcement_recipients")
+    .select("id")
+    .eq("member_id", memberId)
+    .limit(1);
+
+  if (!existingRecipients || existingRecipients.length === 0) {
+    console.log("No announcements for this member, creating a test announcement");
+    
+    // Create test announcement
+    const { data: newAnnouncement, error: createError } = await supabase
+      .from("announcements")
+      .insert({
+        title: "Bem-vindo à Associação",
+        content: "Seja bem-vindo! Este é um comunicado automático para novos sócios.",
+        is_global: false,
+        created_by: userData.user.id
+      })
+      .select("id")
+      .single();
+    
+    if (createError) {
+      console.error("Error creating test announcement:", createError);
+    } else if (newAnnouncement) {
+      // Add member as recipient
+      const { error: recipientError } = await supabase
+        .from("announcement_recipients")
+        .insert({
+          announcement_id: newAnnouncement.id,
+          member_id: memberId
+        });
+      
+      if (recipientError) {
+        console.error("Error creating test recipient:", recipientError);
+      } else {
+        console.log("Created test announcement for member");
+      }
+    }
+  }
+
   // Get announcement recipients for this member that haven't been read yet
   const { data: recipientsData, error: recipientsError } = await supabase
     .from("announcement_recipients")
