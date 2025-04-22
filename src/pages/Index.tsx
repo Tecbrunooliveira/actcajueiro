@@ -56,28 +56,13 @@ const Index = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
-        <HomeLoading />
-        <AnnouncementModal />
-      </MobileLayout>
-    );
-  }
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+  // Always include the AnnouncementModal component
+  const renderContent = () => {
+    if (loading) {
+      return <HomeLoading />;
     }
-  };
 
-  return (
-    <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
-      <AnnouncementModal />
+    return (
       <motion.div 
         className="space-y-6"
         variants={container}
@@ -123,6 +108,23 @@ const Index = () => {
           </div>
         )}
       </motion.div>
+    );
+  };
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  return (
+    <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
+      <AnnouncementModal />
+      {renderContent()}
     </MobileLayout>
   );
 };

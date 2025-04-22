@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, Di
 import { Button } from "@/components/ui/button";
 import { getMyAnnouncements, confirmAnnouncementReceived } from "@/services/announcementService";
 import { useAuth } from "@/contexts/auth";
-import { Loader2, ArrowLeft, ArrowRight, Flag, Bell } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
@@ -16,18 +16,29 @@ export function AnnouncementModal() {
   const [initialized, setInitialized] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
   // Load announcements when the user is authenticated and not an admin
   useEffect(() => {
-    if (isAuthenticated && !isAdmin) {
+    if (isAuthenticated && !isAdmin && !initialized) {
       console.log("AnnouncementModal: User is authenticated and not admin, loading announcements");
       load();
       setInitialized(true);
     } else {
       console.log("AnnouncementModal: Not loading announcements", { isAuthenticated, isAdmin, initialized });
     }
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated, isAdmin, initialized]);
+
+  // Automatically open the dialog when we have pending announcements
+  useEffect(() => {
+    if (pending.length > 0) {
+      console.log("Opening announcement modal with", pending.length, "announcements");
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  }, [pending]);
 
   async function load() {
     setLoading(true);
@@ -58,7 +69,17 @@ export function AnnouncementModal() {
     try {
       await confirmAnnouncementReceived(rowId);
       toast({ title: "Recebido!", description: "Comunicado confirmado com sucesso." });
-      setPending((prev) => prev.filter((p) => p.id !== rowId));
+      
+      // Remove the confirmed announcement from the list
+      setPending((prev) => {
+        const newPending = prev.filter((p) => p.id !== rowId);
+        if (newPending.length === 0) {
+          setIsOpen(false);
+        } else if (currentIndex >= newPending.length) {
+          setCurrentIndex(newPending.length - 1);
+        }
+        return newPending;
+      });
     } catch (e) {
       console.error("Error confirming announcement:", e);
       toast({ 
@@ -92,30 +113,37 @@ export function AnnouncementModal() {
     load();
   };
 
-  // Don't show for users who aren't authenticated, are admins, or if there are no pending announcements
-  if (!isAuthenticated || isAdmin || !pending.length) {
+  // Don't render anything if there are no pending announcements
+  if (!isAuthenticated || isAdmin) {
     return null;
   }
 
-  // Display the current announcement
-  const current = pending[currentIndex];
-  
-  // Make sure the current announcement is valid
-  if (!current || !current.announcement) {
-    console.error("Current announcement is invalid:", current);
+  // If we're still loading or there are no announcements, don't show the dialog
+  if (loading && !pending.length && !error) {
     return null;
   }
+
+  // If there are no pending announcements and we're not loading, don't show the dialog
+  if (!pending.length && !loading && !error) {
+    return null;
+  }
+
+  // Make sure we have a valid current announcement
+  const current = pending.length > 0 ? pending[currentIndex] : null;
+  const hasValidAnnouncement = current && current.announcement;
 
   return (
-    <Dialog open>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="mb-1 flex items-center">
             <Bell className="mr-2 h-5 w-5" />
             Comunicado
-            <div className="text-sm text-gray-500 ml-auto">
-              {currentIndex + 1} de {pending.length}
-            </div>
+            {pending.length > 0 && (
+              <div className="text-sm text-gray-500 ml-auto">
+                {currentIndex + 1} de {pending.length}
+              </div>
+            )}
           </DialogTitle>
           <DialogDescription className="text-xs text-gray-500">
             Comunicado oficial da associação
@@ -136,14 +164,27 @@ export function AnnouncementModal() {
           </MenubarMenu>
         </Menubar>
 
-        {error ? (
+        {loading && !hasValidAnnouncement && (
+          <div className="flex flex-col items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-500 mb-4" />
+            <p className="text-gray-500">Carregando comunicados...</p>
+          </div>
+        )}
+
+        {error && (
           <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
-            {error}
+            <div className="flex items-center mb-2">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              <strong>Erro ao carregar comunicados</strong>
+            </div>
+            <p>{error}</p>
             <Button variant="outline" size="sm" className="mt-2" onClick={handleReload}>
               Tentar novamente
             </Button>
           </div>
-        ) : (
+        )}
+
+        {hasValidAnnouncement && (
           <div className="space-y-4">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
               <div className="font-medium text-lg">{current.announcement.title}</div>
@@ -177,14 +218,16 @@ export function AnnouncementModal() {
             </div>
           )}
           
-          <Button
-            onClick={() => handleConfirm(current.id)}
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-            Confirmar recebimento
-          </Button>
+          {hasValidAnnouncement && (
+            <Button
+              onClick={() => handleConfirm(current.id)}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
+              Confirmar recebimento
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

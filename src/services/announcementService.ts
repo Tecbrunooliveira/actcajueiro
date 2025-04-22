@@ -110,6 +110,13 @@ export const getMyAnnouncements = async () => {
   const announcementIds = unreadRecipients.map(r => r.announcement_id);
   console.log("Fetching announcements with IDs:", announcementIds);
   
+  // Make sure we have valid IDs to query
+  if (!announcementIds.length) {
+    console.log("No announcement IDs to fetch");
+    return [];
+  }
+  
+  // Fixed query to properly fetch announcements
   const { data: announcementsData, error: announcementsError } = await supabase
     .from("announcements")
     .select("*")
@@ -127,12 +134,17 @@ export const getMyAnnouncements = async () => {
     return [];
   }
   
-  // Combine the recipient and announcement data
+  // Combine the recipient and announcement data with more detailed logging
   const result = unreadRecipients.map(recipient => {
     const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
+    if (!announcement) {
+      console.log(`No matching announcement found for ID: ${recipient.announcement_id}`);
+    } else {
+      console.log(`Matched announcement: ${announcement.title} for recipient ID: ${recipient.id}`);
+    }
     return {
       id: recipient.id,
-      announcement: announcement
+      announcement: announcement || null
     };
   }).filter(item => item.announcement !== null);
   

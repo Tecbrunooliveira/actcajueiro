@@ -22,7 +22,6 @@ import NotFound from "./pages/NotFound";
 import PaymentStatus from "./pages/PaymentStatus";
 import UserProfile from "./pages/UserProfile";
 import AdminUsers from "./pages/AdminUsers";
-import { AnnouncementModal } from "@/components/announcements/AnnouncementModal";
 import AnnouncementAdmin from "./pages/AnnouncementAdmin";
 
 const queryClient = new QueryClient();
@@ -38,7 +37,6 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <AnnouncementModal />
         <Routes>
           <Route path="/login" element={<Login />} />
 
