@@ -25,6 +25,10 @@ export const confirmAnnouncementReceived = async (recipientId: string) => {
 };
 
 export const createAnnouncement = async ({ title, content, is_global, memberIds }) => {
+  // Primeiro obtém o ID do usuário atual
+  const { data: { user } } = await supabase.auth.getUser();
+  const userId = user?.id || '';
+  
   // Cria comunicado
   const { data, error } = await supabase
     .from("announcements")
@@ -32,7 +36,7 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
       title, 
       content, 
       is_global,
-      created_by: supabase.auth.getUser().then(res => res.data.user?.id) || ''
+      created_by: userId
     })
     .select("id")
     .single();
