@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      announcement_recipients: {
+        Row: {
+          announcement_id: string
+          id: string
+          member_id: string
+          read_at: string | null
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          member_id: string
+          read_at?: string | null
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          member_id?: string
+          read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_recipients_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcement_recipients_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_global: boolean
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_global?: boolean
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_global?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       expense_categories: {
         Row: {
           color: string | null

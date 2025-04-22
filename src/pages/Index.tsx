@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { memberService, paymentService } from "@/services";
@@ -14,6 +13,7 @@ import { HomeLoading } from "@/components/home/HomeLoading";
 import { useAuth } from "@/contexts/auth";
 import { Link } from "react-router-dom";
 import { UserPlus } from "lucide-react";
+import { Bell } from "lucide-react";
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
@@ -99,6 +99,20 @@ const Index = () => {
                 <div>
                   <h3 className="font-medium">Gerenciar Usuários</h3>
                   <p className="text-sm text-gray-500">Criar e associar usuários a sócios</p>
+                </div>
+              </Link>
+              <Link
+                to="/admin/announcements"
+                className="flex items-center p-3 rounded-lg border border-amber-100 bg-amber-50 hover:bg-amber-100 transition-colors"
+              >
+                <div className="rounded-md bg-amber-500 p-2 mr-3">
+                  <Bell className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-medium">Central de Comunicados</h3>
+                  <p className="text-sm text-gray-500">
+                    Envie comunicados para os sócios
+                  </p>
                 </div>
               </Link>
             </div>

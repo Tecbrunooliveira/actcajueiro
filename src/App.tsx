@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,7 +20,9 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PaymentStatus from "./pages/PaymentStatus";
 import UserProfile from "./pages/UserProfile";
-import AdminUsers from "./pages/AdminUsers"; // Importação correta
+import AdminUsers from "./pages/AdminUsers";
+import AnnouncementModal from "@/components/announcements/AnnouncementModal";
+import AnnouncementAdmin from "./pages/AnnouncementAdmin";
 
 const queryClient = new QueryClient();
 
@@ -36,11 +37,10 @@ const App = () => (
       <AuthProvider>
         <Toaster />
         <Sonner />
+        <AnnouncementModal />
         <Routes>
-          {/* Public route */}
           <Route path="/login" element={<Login />} />
 
-          {/* Rota para admin criar usuário e associar */}
           <Route
             path="/admin/users"
             element={
@@ -50,7 +50,6 @@ const App = () => (
             }
           />
 
-          {/* Protected routes */}
           <Route path="/me" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
@@ -58,7 +57,6 @@ const App = () => (
           <Route path="/members/new" element={<ProtectedRoute><MemberForm /></ProtectedRoute>} />
           <Route path="/members/edit/:id" element={<ProtectedRoute><MemberForm /></ProtectedRoute>} />
 
-          {/* Rotas de pagamentos/despesas só para admin */}
           <Route path="/payments" element={<ProtectedRoute><AdminRoute><Payments /></AdminRoute></ProtectedRoute>} />
           <Route path="/payments/:id" element={<ProtectedRoute><AdminRoute><PaymentDetail /></AdminRoute></ProtectedRoute>} />
           <Route path="/payments/new" element={<ProtectedRoute><AdminRoute><PaymentForm /></AdminRoute></ProtectedRoute>} />
@@ -73,6 +71,16 @@ const App = () => (
           <Route path="/expenses/new" element={<ProtectedRoute><AdminRoute><ExpenseForm /></AdminRoute></ProtectedRoute>} />
           <Route path="/expenses/edit/:id" element={<ProtectedRoute><AdminRoute><ExpenseForm /></AdminRoute></ProtectedRoute>} />
           <Route path="/expense-categories" element={<ProtectedRoute><AdminRoute><ExpenseCategories /></AdminRoute></ProtectedRoute>} />
+          <Route
+            path="/admin/announcements"
+            element={
+              <ProtectedRoute>
+                <AdminRoute>
+                  <AnnouncementAdmin />
+                </AdminRoute>
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
