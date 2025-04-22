@@ -28,7 +28,12 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
   // Cria comunicado
   const { data, error } = await supabase
     .from("announcements")
-    .insert([{ title, content, is_global }])
+    .insert({
+      title, 
+      content, 
+      is_global,
+      created_by: supabase.auth.getUser().then(res => res.data.user?.id) || ''
+    })
     .select("id")
     .single();
   if (error) throw error;

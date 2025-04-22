@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,7 +22,7 @@ import NotFound from "./pages/NotFound";
 import PaymentStatus from "./pages/PaymentStatus";
 import UserProfile from "./pages/UserProfile";
 import AdminUsers from "./pages/AdminUsers";
-import AnnouncementModal from "@/components/announcements/AnnouncementModal";
+import { AnnouncementModal } from "@/components/announcements/AnnouncementModal";
 import AnnouncementAdmin from "./pages/AnnouncementAdmin";
 
 const queryClient = new QueryClient();
