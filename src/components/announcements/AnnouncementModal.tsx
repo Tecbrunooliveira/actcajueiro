@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { getMyAnnouncements, confirmAnnouncementReceived } from "@/services/announcementService";
 import { useAuth } from "@/contexts/auth";
@@ -16,8 +16,11 @@ export function AnnouncementModal() {
   // Carrega os comunicados quando o usuário estiver autenticado e não for admin
   useEffect(() => {
     if (isAuthenticated && !isAdmin && !initialized) {
+      console.log("AnnouncementModal: User is authenticated and not admin, loading announcements");
       load();
       setInitialized(true);
+    } else {
+      console.log("AnnouncementModal: Not loading announcements", { isAuthenticated, isAdmin, initialized });
     }
   }, [isAuthenticated, isAdmin, initialized]);
 
@@ -27,10 +30,13 @@ export function AnnouncementModal() {
       console.log("Loading announcements for member");
       const items = await getMyAnnouncements();
       console.log("Announcements loaded:", items);
-      // Filtra apenas anúncios válidos (que têm o objeto announcement)
-      const validAnnouncements = items.filter((item) => item.announcement !== null);
-      console.log("Valid announcements:", validAnnouncements);
-      setPending(validAnnouncements);
+      
+      if (items && items.length > 0) {
+        console.log("Setting pending announcements:", items);
+        setPending(items);
+      } else {
+        console.log("No announcements to display");
+      }
     } catch (e) {
       console.error("Error loading announcements:", e);
     } finally {
@@ -45,13 +51,16 @@ export function AnnouncementModal() {
       toast({ title: "Recebido!", description: "Comunicado confirmado com sucesso." });
       setPending((prev) => prev.filter((p) => p.id !== rowId));
     } catch (e) {
+      console.error("Error confirming announcement:", e);
       toast({ title: "Erro", description: "Não foi possível confirmar." });
     }
     setLoading(false);
   };
 
   // Não mostra para usuários não autenticados, admin, ou se não houver comunicados pendentes
-  if (!isAuthenticated || isAdmin || !pending.length) return null;
+  if (!isAuthenticated || isAdmin || !pending.length) {
+    return null;
+  }
 
   // Exibe o comunicado mais recente não lido (1 por vez)
   const current = pending[0];
@@ -60,6 +69,9 @@ export function AnnouncementModal() {
     <Dialog open>
       <DialogContent className="max-w-lg">
         <DialogTitle className="mb-1">Comunicado</DialogTitle>
+        <DialogDescription className="sr-only">
+          Comunicado oficial da associação
+        </DialogDescription>
         <div>
           <div className="font-medium">{current.announcement.title}</div>
           <div className="my-2">{current.announcement.content}</div>

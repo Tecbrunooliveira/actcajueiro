@@ -33,35 +33,54 @@ export const getMyAnnouncements = async () => {
 
   console.log("Found member ID:", memberId);
 
-  // Busca comunicados não lidos para este membro
-  const { data, error } = await supabase
+  // Verifique se existem anúncios para este membro
+  const { data: recipientData, error: recipientError } = await supabase
     .from("announcement_recipients")
-    .select(`
-      id,
-      announcement:announcements!announcement_id(
-        id, 
-        title, 
-        content, 
-        created_at, 
-        is_global
-      ),
-      read_at
-    `)
+    .select("id, announcement_id")
     .eq("member_id", memberId)
-    .is("read_at", null); // apenas não lidas
-
-  if (error) {
-    console.error("Error fetching announcements:", error);
-    throw error;
+    .is("read_at", null);
+    
+  if (recipientError) {
+    console.error("Error checking recipients:", recipientError);
+    throw recipientError;
   }
   
-  console.log("Raw announcement data:", data);
+  console.log("Found recipients:", recipientData);
   
-  return (data || []).map((row) => ({
-    id: row.id,
-    announcement: row.announcement,
-    read_at: row.read_at,
-  }));
+  if (!recipientData || recipientData.length === 0) {
+    console.log("No announcements found for this member");
+    return [];
+  }
+
+  // Agora busca os anúncios completos
+  const announcementIds = recipientData.map(r => r.announcement_id);
+  console.log("Announcement IDs to fetch:", announcementIds);
+  
+  const { data: announcementsData, error: announcementsError } = await supabase
+    .from("announcements")
+    .select("id, title, content, created_at, is_global")
+    .in("id", announcementIds);
+    
+  if (announcementsError) {
+    console.error("Error fetching announcements:", announcementsError);
+    throw announcementsError;
+  }
+  
+  console.log("Raw announcements data:", announcementsData);
+  
+  // Combine the data
+  const result = recipientData.map(recipient => {
+    const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
+    return {
+      id: recipient.id,
+      announcement: announcement || null,
+      read_at: null
+    };
+  }).filter(item => item.announcement !== null);
+  
+  console.log("Final announcement data:", result);
+  
+  return result;
 };
 
 export const confirmAnnouncementReceived = async (recipientId: string) => {
