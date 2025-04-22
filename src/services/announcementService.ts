@@ -35,8 +35,8 @@ export const getMyAnnouncements = async () => {
   const memberId = memberData.id;
   console.log("Found member ID:", memberId, "Name:", memberData.name);
 
-  // Get all recipients for this member
-  const { data: recipientsData, error: recipientsError } = await supabase
+  // Get all recipients for this member - using let instead of const to allow reassignment
+  let { data: recipientsData, error: recipientsError } = await supabase
     .from("announcement_recipients")
     .select("id, announcement_id, read_at")
     .eq("member_id", memberId);
