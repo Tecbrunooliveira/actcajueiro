@@ -3,12 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Busca comunicados para membros comuns (com base no user membro)
 export const getMyAnnouncements = async () => {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
+  console.log("Starting getMyAnnouncements");
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    console.error("User not authenticated:", userError);
     throw new Error("User not authenticated");
   }
 
-  // Primeiro obtém o id do membro associado ao usuário
+  // First, get the member ID associated with the user
+  console.log("Getting member ID for user:", userData.user.id);
   const { data: memberData, error: memberError } = await supabase
     .from("members")
     .select("id")
@@ -24,71 +27,79 @@ export const getMyAnnouncements = async () => {
     throw memberError;
   }
   
-  const memberId = memberData?.id;
-  
-  if (!memberId) {
-    console.log("No member associated with current user");
+  if (!memberData) {
+    console.log("No member data found for user");
     return [];
   }
 
+  const memberId = memberData.id;
   console.log("Found member ID:", memberId);
 
-  // Verifique se existem anúncios para este membro
-  const { data: recipientData, error: recipientError } = await supabase
+  // Get announcement recipients for this member that haven't been read yet
+  const { data: recipientsData, error: recipientsError } = await supabase
     .from("announcement_recipients")
     .select("id, announcement_id")
     .eq("member_id", memberId)
     .is("read_at", null);
-    
-  if (recipientError) {
-    console.error("Error checking recipients:", recipientError);
-    throw recipientError;
+  
+  if (recipientsError) {
+    console.error("Error fetching recipients:", recipientsError);
+    throw recipientsError;
   }
   
-  console.log("Found recipients:", recipientData);
+  console.log("Unread announcement recipients:", recipientsData);
   
-  if (!recipientData || recipientData.length === 0) {
-    console.log("No announcements found for this member");
+  if (!recipientsData || recipientsData.length === 0) {
+    console.log("No unread announcements for this member");
     return [];
   }
 
-  // Agora busca os anúncios completos
-  const announcementIds = recipientData.map(r => r.announcement_id);
-  console.log("Announcement IDs to fetch:", announcementIds);
+  // Get the actual announcements
+  const announcementIds = recipientsData.map(r => r.announcement_id);
+  console.log("Fetching announcements with IDs:", announcementIds);
   
   const { data: announcementsData, error: announcementsError } = await supabase
     .from("announcements")
-    .select("id, title, content, created_at, is_global")
+    .select("*")
     .in("id", announcementIds);
-    
+  
   if (announcementsError) {
     console.error("Error fetching announcements:", announcementsError);
     throw announcementsError;
   }
   
-  console.log("Raw announcements data:", announcementsData);
+  console.log("Fetched announcements:", announcementsData);
   
-  // Combine the data
-  const result = recipientData.map(recipient => {
+  if (!announcementsData || announcementsData.length === 0) {
+    console.log("No announcement data found");
+    return [];
+  }
+  
+  // Combine the recipient and announcement data
+  const result = recipientsData.map(recipient => {
     const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
     return {
       id: recipient.id,
-      announcement: announcement || null,
-      read_at: null
+      announcement: announcement
     };
   }).filter(item => item.announcement !== null);
   
-  console.log("Final announcement data:", result);
-  
+  console.log("Final processed announcements:", result);
   return result;
 };
 
 export const confirmAnnouncementReceived = async (recipientId: string) => {
+  console.log("Confirming announcement received:", recipientId);
   const { error } = await supabase
     .from("announcement_recipients")
     .update({ read_at: new Date().toISOString() })
     .eq("id", recipientId);
-  if (error) throw error;
+  
+  if (error) {
+    console.error("Error confirming announcement:", error);
+    throw error;
+  }
+  console.log("Announcement confirmed successfully");
 };
 
 export const createAnnouncement = async ({ title, content, is_global, memberIds }) => {
