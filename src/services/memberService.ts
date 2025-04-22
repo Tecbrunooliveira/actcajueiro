@@ -23,6 +23,8 @@ export const memberService = {
       photo: member.photo || undefined,
       warnings: member.warnings as Array<{text: string, date: string}> || [],
       user_id: member.user_id || undefined,
+      level: member.level,
+      position: member.position || undefined,
     })) || [];
   },
 
@@ -51,6 +53,8 @@ export const memberService = {
       photo: data.photo || undefined,
       warnings: data.warnings as Array<{text: string, date: string}> || [],
       user_id: data.user_id || undefined,
+      level: data.level,
+      position: data.position || undefined,
     };
   },
 
@@ -67,6 +71,8 @@ export const memberService = {
         photo: member.photo,
         warnings: member.warnings || [],
         user_id: member.user_id,
+        level: member.level,
+        position: member.position,
       })
       .select()
       .single();
@@ -89,6 +95,8 @@ export const memberService = {
       photo: data.photo || undefined,
       warnings: data.warnings as Array<{text: string, date: string}> || [],
       user_id: data.user_id || undefined,
+      level: data.level,
+      position: data.position,
     };
   },
 
@@ -105,6 +113,8 @@ export const memberService = {
         photo: member.photo,
         warnings: member.warnings || [],
         user_id: member.user_id,
+        level: member.level,
+        position: member.position,
       })
       .eq('id', member.id)
       .select()
@@ -128,6 +138,8 @@ export const memberService = {
       photo: data.photo || undefined,
       warnings: data.warnings as Array<{text: string, date: string}> || [],
       user_id: data.user_id || undefined,
+      level: data.level,
+      position: data.position,
     };
   },
 
@@ -165,6 +177,8 @@ export const memberService = {
       photo: member.photo || undefined,
       warnings: member.warnings as Array<{text: string, date: string}> || [],
       user_id: member.user_id || undefined,
+      level: member.level,
+      position: member.position || undefined,
     })) || [];
   },
 

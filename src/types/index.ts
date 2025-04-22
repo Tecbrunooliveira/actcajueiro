@@ -1,4 +1,3 @@
-
 export type MemberStatus = 'frequentante' | 'afastado';
 
 export interface Member {
@@ -11,7 +10,9 @@ export interface Member {
   notes?: string;
   photo?: string;
   warnings?: Array<{text: string, date: string}>;
-  user_id?: string; // Added user_id property
+  user_id?: string;
+  level?: number;
+  position?: string;
 }
 
 export interface Payment {
@@ -19,7 +20,7 @@ export interface Payment {
   memberId: string;
   amount: number;
   date: string;
-  month: string; // Format: "YYYY-MM"
+  month: string;
   year: number;
   isPaid: boolean;
   paymentMethod?: string;
