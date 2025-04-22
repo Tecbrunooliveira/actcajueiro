@@ -15,21 +15,23 @@ export function AnnouncementModal() {
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Carrega os comunicados quando o usuário estiver autenticado e não for admin
+  // Load announcements when the user is authenticated and not an admin
   useEffect(() => {
-    if (isAuthenticated && !isAdmin && !initialized) {
+    if (isAuthenticated && !isAdmin) {
       console.log("AnnouncementModal: User is authenticated and not admin, loading announcements");
       load();
       setInitialized(true);
     } else {
       console.log("AnnouncementModal: Not loading announcements", { isAuthenticated, isAdmin, initialized });
     }
-  }, [isAuthenticated, isAdmin, initialized]);
+  }, [isAuthenticated, isAdmin]);
 
   async function load() {
     setLoading(true);
+    setError(null);
     try {
       console.log("Loading announcements for member");
       const items = await getMyAnnouncements();
@@ -38,11 +40,14 @@ export function AnnouncementModal() {
       if (items && items.length > 0) {
         console.log("Setting pending announcements:", items);
         setPending(items);
+        setCurrentIndex(0);
       } else {
         console.log("No announcements to display");
+        setPending([]);
       }
     } catch (e) {
       console.error("Error loading announcements:", e);
+      setError("Não foi possível carregar os comunicados. Tente novamente mais tarde.");
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,11 @@ export function AnnouncementModal() {
       setPending((prev) => prev.filter((p) => p.id !== rowId));
     } catch (e) {
       console.error("Error confirming announcement:", e);
-      toast({ title: "Erro", description: "Não foi possível confirmar." });
+      toast({ 
+        title: "Erro", 
+        description: "Não foi possível confirmar o recebimento.", 
+        variant: "destructive" 
+      });
     }
     setLoading(false);
   };
@@ -80,17 +89,18 @@ export function AnnouncementModal() {
   const handleReload = () => {
     setPending([]);
     setInitialized(false);
+    load();
   };
 
-  // Não mostra para usuários não autenticados, admin, ou se não houver comunicados pendentes
+  // Don't show for users who aren't authenticated, are admins, or if there are no pending announcements
   if (!isAuthenticated || isAdmin || !pending.length) {
     return null;
   }
 
-  // Exibe o comunicado atual
+  // Display the current announcement
   const current = pending[currentIndex];
   
-  // Certifique-se de que o comunicado atual é válido
+  // Make sure the current announcement is valid
   if (!current || !current.announcement) {
     console.error("Current announcement is invalid:", current);
     return null;
@@ -126,15 +136,24 @@ export function AnnouncementModal() {
           </MenubarMenu>
         </Menubar>
 
-        <div className="space-y-4">
-          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-            <div className="font-medium text-lg">{current.announcement.title}</div>
-            <div className="my-2 whitespace-pre-wrap">{current.announcement.content}</div>
-            <div className="text-xs text-gray-500 mt-4">
-              Enviado em {new Date(current.announcement.created_at).toLocaleDateString("pt-BR")}
+        {error ? (
+          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
+            {error}
+            <Button variant="outline" size="sm" className="mt-2" onClick={handleReload}>
+              Tentar novamente
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+              <div className="font-medium text-lg">{current.announcement.title}</div>
+              <div className="my-2 whitespace-pre-wrap">{current.announcement.content}</div>
+              <div className="text-xs text-gray-500 mt-4">
+                Enviado em {new Date(current.announcement.created_at).toLocaleDateString("pt-BR")}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
           {pending.length > 1 && (
@@ -163,7 +182,7 @@ export function AnnouncementModal() {
             disabled={loading}
             className="w-full sm:w-auto"
           >
-            {loading ? <Loader2 className="animate-spin mr-2" /> : null}
+            {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
             Confirmar recebimento
           </Button>
         </DialogFooter>

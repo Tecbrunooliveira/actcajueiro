@@ -14,7 +14,7 @@ export const getMyAnnouncements = async () => {
   console.log("Getting member ID for user:", userData.user.id);
   const { data: memberData, error: memberError } = await supabase
     .from("members")
-    .select("id")
+    .select("id, name")
     .eq("user_id", userData.user.id)
     .single();
   
@@ -33,17 +33,23 @@ export const getMyAnnouncements = async () => {
   }
 
   const memberId = memberData.id;
-  console.log("Found member ID:", memberId);
+  console.log("Found member ID:", memberId, "Name:", memberData.name);
 
-  // Insert test announcement if none exist
-  // First check if this user has any announcements
-  const { data: existingRecipients } = await supabase
+  // Get all recipients for this member
+  const { data: recipientsData, error: recipientsError } = await supabase
     .from("announcement_recipients")
-    .select("id")
-    .eq("member_id", memberId)
-    .limit(1);
-
-  if (!existingRecipients || existingRecipients.length === 0) {
+    .select("id, announcement_id, read_at")
+    .eq("member_id", memberId);
+  
+  if (recipientsError) {
+    console.error("Error fetching recipients:", recipientsError);
+    throw recipientsError;
+  }
+  
+  console.log("Announcement recipients for member:", recipientsData?.length || 0);
+  
+  if (!recipientsData || recipientsData.length === 0) {
+    // No announcements found, create a test one
     console.log("No announcements for this member, creating a test announcement");
     
     // Create test announcement
@@ -60,6 +66,7 @@ export const getMyAnnouncements = async () => {
     
     if (createError) {
       console.error("Error creating test announcement:", createError);
+      return [];
     } else if (newAnnouncement) {
       // Add member as recipient
       const { error: recipientError } = await supabase
@@ -71,33 +78,36 @@ export const getMyAnnouncements = async () => {
       
       if (recipientError) {
         console.error("Error creating test recipient:", recipientError);
+        return [];
       } else {
-        console.log("Created test announcement for member");
+        console.log("Created test announcement for member, refetching data");
+        // Refetch recipients after creating test announcement
+        const { data: updatedRecipients, error: refetchError } = await supabase
+          .from("announcement_recipients")
+          .select("id, announcement_id, read_at")
+          .eq("member_id", memberId);
+        
+        if (refetchError || !updatedRecipients) {
+          console.error("Error refetching recipients:", refetchError);
+          return [];
+        }
+        
+        recipientsData = updatedRecipients;
       }
     }
   }
 
-  // Get announcement recipients for this member that haven't been read yet
-  const { data: recipientsData, error: recipientsError } = await supabase
-    .from("announcement_recipients")
-    .select("id, announcement_id")
-    .eq("member_id", memberId)
-    .is("read_at", null);
+  // Filter for unread announcements
+  const unreadRecipients = recipientsData.filter(r => r.read_at === null);
+  console.log("Unread announcement recipients:", unreadRecipients.length);
   
-  if (recipientsError) {
-    console.error("Error fetching recipients:", recipientsError);
-    throw recipientsError;
-  }
-  
-  console.log("Unread announcement recipients:", recipientsData);
-  
-  if (!recipientsData || recipientsData.length === 0) {
+  if (unreadRecipients.length === 0) {
     console.log("No unread announcements for this member");
     return [];
   }
 
   // Get the actual announcements
-  const announcementIds = recipientsData.map(r => r.announcement_id);
+  const announcementIds = unreadRecipients.map(r => r.announcement_id);
   console.log("Fetching announcements with IDs:", announcementIds);
   
   const { data: announcementsData, error: announcementsError } = await supabase
@@ -110,7 +120,7 @@ export const getMyAnnouncements = async () => {
     throw announcementsError;
   }
   
-  console.log("Fetched announcements:", announcementsData);
+  console.log("Fetched announcements:", announcementsData?.length || 0);
   
   if (!announcementsData || announcementsData.length === 0) {
     console.log("No announcement data found");
@@ -118,7 +128,7 @@ export const getMyAnnouncements = async () => {
   }
   
   // Combine the recipient and announcement data
-  const result = recipientsData.map(recipient => {
+  const result = unreadRecipients.map(recipient => {
     const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
     return {
       id: recipient.id,
@@ -126,7 +136,7 @@ export const getMyAnnouncements = async () => {
     };
   }).filter(item => item.announcement !== null);
   
-  console.log("Final processed announcements:", result);
+  console.log("Final processed announcements:", result.length);
   return result;
 };
 
@@ -142,6 +152,7 @@ export const confirmAnnouncementReceived = async (recipientId: string) => {
     throw error;
   }
   console.log("Announcement confirmed successfully");
+  return true;
 };
 
 export const createAnnouncement = async ({ title, content, is_global, memberIds }) => {
@@ -150,6 +161,12 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
   if (!user) {
     throw new Error("User not authenticated");
   }
+  
+  console.log("Creating announcement:", {
+    title,
+    is_global,
+    memberCount: memberIds?.length || 0
+  });
   
   // Cria comunicado
   const { data, error } = await supabase
@@ -162,7 +179,10 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
     })
     .select("id")
     .single();
-  if (error) throw error;
+  if (error) {
+    console.error("Error creating announcement:", error);
+    throw error;
+  }
 
   // Adiciona destinatários
   const announcementId = data.id;
@@ -170,13 +190,21 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
   
   if (is_global) {
     // Se é global, busca todos os membros
-    const { data: allMembers } = await supabase
+    console.log("Global announcement, fetching all members");
+    const { data: allMembers, error: membersError } = await supabase
       .from("members")
       .select("id");
+      
+    if (membersError) {
+      console.error("Error fetching members for global announcement:", membersError);
+      throw membersError;
+    }
     recipients = (allMembers || []).map(m => m.id);
+    console.log(`Adding ${recipients.length} members as recipients`);
   } else {
     // Se não é global, usa a lista de IDs fornecida
     recipients = memberIds;
+    console.log(`Adding ${recipients.length} selected members as recipients`);
   }
 
   if (recipients.length) {
@@ -188,7 +216,11 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
     const { error: recError } = await supabase
       .from("announcement_recipients")
       .insert(rows);
-    if (recError) throw recError;
+    if (recError) {
+      console.error("Error creating recipients:", recError);
+      throw recError;
+    }
+    console.log(`Successfully added ${rows.length} recipients`);
   }
 
   return announcementId;

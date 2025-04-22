@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { memberService, paymentService } from "@/services";
@@ -14,6 +15,7 @@ import { useAuth } from "@/contexts/auth";
 import { Link } from "react-router-dom";
 import { UserPlus } from "lucide-react";
 import { Bell } from "lucide-react";
+import { AnnouncementModal } from "@/components/announcements/AnnouncementModal";
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
@@ -58,6 +60,7 @@ const Index = () => {
     return (
       <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
         <HomeLoading />
+        <AnnouncementModal />
       </MobileLayout>
     );
   }
@@ -74,6 +77,7 @@ const Index = () => {
 
   return (
     <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
+      <AnnouncementModal />
       <motion.div 
         className="space-y-6"
         variants={container}
