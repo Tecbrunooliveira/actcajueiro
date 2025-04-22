@@ -27,7 +27,10 @@ export function AnnouncementModal() {
       console.log("Loading announcements for member");
       const items = await getMyAnnouncements();
       console.log("Announcements loaded:", items);
-      setPending(items.filter((item) => item.announcement));
+      // Filtra apenas anúncios válidos (que têm o objeto announcement)
+      const validAnnouncements = items.filter((item) => item.announcement !== null);
+      console.log("Valid announcements:", validAnnouncements);
+      setPending(validAnnouncements);
     } catch (e) {
       console.error("Error loading announcements:", e);
     } finally {
