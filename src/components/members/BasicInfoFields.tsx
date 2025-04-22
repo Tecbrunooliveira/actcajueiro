@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   FormField,
@@ -21,6 +20,7 @@ import { MemberStatus } from "@/types";
 import { UseFormReturn } from "react-hook-form";
 import { MemberFormValues } from "@/schemas/memberSchema";
 import { PhoneInput } from "./PhoneInput";
+import { StarRatingInput } from "./StarRatingInput";
 
 interface BasicInfoFieldsProps {
   form: UseFormReturn<MemberFormValues>;
@@ -37,6 +37,34 @@ export const BasicInfoFields = ({ form }: BasicInfoFieldsProps) => {
             <FormLabel>Nome</FormLabel>
             <FormControl>
               <Input placeholder="Nome completo" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="level"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nível</FormLabel>
+            <FormControl>
+              <StarRatingInput value={field.value || 0} onChange={field.onChange} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="position"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Posição</FormLabel>
+            <FormControl>
+              <Input placeholder="Exemplo: Goleiro, Atacante..." {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

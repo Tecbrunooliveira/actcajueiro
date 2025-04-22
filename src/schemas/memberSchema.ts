@@ -15,7 +15,9 @@ export const memberSchema = z.object({
   notes: z.string().optional(),
   photo: z.string().optional(),
   warnings: z.array(warningSchema).optional(),
-  user_id: z.string().optional(), // Added user_id field
+  user_id: z.string().optional(),
+  level: z.number().min(0).max(5).default(0), // NEW
+  position: z.string().optional(), // NEW
 });
 
 export type MemberFormValues = z.infer<typeof memberSchema>;
@@ -29,5 +31,7 @@ export const defaultMemberValues: MemberFormValues = {
   notes: "",
   photo: "",
   warnings: [],
-  user_id: "", // Added default value for user_id
+  user_id: "",
+  level: 0,         // NEW
+  position: "",     // NEW
 };

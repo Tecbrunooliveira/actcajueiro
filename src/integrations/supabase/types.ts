@@ -73,10 +73,12 @@ export type Database = {
           email: string | null
           id: string
           join_date: string
+          level: number | null
           name: string
           notes: string | null
           phone: string | null
           photo: string | null
+          position: string | null
           status: string
           user_id: string | null
           warnings: Json | null
@@ -85,10 +87,12 @@ export type Database = {
           email?: string | null
           id?: string
           join_date: string
+          level?: number | null
           name: string
           notes?: string | null
           phone?: string | null
           photo?: string | null
+          position?: string | null
           status: string
           user_id?: string | null
           warnings?: Json | null
@@ -97,10 +101,12 @@ export type Database = {
           email?: string | null
           id?: string
           join_date?: string
+          level?: number | null
           name?: string
           notes?: string | null
           phone?: string | null
           photo?: string | null
+          position?: string | null
           status?: string
           user_id?: string | null
           warnings?: Json | null
