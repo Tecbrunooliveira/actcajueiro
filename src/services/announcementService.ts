@@ -3,12 +3,37 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Busca comunicados para membros comuns (com base no user membro)
 export const getMyAnnouncements = async () => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) {
+    throw new Error("User not authenticated");
+  }
+
+  // Primeiro obtém o id do membro associado ao usuário
+  const { data: memberData } = await supabase
+    .from("members")
+    .select("id")
+    .eq("user_id", userData.user.id)
+    .single();
+  
+  const memberId = memberData?.id;
+  
+  if (!memberId) {
+    console.log("No member associated with current user");
+    return [];
+  }
+
+  // Busca comunicados não lidos para este membro
   const { data, error } = await supabase
     .from("announcement_recipients")
     .select("id, announcement:announcement_id(id, title, content, created_at, is_global), read_at")
+    .eq("member_id", memberId)
     .is("read_at", null); // apenas não lidas
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error fetching announcements:", error);
+    throw error;
+  }
+  
   return (data || []).map((row) => ({
     id: row.id,
     announcement: row.announcement,
@@ -27,7 +52,9 @@ export const confirmAnnouncementReceived = async (recipientId: string) => {
 export const createAnnouncement = async ({ title, content, is_global, memberIds }) => {
   // Primeiro obtém o ID do usuário atual
   const { data: { user } } = await supabase.auth.getUser();
-  const userId = user?.id || '';
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
   
   // Cria comunicado
   const { data, error } = await supabase
@@ -36,7 +63,7 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
       title, 
       content, 
       is_global,
-      created_by: userId
+      created_by: user.id
     })
     .select("id")
     .single();
@@ -44,17 +71,28 @@ export const createAnnouncement = async ({ title, content, is_global, memberIds 
 
   // Adiciona destinatários
   const announcementId = data.id;
-  const recipients = is_global
-    ? await supabase.from("members").select("id").then((res) => (res.data || []).map((m) => m.id))
-    : memberIds;
+  let recipients = [];
+  
+  if (is_global) {
+    // Se é global, busca todos os membros
+    const { data: allMembers } = await supabase
+      .from("members")
+      .select("id");
+    recipients = (allMembers || []).map(m => m.id);
+  } else {
+    // Se não é global, usa a lista de IDs fornecida
+    recipients = memberIds;
+  }
 
-  const rows = recipients.map((member_id) => ({
-    announcement_id: announcementId,
-    member_id,
-  }));
+  if (recipients.length) {
+    const rows = recipients.map((member_id) => ({
+      announcement_id: announcementId,
+      member_id,
+    }));
 
-  if (rows.length) {
-    const { error: recError } = await supabase.from("announcement_recipients").insert(rows);
+    const { error: recError } = await supabase
+      .from("announcement_recipients")
+      .insert(rows);
     if (recError) throw recError;
   }
 

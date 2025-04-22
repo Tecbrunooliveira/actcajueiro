@@ -11,24 +11,28 @@ export function AnnouncementModal() {
   const { isAdmin, isAuthenticated } = useAuth();
   const [pending, setPending] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-  // Só carrega, não exibe para admin e apenas para usuários autenticados
+  // Carrega os comunicados quando o usuário estiver autenticado e não for admin
   useEffect(() => {
-    if (isAuthenticated && !isAdmin) {
+    if (isAuthenticated && !isAdmin && !initialized) {
       load();
+      setInitialized(true);
     }
-    // eslint-disable-next-line
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated, isAdmin, initialized]);
 
   async function load() {
     setLoading(true);
     try {
+      console.log("Loading announcements for member");
       const items = await getMyAnnouncements();
+      console.log("Announcements loaded:", items);
       setPending(items.filter((item) => item.announcement));
     } catch (e) {
-      // não faz nada
+      console.error("Error loading announcements:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   const handleConfirm = async (rowId: string) => {
