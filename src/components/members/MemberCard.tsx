@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/services/communicationService";
-import { useAuth } from "@/contexts/auth"; // ADDED
+import { useAuth } from "@/contexts/auth";
+import { StarRatingInput } from "./StarRatingInput"; // Importa componente de estrelas
 
 interface MemberCardProps {
   member: Member;
@@ -22,7 +23,7 @@ export function MemberCard({ member }: MemberCardProps) {
     }
   };
 
-  const { isAdmin } = useAuth(); // NEW
+  const { isAdmin } = useAuth();
 
   return (
     <Link
@@ -41,6 +42,10 @@ export function MemberCard({ member }: MemberCardProps) {
           <div className="flex justify-between items-start">
             <div>
               <h3 className="font-medium text-lg">{member.name}</h3>
+              {/* Posição abaixo do nome */}
+              {member.position && (
+                <div className="text-xs text-gray-500 mt-0.5">{member.position}</div>
+              )}
               <div className="flex items-center space-x-1 mt-1">
                 <span
                   className={cn(
@@ -52,11 +57,17 @@ export function MemberCard({ member }: MemberCardProps) {
                   {getStatusLabel(member.status)}
                 </span>
               </div>
+              {/* Nível em estrelas */}
+              {typeof member.level === "number" && (
+                <div className="flex items-center mt-1">
+                  <StarRatingInput value={member.level} onChange={() => {}} readOnly />
+                  <span className="ml-2 text-xs text-yellow-700">{member.level}/5</span>
+                </div>
+              )}
             </div>
             <ChevronRight className="h-5 w-5 text-gray-400" />
           </div>
 
-          {/* Só mostra telefone e email se for admin */}
           <div className="mt-3 space-y-1">
             {isAdmin && member.phone && (
               <div className="flex items-center justify-between">
@@ -85,4 +96,3 @@ export function MemberCard({ member }: MemberCardProps) {
     </Link>
   );
 }
-

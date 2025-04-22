@@ -7,6 +7,7 @@ import { User, Mail, Phone, Calendar, AlertCircle } from "lucide-react";
 import { Member } from "@/types";
 import { getStatusLabel } from "@/services/formatters";
 import { cn } from "@/lib/utils";
+import { StarRatingInput } from "./StarRatingInput"; // Importa estrelas
 
 interface MemberInfoCardProps {
   member: Member;
@@ -26,7 +27,20 @@ export function MemberInfoCard({ member }: MemberInfoCardProps) {
           
           <div className="flex-1">
             <div className="flex justify-between items-start">
-              <h2 className="text-2xl font-bold">{member.name}</h2>
+              <div>
+                <h2 className="text-2xl font-bold">{member.name}</h2>
+                {/* Exibe posição em destaque */}
+                {member.position && (
+                  <div className="text-sm text-gray-500 font-medium mt-1">{member.position}</div>
+                )}
+                {/* Exibe nível em estrelas */}
+                {typeof member.level === "number" && (
+                  <div className="flex items-center mt-1">
+                    <StarRatingInput value={member.level} onChange={() => {}} readOnly />
+                    <span className="ml-2 text-sm text-yellow-800">{member.level}/5</span>
+                  </div>
+                )}
+              </div>
               <Badge
                 className={cn(
                   "ml-2",
