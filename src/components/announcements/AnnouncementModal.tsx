@@ -67,7 +67,7 @@ export function AnnouncementModal() {
   const handleConfirm = async (rowId: string) => {
     setLoading(true);
     try {
-      await confirmAnnouncementReceived(rowId);
+      await announcementService.confirmAnnouncementReceived(rowId);
       toast({ title: "Recebido!", description: "Comunicado confirmado com sucesso." });
       
       // Remove the confirmed announcement from the list

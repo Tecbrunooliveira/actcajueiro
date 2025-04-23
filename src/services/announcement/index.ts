@@ -18,5 +18,8 @@ export const announcementService = {
     const announcementId = await announcementBaseService.createAnnouncement(params);
     await announcementRecipientsService.addRecipients(announcementId, params.is_global, params.memberIds);
     return announcementId;
-  }
+  },
+  
+  // Alias confirmReceipt as confirmAnnouncementReceived for backward compatibility
+  confirmAnnouncementReceived: announcementRecipientsService.confirmReceipt
 };
