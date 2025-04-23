@@ -113,13 +113,8 @@ export function AnnouncementModal() {
     load();
   };
 
-  // Don't render anything if there are no pending announcements
+  // Don't render anything if the user is not authenticated
   if (!isAuthenticated) {
-    return null;
-  }
-
-  // If we're still loading or there are no announcements, don't show the dialog
-  if (loading && !pending.length && !error) {
     return null;
   }
 

@@ -35,8 +35,9 @@ export const getMyAnnouncements = async () => {
   const memberId = memberData.id;
   console.log("Found member ID:", memberId, "Name:", memberData.name);
 
-  // Get all recipients for this member - using let instead of const to allow reassignment
-  let { data: recipientsData, error: recipientsError } = await supabase
+  // Get all recipients for this member - usando let em vez de const para permitir reatribuição
+  let recipientsData;
+  const { data, error: recipientsError } = await supabase
     .from("announcement_recipients")
     .select("id, announcement_id, read_at")
     .eq("member_id", memberId);
@@ -46,40 +47,45 @@ export const getMyAnnouncements = async () => {
     throw recipientsError;
   }
   
-  console.log("Announcement recipients for member:", recipientsData?.length || 0);
+  recipientsData = data || [];
+  console.log("Announcement recipients for member:", recipientsData.length);
   
-  if (!recipientsData || recipientsData.length === 0) {
-    // No announcements found, create a test one
+  if (recipientsData.length === 0) {
+    // No announcements found, create a test one for new members
     console.log("No announcements for this member, creating a test announcement");
     
-    // Create test announcement
-    const { data: newAnnouncement, error: createError } = await supabase
-      .from("announcements")
-      .insert({
-        title: "Bem-vindo à Associação",
-        content: "Seja bem-vindo! Este é um comunicado automático para novos sócios.",
-        is_global: false,
-        created_by: userData.user.id
-      })
-      .select("id")
-      .single();
-    
-    if (createError) {
-      console.error("Error creating test announcement:", createError);
-      return [];
-    } else if (newAnnouncement) {
-      // Add member as recipient
-      const { error: recipientError } = await supabase
-        .from("announcement_recipients")
+    try {
+      // Create test announcement
+      const { data: newAnnouncement, error: createError } = await supabase
+        .from("announcements")
         .insert({
-          announcement_id: newAnnouncement.id,
-          member_id: memberId
-        });
+          title: "Bem-vindo à Associação",
+          content: "Seja bem-vindo! Este é um comunicado automático para novos sócios.",
+          is_global: false,
+          created_by: userData.user.id
+        })
+        .select("id")
+        .single();
       
-      if (recipientError) {
-        console.error("Error creating test recipient:", recipientError);
+      if (createError) {
+        console.error("Error creating test announcement:", createError);
         return [];
-      } else {
+      }
+      
+      if (newAnnouncement) {
+        // Add member as recipient
+        const { error: recipientError } = await supabase
+          .from("announcement_recipients")
+          .insert({
+            announcement_id: newAnnouncement.id,
+            member_id: memberId
+          });
+        
+        if (recipientError) {
+          console.error("Error creating test recipient:", recipientError);
+          return [];
+        } 
+        
         console.log("Created test announcement for member, refetching data");
         // Refetch recipients after creating test announcement
         const { data: updatedRecipients, error: refetchError } = await supabase
@@ -87,13 +93,17 @@ export const getMyAnnouncements = async () => {
           .select("id, announcement_id, read_at")
           .eq("member_id", memberId);
         
-        if (refetchError || !updatedRecipients) {
+        if (refetchError) {
           console.error("Error refetching recipients:", refetchError);
           return [];
         }
         
-        recipientsData = updatedRecipients;
+        recipientsData = updatedRecipients || [];
+        console.log("Updated recipients data:", recipientsData.length);
       }
+    } catch (error) {
+      console.error("Error in test announcement creation flow:", error);
+      return [];
     }
   }
 
@@ -110,13 +120,13 @@ export const getMyAnnouncements = async () => {
   const announcementIds = unreadRecipients.map(r => r.announcement_id);
   console.log("Fetching announcements with IDs:", announcementIds);
   
-  // Make sure we have valid IDs to query
+  // Certifica-se de que temos IDs válidos para consultar
   if (!announcementIds.length) {
     console.log("No announcement IDs to fetch");
     return [];
   }
   
-  // Fixed query to properly fetch announcements
+  // Busca dos anúncios
   const { data: announcementsData, error: announcementsError } = await supabase
     .from("announcements")
     .select("*")
