@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { getMyAnnouncements, confirmAnnouncementReceived } from "@/services/announcementService";
+import { announcementService } from "@/services";
 import { useAuth } from "@/contexts/auth";
 import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -45,7 +45,7 @@ export function AnnouncementModal() {
     setError(null);
     try {
       console.log("Loading announcements for member");
-      const items = await getMyAnnouncements();
+      const items = await announcementService.getMyAnnouncements();
       console.log("Announcements loaded:", items);
       
       if (items && items.length > 0) {

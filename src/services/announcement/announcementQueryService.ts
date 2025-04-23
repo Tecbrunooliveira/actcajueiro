@@ -54,6 +54,7 @@ export const announcementQueryService = {
     const announcementIds = recipientsData.map(r => r.announcement_id);
     console.log("Fetching announcements with IDs:", announcementIds);
     
+    // Fix: Use .select('*') to ensure all fields are returned and improve the debugging
     const { data: announcementsData, error: announcementsError } = await supabase
       .from("announcements")
       .select("*")
@@ -65,6 +66,17 @@ export const announcementQueryService = {
     }
     
     console.log("Fetched announcements:", announcementsData?.length || 0);
+    
+    // Add better logging to debug the issue
+    if (!announcementsData || announcementsData.length === 0) {
+      console.log("No announcement data found");
+      return [];
+    }
+
+    // Enhanced logging for debugging
+    announcementsData.forEach(a => {
+      console.log(`Found announcement: ${a.id} - ${a.title}`);
+    });
     
     // Combine recipient and announcement data
     const result = recipientsData.map(recipient => {
