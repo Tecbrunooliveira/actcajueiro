@@ -12,7 +12,7 @@ import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } fro
 export function AnnouncementModal() {
   const { isAdmin, isAuthenticated } = useAuth();
   const [pending, setPending] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -114,7 +114,7 @@ export function AnnouncementModal() {
   };
 
   // Don't render anything if there are no pending announcements
-  if (!isAuthenticated || isAdmin) {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -122,15 +122,6 @@ export function AnnouncementModal() {
   if (loading && !pending.length && !error) {
     return null;
   }
-
-  // If there are no pending announcements and we're not loading, don't show the dialog
-  if (!pending.length && !loading && !error) {
-    return null;
-  }
-
-  // Make sure we have a valid current announcement
-  const current = pending.length > 0 ? pending[currentIndex] : null;
-  const hasValidAnnouncement = current && current.announcement;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -164,7 +155,7 @@ export function AnnouncementModal() {
           </MenubarMenu>
         </Menubar>
 
-        {loading && !hasValidAnnouncement && (
+        {loading && (
           <div className="flex flex-col items-center justify-center p-8">
             <Loader2 className="h-8 w-8 animate-spin text-gray-500 mb-4" />
             <p className="text-gray-500">Carregando comunicados...</p>
@@ -184,13 +175,13 @@ export function AnnouncementModal() {
           </div>
         )}
 
-        {hasValidAnnouncement && (
+        {!loading && !error && pending.length > 0 && pending[currentIndex]?.announcement && (
           <div className="space-y-4">
             <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-              <div className="font-medium text-lg">{current.announcement.title}</div>
-              <div className="my-2 whitespace-pre-wrap">{current.announcement.content}</div>
+              <div className="font-medium text-lg">{pending[currentIndex].announcement.title}</div>
+              <div className="my-2 whitespace-pre-wrap">{pending[currentIndex].announcement.content}</div>
               <div className="text-xs text-gray-500 mt-4">
-                Enviado em {new Date(current.announcement.created_at).toLocaleDateString("pt-BR")}
+                Enviado em {new Date(pending[currentIndex].announcement.created_at).toLocaleDateString("pt-BR")}
               </div>
             </div>
           </div>
@@ -218,9 +209,9 @@ export function AnnouncementModal() {
             </div>
           )}
           
-          {hasValidAnnouncement && (
+          {!loading && !error && pending.length > 0 && pending[currentIndex] && (
             <Button
-              onClick={() => handleConfirm(current.id)}
+              onClick={() => handleConfirm(pending[currentIndex].id)}
               disabled={loading}
               className="w-full sm:w-auto"
             >
