@@ -1,4 +1,3 @@
-
 // Reexport everything from service files to maintain backward compatibility
 export * from './memberService';
 export * from './payment';
@@ -6,6 +5,7 @@ export * from './formatters';
 export * from './pdfService';
 export * from './communicationService';
 export * from './expense';
+export * from './announcement';
 
 // Create a consolidated paymentService for backward compatibility
 import { 
