@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, Di
 import { Button } from "@/components/ui/button";
 import { announcementService } from "@/services";
 import { useAuth } from "@/contexts/auth";
-import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle, RefreshCcw } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle, RefreshCcw, Database } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
@@ -17,6 +17,7 @@ export function AnnouncementModal() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isFixingRecords, setIsFixingRecords] = useState(false);
   const navigate = useNavigate();
 
   // Load announcements for all authenticated users (including admins)
@@ -113,6 +114,39 @@ export function AnnouncementModal() {
     load();
   };
 
+  const handleFixOrphanedRecords = async () => {
+    if (!isAdmin) return;
+    
+    setIsFixingRecords(true);
+    try {
+      // Call the cleanup method to fix orphaned records
+      if (announcementService.announcementQueryService) {
+        await announcementService.announcementQueryService.cleanupOrphanedRecipients();
+        toast({
+          title: "Registros corrigidos",
+          description: "Os registros de comunicados foram corrigidos com sucesso.",
+        });
+        // Reload to verify the fix
+        handleReload();
+      } else {
+        toast({
+          title: "Erro",
+          description: "Função de correção não está disponível.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fixing orphaned records:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível corrigir os registros.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFixingRecords(false);
+    }
+  };
+
   // Don't render anything if the user is not authenticated
   if (!isAuthenticated) {
     return null;
@@ -142,9 +176,14 @@ export function AnnouncementModal() {
             <MenubarContent>
               <MenubarItem onClick={handleReload}>Recarregar</MenubarItem>
               {isAdmin && (
-                <MenubarItem onClick={handleGoToAnnouncements}>
-                  Gerenciar Comunicados
-                </MenubarItem>
+                <>
+                  <MenubarItem onClick={handleFixOrphanedRecords} disabled={isFixingRecords}>
+                    Corrigir registros
+                  </MenubarItem>
+                  <MenubarItem onClick={handleGoToAnnouncements}>
+                    Gerenciar Comunicados
+                  </MenubarItem>
+                </>
               )}
             </MenubarContent>
           </MenubarMenu>
@@ -164,9 +203,39 @@ export function AnnouncementModal() {
               <strong>Erro ao carregar comunicados</strong>
             </div>
             <p>{error}</p>
-            <Button variant="outline" size="sm" className="mt-2" onClick={handleReload}>
+            <div className="flex gap-2 mt-4">
+              <Button variant="outline" size="sm" onClick={handleReload}>
+                <RefreshCcw className="h-4 w-4 mr-2" />
+                Tentar novamente
+              </Button>
+              
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleFixOrphanedRecords}
+                  disabled={isFixingRecords}
+                  className="bg-amber-100 hover:bg-amber-200 border-amber-200"
+                >
+                  {isFixingRecords ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Database className="h-4 w-4 mr-2" />
+                  )}
+                  Corrigir registros
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && pending.length === 0 && (
+          <div className="flex flex-col items-center justify-center p-8">
+            <Bell className="h-8 w-8 text-gray-400 mb-4" />
+            <p className="text-gray-500 text-center">Não há comunicados pendentes para exibir.</p>
+            <Button variant="outline" size="sm" className="mt-4" onClick={handleReload}>
               <RefreshCcw className="h-4 w-4 mr-2" />
-              Tentar novamente
+              Verificar novamente
             </Button>
           </div>
         )}

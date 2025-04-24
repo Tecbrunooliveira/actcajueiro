@@ -33,138 +33,200 @@ export const announcementQueryService = {
     const memberId = memberData.id;
     console.log("Found member ID:", memberId, "Name:", memberData.name);
 
-    // Directly check for announcements first
-    const { data: allAnnouncementsData, error: allAnnouncementsError } = await supabase
-      .from("announcements")
-      .select("*");
-      
-    if (allAnnouncementsError) {
-      console.error("Error fetching all announcements:", allAnnouncementsError);
-      console.log("Will try to proceed with recipients check anyway");
-    } else {
-      console.log("All announcements in DB:", allAnnouncementsData?.length || 0);
-      if (allAnnouncementsData && allAnnouncementsData.length > 0) {
-        console.log("All announcement IDs in database:", allAnnouncementsData.map(a => a.id));
-        allAnnouncementsData.forEach(a => {
-          console.log(`DB announcement: ${a.id} - ${a.title} - created by: ${a.created_by}`);
-        });
+    try {
+      // First check if the announcements exist at all (to diagnose the issue)
+      const { data: allAnnouncementsData, error: allAnnouncementsError } = await supabase
+        .from("announcements")
+        .select("*");
+        
+      if (allAnnouncementsError) {
+        console.error("Error fetching all announcements:", allAnnouncementsError);
       } else {
-        console.log("⚠️ No announcements found in the database at all. Please create some announcements first.");
+        console.log("All announcements in DB:", allAnnouncementsData?.length || 0);
+        if (allAnnouncementsData && allAnnouncementsData.length > 0) {
+          console.log("All announcement IDs in database:", allAnnouncementsData.map(a => a.id));
+          allAnnouncementsData.forEach(a => {
+            console.log(`DB announcement: ${a.id} - ${a.title} - created by: ${a.created_by}`);
+          });
+        } else {
+          console.log("⚠️ No announcements found in the database at all. Please create some announcements first.");
+        }
       }
-    }
 
-    // Check directly if this member has any announcement recipients at all
-    const { count: recipientsCount, error: countError } = await supabase
-      .from("announcement_recipients")
-      .select("*", { count: "exact", head: true })
-      .eq("member_id", memberId);
-
-    if (countError) {
-      console.error("Error counting recipients:", countError);
-    } else {
-      console.log(`Total announcement recipients for member ${memberData.name}: ${recipientsCount || 0}`);
+      // Get all recipients for this member
+      const { data: recipientsData, error: recipientsError } = await supabase
+        .from("announcement_recipients")
+        .select("id, announcement_id, read_at")
+        .eq("member_id", memberId);
       
-      if (recipientsCount === 0) {
-        console.log("⚠️ This member has no announcement recipients at all. No announcements were ever sent to them.");
+      if (recipientsError) {
+        console.error("Error fetching recipients:", recipientsError);
+        throw recipientsError;
+      }
+      
+      console.log("All announcement recipients for member:", recipientsData?.length || 0);
+      
+      if (!recipientsData || recipientsData.length === 0) {
+        console.log("No announcements for this member");
         return [];
       }
-    }
 
-    // Get all recipients for this member
-    const { data: recipientsData, error: recipientsError } = await supabase
-      .from("announcement_recipients")
-      .select("id, announcement_id, read_at")
-      .eq("member_id", memberId);
-    
-    if (recipientsError) {
-      console.error("Error fetching recipients:", recipientsError);
-      throw recipientsError;
-    }
-    
-    console.log("All announcement recipients for member:", recipientsData?.length || 0);
-    
-    if (!recipientsData || recipientsData.length === 0) {
-      console.log("No announcements for this member");
-      return [];
-    }
+      // Log all recipient records for debugging
+      console.log("Recipient records:", recipientsData.map(r => ({
+        id: r.id,
+        announcement_id: r.announcement_id,
+        read_at: r.read_at
+      })));
 
-    // Log all recipient records for debugging
-    console.log("Recipient records:", recipientsData.map(r => ({
-      id: r.id,
-      announcement_id: r.announcement_id,
-      read_at: r.read_at
-    })));
+      // Separate unread recipients
+      const unreadRecipients = recipientsData.filter(r => r.read_at === null);
+      console.log("Unread announcement recipients:", unreadRecipients.length);
 
-    // Separate unread recipients
-    const unreadRecipients = recipientsData.filter(r => r.read_at === null);
-    console.log("Unread announcement recipients:", unreadRecipients.length);
+      if (unreadRecipients.length === 0) {
+        console.log("No unread announcements for this member - all announcements have already been marked as read");
+        return [];
+      }
 
-    if (unreadRecipients.length === 0) {
-      console.log("No unread announcements for this member - all announcements have already been marked as read");
-      return [];
-    }
-
-    // Get the actual announcements
-    const announcementIds = unreadRecipients.map(r => r.announcement_id);
-    console.log("Fetching announcements with IDs:", announcementIds);
-    
-    // Now try with the filter - use specific columns to avoid any issues
-    const { data: announcementsData, error: announcementsError } = await supabase
-      .from("announcements")
-      .select("id, title, content, is_global, created_by, created_at")
-      .in("id", announcementIds);
-    
-    if (announcementsError) {
-      console.error("Error fetching announcements:", announcementsError);
-      throw announcementsError;
-    }
-    
-    console.log("Fetched announcements:", announcementsData?.length || 0);
-    
-    // Handle data integrity issues
-    if (!announcementsData || announcementsData.length === 0) {
-      console.error("❌ Critical: No announcement data found for the specific IDs. This suggests data integrity issues.");
+      // Get the actual announcements
+      const announcementIds = unreadRecipients.map(r => r.announcement_id);
+      console.log("Fetching announcements with IDs:", announcementIds);
       
-      // Check if there are orphaned recipient records
-      console.log("Cleaning up orphaned recipient records...");
+      const { data: announcementsData, error: announcementsError } = await supabase
+        .from("announcements")
+        .select("id, title, content, is_global, created_by, created_at")
+        .in("id", announcementIds);
       
-      // Return empty array as there are no valid announcements
-      return [];
-    }
-
-    // Enhancement: Log which IDs were found and which weren't (to identify orphaned records)
-    const foundAnnouncementIds = announcementsData.map(a => a.id);
-    const missingIds = announcementIds.filter(id => !foundAnnouncementIds.includes(id));
-    
-    if (missingIds.length > 0) {
-      console.log("⚠️ Some announcement IDs from recipients don't exist in the announcements table:", missingIds);
-    }
-
-    // Enhanced logging for debugging
-    console.log("🎉 Successfully found matching announcements:");
-    announcementsData.forEach(a => {
-      console.log(`Found announcement: ${a.id} - ${a.title} - created by: ${a.created_by}`);
-    });
-    
-    // Combine unread recipient and announcement data (only for valid announcements)
-    const result = unreadRecipients
-      .filter(recipient => foundAnnouncementIds.includes(recipient.announcement_id))
-      .map(recipient => {
-        const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
-        if (announcement) {
-          console.log(`Matched announcement: ${announcement.title} for recipient ID: ${recipient.id}`);
+      if (announcementsError) {
+        console.error("Error fetching announcements:", announcementsError);
+        throw announcementsError;
+      }
+      
+      console.log("Fetched announcements:", announcementsData?.length || 0);
+      
+      // CRITICAL CHANGE: If there are no announcements found, cleanup the orphaned records
+      if (!announcementsData || announcementsData.length === 0) {
+        console.error("❌ Critical: No announcement data found for the specific IDs. This suggests data integrity issues.");
+        console.log("Attempting to clean up orphaned recipient records...");
+        
+        // Fix: Clean up orphaned recipient records
+        for (const recipient of unreadRecipients) {
+          // Mark the orphaned record as read to prevent it from showing up again
+          await supabase
+            .from("announcement_recipients")
+            .update({ read_at: new Date().toISOString() })
+            .eq("id", recipient.id);
+            
+          console.log(`Marked orphaned recipient ${recipient.id} as read to prevent it from appearing again`);
         }
-        return {
-          id: recipient.id,
-          announcement: announcement || null
-        };
-      })
-      .filter(item => item.announcement !== null);
-    
-    console.log("Final processed announcements to show:", result.length);
-    if (result.length > 0) {
-      console.log("First announcement title:", result[0].announcement.title);
+        
+        // Return empty array as there are no valid announcements
+        return [];
+      }
+
+      // Enhancement: Log which IDs were found and which weren't (to identify orphaned records)
+      const foundAnnouncementIds = announcementsData.map(a => a.id);
+      const missingIds = announcementIds.filter(id => !foundAnnouncementIds.includes(id));
+      
+      if (missingIds.length > 0) {
+        console.log("⚠️ Some announcement IDs from recipients don't exist in the announcements table:", missingIds);
+        
+        // Also clean up these specific orphaned records
+        for (const recipient of unreadRecipients.filter(r => missingIds.includes(r.announcement_id))) {
+          await supabase
+            .from("announcement_recipients")
+            .update({ read_at: new Date().toISOString() })
+            .eq("id", recipient.id);
+            
+          console.log(`Marked orphaned recipient ${recipient.id} with missing announcement as read`);
+        }
+      }
+
+      // Enhanced logging for debugging
+      console.log("🎉 Successfully found matching announcements:");
+      announcementsData.forEach(a => {
+        console.log(`Found announcement: ${a.id} - ${a.title} - created by: ${a.created_by}`);
+      });
+      
+      // Combine unread recipient and announcement data (only for valid announcements)
+      const result = unreadRecipients
+        .filter(recipient => foundAnnouncementIds.includes(recipient.announcement_id))
+        .map(recipient => {
+          const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
+          if (announcement) {
+            console.log(`Matched announcement: ${announcement.title} for recipient ID: ${recipient.id}`);
+          }
+          return {
+            id: recipient.id,
+            announcement: announcement || null
+          };
+        })
+        .filter(item => item.announcement !== null);
+      
+      console.log("Final processed announcements to show:", result.length);
+      if (result.length > 0) {
+        console.log("First announcement title:", result[0].announcement.title);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error processing announcements:", error);
+      throw error;
     }
-    return result;
+  },
+  
+  // New method to fix orphaned recipient records in the database
+  async cleanupOrphanedRecipients() {
+    try {
+      console.log("Starting cleanup of orphaned recipient records");
+      
+      // Get all announcement IDs
+      const { data: announcements, error: announcementError } = await supabase
+        .from("announcements")
+        .select("id");
+        
+      if (announcementError) {
+        console.error("Error fetching announcements for cleanup:", announcementError);
+        return false;
+      }
+      
+      if (!announcements || announcements.length === 0) {
+        console.log("No announcements found in the database - will mark all recipients as read");
+        
+        // If there are no announcements at all, mark all recipients as read
+        const { error } = await supabase
+          .from("announcement_recipients")
+          .update({ read_at: new Date().toISOString() })
+          .is("read_at", null);
+          
+        if (error) {
+          console.error("Error marking all recipients as read:", error);
+          return false;
+        }
+        
+        console.log("Successfully marked all recipients as read since no announcements exist");
+        return true;
+      }
+      
+      // Get the list of valid announcement IDs
+      const validIds = announcements.map(a => a.id);
+      
+      // Mark as read any recipient records that refer to non-existent announcements
+      const { error } = await supabase
+        .from("announcement_recipients")
+        .update({ read_at: new Date().toISOString() })
+        .is("read_at", null)
+        .not("announcement_id", "in", `(${validIds.map(id => `'${id}'`).join(',')})`);
+        
+      if (error) {
+        console.error("Error cleaning up orphaned recipients:", error);
+        return false;
+      }
+      
+      console.log("Successfully cleaned up orphaned recipient records");
+      return true;
+    } catch (error) {
+      console.error("Error during orphaned recipient cleanup:", error);
+      return false;
+    }
   }
 };

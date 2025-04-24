@@ -13,6 +13,11 @@ export const announcementService = {
   ...announcementRecipientsService,
   ...announcementQueryService,
   
+  // Expose the specific services to allow direct access to their methods
+  announcementBaseService,
+  announcementRecipientsService,
+  announcementQueryService,
+  
   // Combine createAnnouncement and addRecipients for backward compatibility
   async createAnnouncement(params: { title: string; content: string; is_global: boolean; memberIds?: string[] }) {
     const announcementId = await announcementBaseService.createAnnouncement(params);
