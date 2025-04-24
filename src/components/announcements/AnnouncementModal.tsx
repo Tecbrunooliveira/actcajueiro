@@ -19,7 +19,7 @@ export function AnnouncementModal() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Load announcements when the user is authenticated and not an admin
+  // Load announcements for all authenticated users (including admins)
   useEffect(() => {
     if (isAuthenticated && !initialized) {
       console.log("AnnouncementModal: User is authenticated, loading announcements");

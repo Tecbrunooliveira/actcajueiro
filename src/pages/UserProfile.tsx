@@ -1,19 +1,21 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth";
-import { memberService, paymentService } from "@/services";
+import { memberService, paymentService, announcementService } from "@/services";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MemberInfoCard } from "@/components/members/MemberInfoCard";
 import { PaymentsList } from "@/components/members/PaymentsList";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { AnnouncementModal } from "@/components/announcements/AnnouncementModal";
 
 const UserProfile = () => {
   const { user, isAdmin } = useAuth();
   const [member, setMember] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
+  const [hasAnnouncements, setHasAnnouncements] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,6 +31,14 @@ const UserProfile = () => {
         if (myMember) {
           const history = await paymentService.getPaymentsByMember(myMember.id);
           setPayments(history);
+          
+          // Check for announcements
+          try {
+            const announcements = await announcementService.getMyAnnouncements();
+            setHasAnnouncements(announcements && announcements.length > 0);
+          } catch (err) {
+            console.error("Error checking announcements:", err);
+          }
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -81,6 +91,32 @@ const UserProfile = () => {
 
   return (
     <MobileLayout title="Meu Perfil">
+      <AnnouncementModal />
+      
+      {hasAnnouncements && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center">
+          <Bell className="h-5 w-5 text-amber-500 mr-2 animate-bounce" />
+          <div>
+            <p className="font-medium">Você tem comunicados não lidos</p>
+            <p className="text-sm text-gray-600">Clique no botão para visualizá-los</p>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="ml-auto bg-amber-100 hover:bg-amber-200 border-amber-200"
+            onClick={() => {
+              const modal = document.querySelector("[role='dialog']");
+              if (modal) {
+                (modal as HTMLElement).click();
+              }
+            }}
+          >
+            <Bell className="h-4 w-4 mr-2" />
+            Ver comunicados
+          </Button>
+        </div>
+      )}
+      
       <MemberInfoCard member={member} />
       <div className="mt-6">
         <PaymentsList 

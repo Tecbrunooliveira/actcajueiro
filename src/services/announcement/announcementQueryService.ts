@@ -10,6 +10,8 @@ export const announcementQueryService = {
       throw new Error("User not authenticated");
     }
 
+    console.log("Authenticated user ID:", userData.user.id, "Email:", userData.user.email);
+
     // Get the member ID associated with the user
     console.log("Getting member ID for user:", userData.user.id);
     const { data: memberData, error: memberError } = await supabase
@@ -24,14 +26,31 @@ export const announcementQueryService = {
     }
     
     if (!memberData) {
-      console.log("No member data found for user");
+      console.error("No member data found for user. The user is not associated with any member in the members table.");
       return [];
     }
 
     const memberId = memberData.id;
     console.log("Found member ID:", memberId, "Name:", memberData.name);
 
-    // Get all recipients for this member (including read ones)
+    // Check directly if this member has any announcement recipients at all
+    const { count: recipientsCount, error: countError } = await supabase
+      .from("announcement_recipients")
+      .select("*", { count: "exact", head: true })
+      .eq("member_id", memberId);
+
+    if (countError) {
+      console.error("Error counting recipients:", countError);
+    } else {
+      console.log(`Total announcement recipients for member ${memberData.name}: ${recipientsCount || 0}`);
+      
+      if (recipientsCount === 0) {
+        console.log("⚠️ This member has no announcement recipients at all. No announcements were ever sent to them.");
+        return [];
+      }
+    }
+
+    // Get all recipients for this member
     const { data: recipientsData, error: recipientsError } = await supabase
       .from("announcement_recipients")
       .select("id, announcement_id, read_at")
@@ -49,12 +68,27 @@ export const announcementQueryService = {
       return [];
     }
 
+    // Log all recipient records for debugging
+    console.log("Recipient records:", recipientsData.map(r => ({
+      id: r.id,
+      announcement_id: r.announcement_id,
+      read_at: r.read_at
+    })));
+
     // Separate unread recipients
     const unreadRecipients = recipientsData.filter(r => r.read_at === null);
     console.log("Unread announcement recipients:", unreadRecipients.length);
+
+    // Log unread recipients for debugging
+    if (unreadRecipients.length > 0) {
+      console.log("Unread recipient records:", unreadRecipients.map(r => ({
+        id: r.id,
+        announcement_id: r.announcement_id
+      })));
+    }
     
     if (unreadRecipients.length === 0) {
-      console.log("No unread announcements for this member");
+      console.log("No unread announcements for this member - all announcements have already been marked as read");
       return [];
     }
 
@@ -72,8 +106,9 @@ export const announcementQueryService = {
     } else {
       console.log("All announcements in DB:", allAnnouncementsData?.length || 0);
       if (allAnnouncementsData && allAnnouncementsData.length > 0) {
+        console.log("All announcement IDs in database:", allAnnouncementsData.map(a => a.id));
         allAnnouncementsData.forEach(a => {
-          console.log(`DB announcement: ${a.id} - ${a.title}`);
+          console.log(`DB announcement: ${a.id} - ${a.title} - created by: ${a.created_by}`);
         });
       }
     }
@@ -93,21 +128,31 @@ export const announcementQueryService = {
     
     // Add better logging to debug the issue
     if (!announcementsData || announcementsData.length === 0) {
-      console.log("No announcement data found for the specific IDs");
+      console.error("❌ Critical: No announcement data found for the specific IDs. This suggests data integrity issues.");
       
       // Check if announcements exist but IDs don't match
       if (allAnnouncementsData && allAnnouncementsData.length > 0) {
-        console.log("Potential ID mismatch between announcements and recipients");
+        console.error("❌ ID mismatch detected! The announcement_recipients table has IDs that don't match any rows in the announcements table.");
         console.log("Announcement IDs from recipients:", announcementIds);
         console.log("Announcement IDs in database:", allAnnouncementsData.map(a => a.id));
+        
+        // Check for potential UUID format issues or case sensitivity
+        const normalizedDbIds = allAnnouncementsData.map(a => a.id.toLowerCase());
+        const normalizedRecipientIds = announcementIds.map(id => id.toLowerCase());
+        const matchesAfterNormalization = normalizedRecipientIds.filter(id => normalizedDbIds.includes(id));
+        
+        if (matchesAfterNormalization.length > 0) {
+          console.log("Some IDs match after normalization (case insensitive):", matchesAfterNormalization);
+        }
       }
       
       return [];
     }
 
     // Enhanced logging for debugging
+    console.log("🎉 Successfully found matching announcements:");
     announcementsData.forEach(a => {
-      console.log(`Found announcement: ${a.id} - ${a.title}`);
+      console.log(`Found announcement: ${a.id} - ${a.title} - created by: ${a.created_by}`);
     });
     
     // Combine unread recipient and announcement data
@@ -124,7 +169,10 @@ export const announcementQueryService = {
       };
     }).filter(item => item.announcement !== null);
     
-    console.log("Final processed announcements:", result.length);
+    console.log("Final processed announcements to show:", result.length);
+    if (result.length > 0) {
+      console.log("First announcement title:", result[0].announcement.title);
+    }
     return result;
   }
 };
