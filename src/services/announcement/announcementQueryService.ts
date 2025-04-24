@@ -50,13 +50,30 @@ export const announcementQueryService = {
       return [];
     }
 
-    // Get the actual announcements
+    // Get the actual announcements - Debug: Log the raw SQL query
     const announcementIds = recipientsData.map(r => r.announcement_id);
     console.log("Fetching announcements with IDs:", announcementIds);
     
+    // Execute the query without filters first to check if announcements exist at all
+    const { data: allAnnouncementsData, error: allAnnouncementsError } = await supabase
+      .from("announcements")
+      .select("*");
+      
+    if (allAnnouncementsError) {
+      console.error("Error fetching all announcements:", allAnnouncementsError);
+    } else {
+      console.log("All announcements in DB:", allAnnouncementsData?.length || 0);
+      if (allAnnouncementsData && allAnnouncementsData.length > 0) {
+        allAnnouncementsData.forEach(a => {
+          console.log(`DB announcement: ${a.id} - ${a.title}`);
+        });
+      }
+    }
+    
+    // Now try with the filter
     const { data: announcementsData, error: announcementsError } = await supabase
       .from("announcements")
-      .select("*")  // Use * to ensure we get all fields
+      .select("*")
       .in("id", announcementIds);
     
     if (announcementsError) {
@@ -68,7 +85,15 @@ export const announcementQueryService = {
     
     // Add better logging to debug the issue
     if (!announcementsData || announcementsData.length === 0) {
-      console.log("No announcement data found");
+      console.log("No announcement data found for the specific IDs");
+      
+      // Check if announcements exist but IDs don't match
+      if (allAnnouncementsData && allAnnouncementsData.length > 0) {
+        console.log("Potential ID mismatch between announcements and recipients");
+        console.log("Announcement IDs from recipients:", announcementIds);
+        console.log("Announcement IDs in database:", allAnnouncementsData.map(a => a.id));
+      }
+      
       return [];
     }
 
