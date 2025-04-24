@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, Di
 import { Button } from "@/components/ui/button";
 import { announcementService } from "@/services";
 import { useAuth } from "@/contexts/auth";
-import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle, RefreshCcw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
@@ -21,8 +21,8 @@ export function AnnouncementModal() {
 
   // Load announcements when the user is authenticated and not an admin
   useEffect(() => {
-    if (isAuthenticated && !isAdmin && !initialized) {
-      console.log("AnnouncementModal: User is authenticated and not admin, loading announcements");
+    if (isAuthenticated && !initialized) {
+      console.log("AnnouncementModal: User is authenticated, loading announcements");
       load();
       setInitialized(true);
     } else {
@@ -165,6 +165,7 @@ export function AnnouncementModal() {
             </div>
             <p>{error}</p>
             <Button variant="outline" size="sm" className="mt-2" onClick={handleReload}>
+              <RefreshCcw className="h-4 w-4 mr-2" />
               Tentar novamente
             </Button>
           </div>

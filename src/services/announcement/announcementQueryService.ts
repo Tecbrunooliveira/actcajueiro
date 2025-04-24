@@ -31,27 +31,35 @@ export const announcementQueryService = {
     const memberId = memberData.id;
     console.log("Found member ID:", memberId, "Name:", memberData.name);
 
-    // Get unread recipients for this member
+    // Get all recipients for this member (including read ones)
     const { data: recipientsData, error: recipientsError } = await supabase
       .from("announcement_recipients")
       .select("id, announcement_id, read_at")
-      .eq("member_id", memberId)
-      .is("read_at", null);
+      .eq("member_id", memberId);
     
     if (recipientsError) {
       console.error("Error fetching recipients:", recipientsError);
       throw recipientsError;
     }
     
-    console.log("Unread announcement recipients:", recipientsData?.length || 0);
+    console.log("All announcement recipients for member:", recipientsData?.length || 0);
     
     if (!recipientsData || recipientsData.length === 0) {
+      console.log("No announcements for this member");
+      return [];
+    }
+
+    // Separate unread recipients
+    const unreadRecipients = recipientsData.filter(r => r.read_at === null);
+    console.log("Unread announcement recipients:", unreadRecipients.length);
+    
+    if (unreadRecipients.length === 0) {
       console.log("No unread announcements for this member");
       return [];
     }
 
-    // Get the actual announcements - Debug: Log the raw SQL query
-    const announcementIds = recipientsData.map(r => r.announcement_id);
+    // Get the actual announcements
+    const announcementIds = unreadRecipients.map(r => r.announcement_id);
     console.log("Fetching announcements with IDs:", announcementIds);
     
     // Execute the query without filters first to check if announcements exist at all
@@ -70,10 +78,10 @@ export const announcementQueryService = {
       }
     }
     
-    // Now try with the filter
+    // Now try with the filter - use specific columns to avoid any issues
     const { data: announcementsData, error: announcementsError } = await supabase
       .from("announcements")
-      .select("*")
+      .select("id, title, content, is_global, created_by, created_at")
       .in("id", announcementIds);
     
     if (announcementsError) {
@@ -102,8 +110,8 @@ export const announcementQueryService = {
       console.log(`Found announcement: ${a.id} - ${a.title}`);
     });
     
-    // Combine recipient and announcement data
-    const result = recipientsData.map(recipient => {
+    // Combine unread recipient and announcement data
+    const result = unreadRecipients.map(recipient => {
       const announcement = announcementsData.find(a => a.id === recipient.announcement_id);
       if (!announcement) {
         console.log(`No matching announcement found for ID: ${recipient.announcement_id}`);
