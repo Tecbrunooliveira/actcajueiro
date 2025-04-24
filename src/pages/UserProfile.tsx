@@ -5,7 +5,7 @@ import { memberService, paymentService, announcementService } from "@/services";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MemberInfoCard } from "@/components/members/MemberInfoCard";
 import { PaymentsList } from "@/components/members/PaymentsList";
-import { AlertCircle, Info, Bell } from "lucide-react";
+import { AlertCircle, Info, Bell, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ const UserProfile = () => {
   const [member, setMember] = useState<any>(null);
   const [payments, setPayments] = useState<any[]>([]);
   const [hasAnnouncements, setHasAnnouncements] = useState(false);
+  const [announcementsError, setAnnouncementsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -36,8 +37,18 @@ const UserProfile = () => {
           try {
             const announcements = await announcementService.getMyAnnouncements();
             setHasAnnouncements(announcements && announcements.length > 0);
+            
+            if (announcements && announcements.length > 0) {
+              console.log("Found announcements for user:", announcements.length);
+            } else {
+              console.log("No announcements found for this user");
+              
+              // Reset any previous errors
+              setAnnouncementsError(null);
+            }
           } catch (err) {
             console.error("Error checking announcements:", err);
+            setAnnouncementsError("Erro ao carregar comunicados. Por favor, tente novamente mais tarde.");
           }
         }
       } catch (error) {
@@ -53,6 +64,13 @@ const UserProfile = () => {
     }
     if (user?.id) loadProfile();
   }, [user, toast]);
+
+  const triggerAnnouncementModal = () => {
+    const modal = document.querySelector("[role='dialog']");
+    if (modal) {
+      (modal as HTMLElement).click();
+    }
+  };
 
   if (loading) {
     return (
@@ -93,7 +111,26 @@ const UserProfile = () => {
     <MobileLayout title="Meu Perfil">
       <AnnouncementModal />
       
-      {hasAnnouncements && (
+      {announcementsError && (
+        <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center">
+          <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+          <div>
+            <p className="font-medium">Erro ao carregar comunicados</p>
+            <p className="text-sm text-gray-600">{announcementsError}</p>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="ml-auto bg-red-100 hover:bg-red-200 border-red-200"
+            onClick={triggerAnnouncementModal}
+          >
+            <Database className="h-4 w-4 mr-2" />
+            Tentar novamente
+          </Button>
+        </div>
+      )}
+      
+      {hasAnnouncements && !announcementsError && (
         <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center">
           <Bell className="h-5 w-5 text-amber-500 mr-2 animate-bounce" />
           <div>
@@ -104,12 +141,7 @@ const UserProfile = () => {
             variant="outline" 
             size="sm" 
             className="ml-auto bg-amber-100 hover:bg-amber-200 border-amber-200"
-            onClick={() => {
-              const modal = document.querySelector("[role='dialog']");
-              if (modal) {
-                (modal as HTMLElement).click();
-              }
-            }}
+            onClick={triggerAnnouncementModal}
           >
             <Bell className="h-4 w-4 mr-2" />
             Ver comunicados
