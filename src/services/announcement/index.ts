@@ -1,4 +1,3 @@
-
 export * from './announcementBaseService';
 export * from './announcementRecipientsService';
 export * from './announcementQueryService';
@@ -7,6 +6,9 @@ export * from './announcementQueryService';
 import { announcementBaseService } from './announcementBaseService';
 import { announcementRecipientsService } from './announcementRecipientsService';
 import { announcementQueryService } from './announcementQueryService';
+
+// Re-export the cleanup service
+export { cleanupOrphanedRecipients } from './services/cleanupService';
 
 export const announcementService = {
   ...announcementBaseService,
