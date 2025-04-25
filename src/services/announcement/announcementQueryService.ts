@@ -59,13 +59,8 @@ export const announcementQueryService = {
       
       if (!announcementsData || announcementsData.length === 0) {
         console.error("❌ Critical: No announcement data found for the specific IDs. This suggests data integrity issues.");
-        // Clean up orphaned recipient records
-        for (const recipient of unreadRecipients) {
-          await supabase
-            .from("announcement_recipients")
-            .update({ read_at: new Date().toISOString() })
-            .eq("id", recipient.id);
-        }
+        // Removido o código que limpava automaticamente os registros órfãos
+        // Não vamos mais marcar como lidos automaticamente
         return [];
       }
 
