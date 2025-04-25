@@ -1,15 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import type { CreateAnnouncementParams } from "./types/announcement";
 
 export const announcementBaseService = {
-  async createAnnouncement({ title, content, is_global, memberIds }: { 
-    title: string; 
-    content: string; 
-    is_global: boolean; 
-    memberIds?: string[] 
-  }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+  async createAnnouncement({ title, content, is_global, memberIds }: CreateAnnouncementParams): Promise<string> {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Authentication error:", authError);
       throw new Error("User not authenticated");
     }
     
@@ -33,6 +31,10 @@ export const announcementBaseService = {
     if (error) {
       console.error("Error creating announcement:", error);
       throw error;
+    }
+    
+    if (!data) {
+      throw new Error("No data returned after creating announcement");
     }
     
     return data.id;
