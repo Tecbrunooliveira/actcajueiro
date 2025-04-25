@@ -1,38 +1,34 @@
 
-import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { announcementService } from "@/services";
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogHeader } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/auth";
-import { Loader2, ArrowLeft, ArrowRight, Bell, AlertCircle, RefreshCcw, Database } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Loader2, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
+import { AnnouncementError } from "./AnnouncementError";
+import { AnnouncementEmpty } from "./AnnouncementEmpty";
+import { AnnouncementContent } from "./AnnouncementContent";
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 
 export function AnnouncementModal() {
   const { isAdmin, isAuthenticated } = useAuth();
-  const [pending, setPending] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isFixingRecords, setIsFixingRecords] = useState(false);
   const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const {
+    pending,
+    loading,
+    error,
+    currentIndex,
+    isFixingRecords,
+    setCurrentIndex,
+    handleReload,
+    handleConfirm,
+    handleFixOrphanedRecords,
+  } = useAnnouncements();
 
-  // Load announcements for all authenticated users (including admins)
-  useEffect(() => {
-    if (isAuthenticated && !initialized) {
-      console.log("AnnouncementModal: User is authenticated, loading announcements");
-      load();
-      setInitialized(true);
-    } else {
-      console.log("AnnouncementModal: Not loading announcements", { isAuthenticated, isAdmin, initialized });
-    }
-  }, [isAuthenticated, isAdmin, initialized]);
-
-  // Automatically open the dialog when we have pending announcements
-  useEffect(() => {
+  // Effects to handle modal visibility
+  React.useEffect(() => {
     if (pending.length > 0) {
       console.log("Opening announcement modal with", pending.length, "announcements");
       setIsOpen(true);
@@ -40,57 +36,6 @@ export function AnnouncementModal() {
       setIsOpen(false);
     }
   }, [pending]);
-
-  async function load() {
-    setLoading(true);
-    setError(null);
-    try {
-      console.log("Loading announcements for member");
-      const items = await announcementService.getMyAnnouncements();
-      console.log("Announcements loaded:", items);
-      
-      if (items && items.length > 0) {
-        console.log("Setting pending announcements:", items);
-        setPending(items);
-        setCurrentIndex(0);
-      } else {
-        console.log("No announcements to display");
-        setPending([]);
-      }
-    } catch (e) {
-      console.error("Error loading announcements:", e);
-      setError("Não foi possível carregar os comunicados. Tente novamente mais tarde.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleConfirm = async (rowId: string) => {
-    setLoading(true);
-    try {
-      await announcementService.confirmAnnouncementReceived(rowId);
-      toast({ title: "Recebido!", description: "Comunicado confirmado com sucesso." });
-      
-      // Remove the confirmed announcement from the list
-      setPending((prev) => {
-        const newPending = prev.filter((p) => p.id !== rowId);
-        if (newPending.length === 0) {
-          setIsOpen(false);
-        } else if (currentIndex >= newPending.length) {
-          setCurrentIndex(newPending.length - 1);
-        }
-        return newPending;
-      });
-    } catch (e) {
-      console.error("Error confirming announcement:", e);
-      toast({ 
-        title: "Erro", 
-        description: "Não foi possível confirmar o recebimento.", 
-        variant: "destructive" 
-      });
-    }
-    setLoading(false);
-  };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
@@ -108,46 +53,6 @@ export function AnnouncementModal() {
     navigate("/admin/announcements");
   };
 
-  const handleReload = () => {
-    setPending([]);
-    setInitialized(false);
-    load();
-  };
-
-  const handleFixOrphanedRecords = async () => {
-    if (!isAdmin) return;
-    
-    setIsFixingRecords(true);
-    try {
-      // Call the cleanup method to fix orphaned records
-      if (announcementService.announcementQueryService) {
-        await announcementService.announcementQueryService.cleanupOrphanedRecipients();
-        toast({
-          title: "Registros corrigidos",
-          description: "Os registros de comunicados foram corrigidos com sucesso.",
-        });
-        // Reload to verify the fix
-        handleReload();
-      } else {
-        toast({
-          title: "Erro",
-          description: "Função de correção não está disponível.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error fixing orphaned records:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível corrigir os registros.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsFixingRecords(false);
-    }
-  };
-
-  // Don't render anything if the user is not authenticated
   if (!isAuthenticated) {
     return null;
   }
@@ -197,94 +102,30 @@ export function AnnouncementModal() {
         )}
 
         {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
-            <div className="flex items-center mb-2">
-              <AlertCircle className="h-5 w-5 mr-2" />
-              <strong>Erro ao carregar comunicados</strong>
-            </div>
-            <p>{error}</p>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" size="sm" onClick={handleReload}>
-                <RefreshCcw className="h-4 w-4 mr-2" />
-                Tentar novamente
-              </Button>
-              
-              {isAdmin && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleFixOrphanedRecords}
-                  disabled={isFixingRecords}
-                  className="bg-amber-100 hover:bg-amber-200 border-amber-200"
-                >
-                  {isFixingRecords ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Database className="h-4 w-4 mr-2" />
-                  )}
-                  Corrigir registros
-                </Button>
-              )}
-            </div>
-          </div>
+          <AnnouncementError
+            error={error}
+            isAdmin={isAdmin}
+            isFixingRecords={isFixingRecords}
+            onReload={handleReload}
+            onFixRecords={handleFixOrphanedRecords}
+          />
         )}
 
         {!loading && !error && pending.length === 0 && (
-          <div className="flex flex-col items-center justify-center p-8">
-            <Bell className="h-8 w-8 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-center">Não há comunicados pendentes para exibir.</p>
-            <Button variant="outline" size="sm" className="mt-4" onClick={handleReload}>
-              <RefreshCcw className="h-4 w-4 mr-2" />
-              Verificar novamente
-            </Button>
-          </div>
+          <AnnouncementEmpty onReload={handleReload} />
         )}
 
         {!loading && !error && pending.length > 0 && pending[currentIndex]?.announcement && (
-          <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-              <div className="font-medium text-lg">{pending[currentIndex].announcement.title}</div>
-              <div className="my-2 whitespace-pre-wrap">{pending[currentIndex].announcement.content}</div>
-              <div className="text-xs text-gray-500 mt-4">
-                Enviado em {new Date(pending[currentIndex].announcement.created_at).toLocaleDateString("pt-BR")}
-              </div>
-            </div>
-          </div>
+          <AnnouncementContent
+            announcement={pending[currentIndex].announcement}
+            currentIndex={currentIndex}
+            totalAnnouncements={pending.length}
+            loading={loading}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onConfirm={handleConfirm}
+          />
         )}
-
-        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-          {pending.length > 1 && (
-            <div className="flex space-x-2 mr-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={currentIndex === 0 || loading}
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" /> Anterior
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNext}
-                disabled={currentIndex === pending.length - 1 || loading}
-              >
-                Próximo <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
-          
-          {!loading && !error && pending.length > 0 && pending[currentIndex] && (
-            <Button
-              onClick={() => handleConfirm(pending[currentIndex].id)}
-              disabled={loading}
-              className="w-full sm:w-auto"
-            >
-              {loading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-              Confirmar recebimento
-            </Button>
-          )}
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
