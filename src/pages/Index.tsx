@@ -65,7 +65,7 @@ const Index = () => {
   };
 
   return (
-    <MobileLayout title="ACT CAJUEIRO">
+    <MobileLayout title="ASSOCIAÇÃO ACT - CAJUEIRO">
       <AnnouncementModal />
       {loading ? <HomeLoading /> : (
         <motion.div 
