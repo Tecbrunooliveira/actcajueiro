@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Home,
@@ -29,7 +28,7 @@ export function SideMenu({ onClose }: SideMenuProps) {
     <div className="flex flex-col justify-between h-full overflow-y-auto bg-white">
       <div className="p-4">
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-club-500">ACT Cajueiro</h2>
+          <h2 className="text-xl font-bold text-club-500">ACT CAJUEIRO</h2>
           <p className="text-sm text-gray-500">Sistema de Gestão</p>
         </div>
         
