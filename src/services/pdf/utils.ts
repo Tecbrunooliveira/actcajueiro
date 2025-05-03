@@ -1,6 +1,5 @@
 
 import { Font } from "@react-pdf/renderer";
-import React from 'react';
 
 // Register fonts for PDF
 export const registerFonts = () => {
@@ -15,8 +14,11 @@ export const registerFonts = () => {
   });
 };
 
-// Register fonts immediately
-registerFonts();
+// Registrar fontes apenas quando este módulo for importado
+// mas não imediatamente durante a inicialização
+export const initializePdfUtils = () => {
+  registerFonts();
+};
 
 // Helper function to download PDF
 export const downloadPdf = (blob: Blob, fileName: string) => {
