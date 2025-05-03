@@ -30,7 +30,7 @@ const Reports = () => {
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
-    handleRetry
+    handleRetry: handleReportsDataRetry
   } = useReportsData(retryCount);
 
   const {
@@ -47,6 +47,7 @@ const Reports = () => {
     activeTab === 'advanced' && retryCount > 0 ? selectedYear : ''
   );
   
+  // Combinação das funções de retry
   const handleRetry = () => {
     handleRetryCountIncrement();
     toast({
@@ -54,8 +55,8 @@ const Reports = () => {
       description: "Tentando carregar os dados de relatórios novamente...",
       duration: 3000,
     });
-    if (handleRetry) {
-      handleRetry();
+    if (handleReportsDataRetry) {
+      handleReportsDataRetry();
     }
   };
   
