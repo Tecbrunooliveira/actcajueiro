@@ -47,7 +47,7 @@ const Reports = () => {
     activeTab === 'advanced' && retryCount > 0 ? selectedYear : ''
   );
   
-  // Combinação das funções de retry
+  // Combined retry function
   const handleRetry = () => {
     handleRetryCountIncrement();
     toast({

@@ -7,22 +7,22 @@ import { initializePdfUtils } from './services/pdf/utils';
 // Initialize PDF utilities before importing components that might use them
 initializePdfUtils();
 
-// Now import the application components
+// Import the application components
 import App from './App';
 import './index.css';
 
+// Create the query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
+
 // Make sure the DOM is ready before rendering
 document.addEventListener('DOMContentLoaded', () => {
-  // Create the query client after React is loaded
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        retry: 1,
-        staleTime: 30000,
-      },
-    },
-  });
-
   // Render the application
   const rootElement = document.getElementById('root');
   if (rootElement) {

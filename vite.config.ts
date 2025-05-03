@@ -17,6 +17,12 @@ export default defineConfig(({ mode }) => ({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3000000, // Increase size limit to 3MB to accommodate react-pdf
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Skip precaching these large files
+        navigateFallbackDenylist: [/^.*\/react-pdf.*$/]
+      },
       manifest: {
         name: 'ACT - CAJUEIRO',
         short_name: 'CAJUEIRO',
