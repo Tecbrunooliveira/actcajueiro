@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { memberService, paymentService } from "@/services";
 import { MonthlyRecord, Payment } from "@/types";
@@ -14,45 +14,45 @@ import { useAuth } from "@/contexts/auth";
 import { Link } from "react-router-dom";
 import { UserPlus, Bell } from "lucide-react";
 import { AnnouncementModal } from "@/components/announcements/AnnouncementModal";
+import { useQuery } from '@tanstack/react-query';
 
 const Index = () => {
   const { user, isAdmin } = useAuth();
-  const [members, setMembers] = useState([]);
-  const [unpaidPayments, setUnpaidPayments] = useState<Payment[]>([]);
-  const [monthlyRecord, setMonthlyRecord] = useState<MonthlyRecord>({
-    month: "",
-    year: 0,
-    totalMembers: 0,
-    paidMembers: 0,
-    unpaidMembers: 0,
-    totalAmount: 0,
-    collectedAmount: 0,
-  });
-  const [loading, setLoading] = useState(true);
   const currentMonth = getCurrentMonthYear();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [fetchedMembers, fetchedUnpaidPayments, fetchedMonthlyRecord] = await Promise.all([
-          memberService.getAllMembers(),
-          paymentService.getUnpaidPayments(),
-          paymentService.getMonthlyRecord(currentMonth.month, currentMonth.year)
-        ]);
+  // Buscar sócios (apenas id e nome, se possível)
+  const {
+    data: members = [],
+    isLoading: loadingMembers
+  } = useQuery({
+    queryKey: ['members'],
+    queryFn: () => memberService.getAllMembers()
+  });
 
-        setMembers(fetchedMembers);
-        setUnpaidPayments(fetchedUnpaidPayments);
-        setMonthlyRecord(fetchedMonthlyRecord);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Buscar pagamentos em aberto (limitar a 10 para exibição rápida)
+  const {
+    data: unpaidPayments = [],
+    isLoading: loadingPayments
+  } = useQuery({
+    queryKey: ['unpaidPayments'],
+    queryFn: async () => {
+      const all = await paymentService.getUnpaidPayments();
+      return all.slice(0, 10);
+    }
+  });
 
-    fetchData();
-  }, []);
+  // Buscar resumo mensal
+  const {
+    data: monthlyRecord = {
+      month: '', year: 0, totalMembers: 0, paidMembers: 0, unpaidMembers: 0, totalAmount: 0, collectedAmount: 0
+    },
+    isLoading: loadingMonthly
+  } = useQuery({
+    queryKey: ['monthlyRecord', currentMonth.month, currentMonth.year],
+    queryFn: () => paymentService.getMonthlyRecord(currentMonth.month, currentMonth.year)
+  });
+
+  const loading = loadingMembers || loadingPayments || loadingMonthly;
 
   const container = {
     hidden: { opacity: 0 },

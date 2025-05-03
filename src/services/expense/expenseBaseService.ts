@@ -1,18 +1,20 @@
-
 import { Expense } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const expenseBaseService = {
-  getAllExpenses: async (): Promise<Expense[]> => {
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('*');
-    
+  getAllExpenses: async (filters?: { month?: number; year?: number; type?: string }) : Promise<Expense[]> => {
+    let query = supabase.from('expenses').select('id, description, amount, date, category_id, payment_method, notes, type');
+    if (filters) {
+      if (filters.type) query = query.eq('type', filters.type);
+      if (filters.month && filters.year) {
+        // Filtrar por mês/ano no lado do cliente após buscar, pois Supabase não suporta funções de data diretamente
+      }
+    }
+    const { data, error } = await query;
     if (error) {
       console.error('Error fetching expenses:', error);
       return [];
     }
-    
     return data?.map(expense => ({
       id: expense.id,
       description: expense.description,
@@ -21,6 +23,7 @@ export const expenseBaseService = {
       categoryId: expense.category_id || "",
       paymentMethod: expense.payment_method || undefined,
       notes: expense.notes || undefined,
+      type: expense?.type || "despesa",
     })) || [];
   },
 
@@ -46,6 +49,7 @@ export const expenseBaseService = {
       categoryId: data.category_id || "",
       paymentMethod: data.payment_method || undefined,
       notes: data.notes || undefined,
+      type: data?.type || "despesa",
     };
   },
 
@@ -59,6 +63,7 @@ export const expenseBaseService = {
         category_id: expense.categoryId,
         payment_method: expense.paymentMethod,
         notes: expense.notes,
+        type: expense.type,
       })
       .select()
       .single();
@@ -78,6 +83,7 @@ export const expenseBaseService = {
       categoryId: data.category_id || "",
       paymentMethod: data.payment_method || undefined,
       notes: data.notes || undefined,
+      type: data?.type || "despesa",
     };
   },
 
@@ -91,6 +97,7 @@ export const expenseBaseService = {
         category_id: expense.categoryId,
         payment_method: expense.paymentMethod,
         notes: expense.notes,
+        type: expense.type,
       })
       .eq('id', expense.id)
       .select()
@@ -111,6 +118,7 @@ export const expenseBaseService = {
       categoryId: data.category_id || "",
       paymentMethod: data.payment_method || undefined,
       notes: data.notes || undefined,
+      type: data?.type || "despesa",
     };
   },
 
@@ -145,6 +153,7 @@ export const expenseBaseService = {
       categoryId: expense.category_id || "",
       paymentMethod: expense.payment_method || undefined,
       notes: expense.notes || undefined,
+      type: expense?.type || "despesa",
     })) || [];
   },
 };

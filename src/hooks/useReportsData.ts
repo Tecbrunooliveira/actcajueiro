@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Payment } from "@/types";
 import { paymentService } from "@/services";
+import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 
 // Import our new hooks
 import { usePeriodSelection } from "./reports/usePeriodSelection";
@@ -11,12 +11,13 @@ import { usePaymentGeneration } from "./reports/usePaymentGeneration";
 import { usePdfReportGeneration } from "./reports/usePdfReportGeneration";
 import { useToast } from "@/components/ui/use-toast";
 
-export const useReportsData = (retryTrigger = 0) => {
+export function useReportsData(retryCount: number) {
   const [allPayments, setAllPayments] = useState<Payment[]>([]);
   const [monthlyPayments, setMonthlyPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Use our smaller hooks
   const {
@@ -35,7 +36,7 @@ export const useReportsData = (retryTrigger = 0) => {
     loadingMonthlyRecord, 
     error: monthlyRecordError,
     retry: retryMonthlyRecord
-  } = useMonthlyRecord(selectedMonth, selectedYear, retryTrigger > 0);
+  } = useMonthlyRecord(selectedMonth, selectedYear, retryCount > 0);
 
   // Define the data refresh function with error handling and optimized loading
   const refreshData = useCallback(async () => {
@@ -95,11 +96,11 @@ export const useReportsData = (retryTrigger = 0) => {
 
   // Only load data when retryTrigger changes (search button clicked)
   useEffect(() => {
-    if (retryTrigger > 0) {
-      console.log("Loading data due to retry trigger:", retryTrigger);
+    if (retryCount > 0) {
+      console.log("Loading data due to retry trigger:", retryCount);
       refreshData();
     }
-  }, [refreshData, retryTrigger]);
+  }, [refreshData, retryCount]);
 
   // Combine errors
   useEffect(() => {
@@ -119,13 +120,36 @@ export const useReportsData = (retryTrigger = 0) => {
   // Calculate combined loading state
   const isLoading = loading || loadingMonthlyRecord || loadingMembers;
   
-  // Combined retry function
+  // Função para buscar dados do relatório
+  const fetchReportData = useCallback(async (month: string, year: string) => {
+    // Aqui você pode compor as chamadas necessárias (pagamentos, membros, etc)
+    // Exemplo: buscar pagamentos do mês/ano
+    const payments = await paymentService.getAllPayments();
+    return {
+      payments,
+      // ...outros dados
+    };
+  }, []);
+
+  // React Query para cachear os dados do relatório
+  const queryOptions: UseQueryOptions<any, Error, any, any[]> = {
+    queryKey: ['reportData', selectedMonth, selectedYear],
+    queryFn: () => fetchReportData(selectedMonth, selectedYear),
+    enabled: false,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 30
+  };
+  const {
+    data: reportData,
+    isFetching: loadingReport,
+    error: reportError,
+    refetch: refetchReport
+  } = useQuery(queryOptions);
+
+  // Handler para buscar dados manualmente
   const handleRetry = useCallback(() => {
-    setDataError(null);
-    refreshData();
-    retryMonthlyRecord?.();
-    retryMembers?.();
-  }, [refreshData, retryMonthlyRecord, retryMembers]);
+    refetchReport();
+  }, [refetchReport]);
 
   return {
     selectedMonth,
@@ -139,12 +163,12 @@ export const useReportsData = (retryTrigger = 0) => {
     unpaidMembers,
     paidMembers,
     loading: isLoading,
-    dataError,
+    dataError: reportError ? String(reportError) : null,
     generatingPayments,
     generatingPdf,
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
-    retry: handleRetry
+    handleRetry
   };
-};
+}

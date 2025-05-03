@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDownIcon, ArrowUpIcon, BanknoteIcon, CoinsIcon, TrendingUp } from "lucide-react";
@@ -12,9 +11,12 @@ export const FinancialSummary = ({
     totalIncome: number;
     totalExpenses: number;
     balance: number;
+    totalPaymentIncome?: number;
+    totalCategoryIncome?: number;
+    categoryIncomes?: { name: string; value: number }[];
   } 
 }) => {
-  const { totalIncome, totalExpenses, balance } = data;
+  const { totalIncome, totalExpenses, balance, totalPaymentIncome = 0, totalCategoryIncome = 0 } = data;
   
   // Add console logging to debug the values
   console.log("FinancialSummary rendering with data:", { totalIncome, totalExpenses, balance });
@@ -41,10 +43,29 @@ export const FinancialSummary = ({
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-club-600 tracking-tight">{formatCurrency(totalIncome)}</div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">Recebimento de sócio</span>
+                <span className="font-semibold text-green-700">{formatCurrency(totalPaymentIncome)}</span>
+              </div>
+              {data.categoryIncomes && data.categoryIncomes.length > 0 && (
+                <ul className="ml-2">
+                  {data.categoryIncomes.map((cat) => (
+                    <li key={cat.name} className="flex justify-between text-[0.85em] py-0.5">
+                      <span className="truncate max-w-[120px]">{cat.name}</span>
+                      <span className="font-semibold text-green-700">{formatCurrency(cat.value)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="flex items-center justify-between border-t pt-2 mt-2">
+                <span className="text-xs font-bold">Total de receitas</span>
+                <span className="text-2xl font-bold text-club-600">{formatCurrency(totalIncome)}</span>
+              </div>
+            </div>
             <div className="mt-2 flex items-center text-xs text-muted-foreground">
               <TrendingUp className="mr-1 h-3.5 w-3.5 text-green-500" />
-              <span>Valor total recebido dos sócios</span>
+              <span>Receita de pagamentos e lançamentos do período</span>
             </div>
           </CardContent>
         </Card>

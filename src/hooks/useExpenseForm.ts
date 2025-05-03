@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,6 +12,7 @@ const expenseSchema = z.object({
   categoryId: z.string().min(1, { message: "Selecione uma categoria" }),
   paymentMethod: z.string().min(1, { message: "Selecione um método de pagamento" }),
   notes: z.string().optional(),
+  type: z.enum(["despesa", "receita"]).default("despesa"),
 });
 
 export type ExpenseFormValues = z.infer<typeof expenseSchema>;
@@ -35,6 +35,7 @@ export function useExpenseForm({ onSubmit, initialData, onCancel, categories }: 
       categoryId: initialData?.categoryId || "",
       paymentMethod: initialData?.paymentMethod || "pix",
       notes: initialData?.notes || "",
+      type: initialData?.type || "despesa",
     },
   });
 
@@ -58,6 +59,7 @@ export function useExpenseForm({ onSubmit, initialData, onCancel, categories }: 
         categoryId: data.categoryId,
         paymentMethod: data.paymentMethod,
         notes: data.notes,
+        type: data.type,
       });
       form.reset();
     } catch (error) {

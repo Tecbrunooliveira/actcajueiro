@@ -1,4 +1,3 @@
-
 export type MemberStatus = 'frequentante' | 'afastado';
 
 export interface Position {
@@ -59,4 +58,5 @@ export interface Expense {
   categoryId: string;
   paymentMethod?: string;
   notes?: string;
+  type: "despesa" | "receita";
 }

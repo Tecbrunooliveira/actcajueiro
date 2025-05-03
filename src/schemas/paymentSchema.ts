@@ -1,10 +1,12 @@
-
 import { z } from "zod";
 import { getCurrentMonthYear } from "@/services/formatters";
 
 export const paymentSchema = z.object({
   memberId: z.string().min(1, "Sócio é obrigatório"),
-  amount: z.coerce.number().min(1, "Valor é obrigatório"),
+  amount: z.preprocess(
+    (val) => val === "" ? undefined : Number(val),
+    z.number().min(1, "Valor é obrigatório")
+  ),
   month: z.string().min(1, "Mês é obrigatório"),
   year: z.coerce.number().min(2020, "Ano inválido"),
   isPaid: z.boolean().default(false),

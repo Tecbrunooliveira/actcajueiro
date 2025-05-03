@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Expense } from "@/types";
 import { paymentService, expenseService } from "@/services";
@@ -8,7 +7,10 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
   const [financialSummary, setFinancialSummary] = useState({
     totalIncome: 0,
     totalExpenses: 0,
-    balance: 0
+    balance: 0,
+    totalPaymentIncome: 0,
+    totalCategoryIncome: 0,
+    categoryIncomes: [] as { name: string; value: number }[],
   });
   const [error, setError] = useState<string | null>(null);
   const [fetchAttempted, setFetchAttempted] = useState(false);
@@ -21,7 +23,10 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       return {
         totalIncome: 0,
         totalExpenses: 0,
-        balance: 0
+        balance: 0,
+        totalPaymentIncome: 0,
+        totalCategoryIncome: 0,
+        categoryIncomes: [],
       };
     }
     
@@ -33,9 +38,10 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       const payments = await paymentQueryService.getPaymentsByMonth(selectedMonth, yearNumber);
       
       // Sum up paid payments to calculate total income
-      const totalIncome = payments
+      let totalIncome = payments
         .filter(payment => payment.isPaid)
         .reduce((sum, payment) => sum + payment.amount, 0);
+      let totalPaymentIncome = totalIncome;
       
       console.log(`Calculated totalIncome: ${totalIncome} from ${payments.length} payments`);
       
@@ -44,17 +50,39 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       
       // Filter expenses by month and year
       let totalExpenses = 0;
-      
+      let totalExtraIncome = 0;
+      let categoryIncomes: { name: string; value: number }[] = [];
       if (allExpenses && allExpenses.length > 0) {
         const year = parseInt(selectedYear);
         const month = selectedMonth ? parseInt(selectedMonth.split('-')[1]) : 0;
-        
         if (year && month) {
+          // Buscar categorias
+          const categories = await expenseService.getAllCategories();
+          // Agrupar receitas por categoria
+          const receitas = allExpenses.filter(expense => {
+            try {
+              const expenseDate = new Date(expense.date);
+              return expense.type === 'receita' && expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
+            } catch (e) {
+              return false;
+            }
+          });
+          const receitasPorCategoria: Record<string, number> = {};
+          receitas.forEach(expense => {
+            if (!receitasPorCategoria[expense.categoryId]) receitasPorCategoria[expense.categoryId] = 0;
+            receitasPorCategoria[expense.categoryId] += expense.amount || 0;
+          });
+          categoryIncomes = Object.entries(receitasPorCategoria).map(([categoryId, value]) => {
+            const cat = categories.find(c => c.id === categoryId);
+            return { name: cat?.name || 'Sem categoria', value };
+          });
+          totalExtraIncome = receitas.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+
           totalExpenses = allExpenses
             .filter(expense => {
               try {
                 const expenseDate = new Date(expense.date);
-                return expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
+                return expense.type !== 'receita' && expenseDate.getFullYear() === year && expenseDate.getMonth() === month - 1;
               } catch (e) {
                 return false; // Skip invalid dates
               }
@@ -63,6 +91,8 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
         }
       }
       
+      // Incluir receitas extras no totalIncome
+      totalIncome += totalExtraIncome;
       // Calculate balance
       const balance = totalIncome - totalExpenses;
       
@@ -71,7 +101,10 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       return {
         totalIncome,
         totalExpenses,
-        balance
+        balance,
+        totalPaymentIncome,
+        totalCategoryIncome: totalExtraIncome,
+        categoryIncomes,
       };
     } catch (error) {
       console.error("Error in calculateFinancialSummary:", error);
@@ -79,7 +112,10 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       return {
         totalIncome: 0,
         totalExpenses: 0,
-        balance: 0
+        balance: 0,
+        totalPaymentIncome: 0,
+        totalCategoryIncome: 0,
+        categoryIncomes: [],
       };
     }
   }, [selectedMonth, selectedYear]);
@@ -90,7 +126,10 @@ export const useFinancialSummary = (selectedMonth: string, selectedYear: string)
       setFinancialSummary({
         totalIncome: 0, 
         totalExpenses: 0, 
-        balance: 0
+        balance: 0,
+        totalPaymentIncome: 0,
+        totalCategoryIncome: 0,
+        categoryIncomes: [],
       });
       return;
     }
