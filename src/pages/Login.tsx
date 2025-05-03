@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
@@ -7,8 +6,8 @@ import LoginForm from "@/components/auth/LoginForm";
 import CreateAdminButton from "@/components/auth/CreateAdminButton";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("admin");
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 

@@ -1,3 +1,4 @@
+
 import { Expense } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,7 +24,7 @@ export const expenseBaseService = {
       categoryId: expense.category_id || "",
       paymentMethod: expense.payment_method || undefined,
       notes: expense.notes || undefined,
-      type: expense?.type || "despesa",
+      type: (expense?.type || "despesa") as "despesa" | "receita",
     })) || [];
   },
 
@@ -49,7 +50,7 @@ export const expenseBaseService = {
       categoryId: data.category_id || "",
       paymentMethod: data.payment_method || undefined,
       notes: data.notes || undefined,
-      type: data?.type || "despesa",
+      type: (data?.type || "despesa") as "despesa" | "receita",
     };
   },
 
@@ -83,7 +84,7 @@ export const expenseBaseService = {
       categoryId: data.category_id || "",
       paymentMethod: data.payment_method || undefined,
       notes: data.notes || undefined,
-      type: data?.type || "despesa",
+      type: (data?.type || "despesa") as "despesa" | "receita",
     };
   },
 
@@ -118,7 +119,7 @@ export const expenseBaseService = {
       categoryId: data.category_id || "",
       paymentMethod: data.payment_method || undefined,
       notes: data.notes || undefined,
-      type: data?.type || "despesa",
+      type: (data?.type || "despesa") as "despesa" | "receita",
     };
   },
 
@@ -153,7 +154,7 @@ export const expenseBaseService = {
       categoryId: expense.category_id || "",
       paymentMethod: expense.payment_method || undefined,
       notes: expense.notes || undefined,
-      type: expense?.type || "despesa",
+      type: (expense?.type || "despesa") as "despesa" | "receita",
     })) || [];
   },
 };

@@ -1,22 +1,42 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient } from '@tanstack/react-query';
-
-// Certifique-se de que o React esteja completamente inicializado antes de importar o App
-// que pode conter componentes como React-PDF que dependem dele
-import App from './App.tsx';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { initializePdfUtils } from './services/pdf/utils';
 import './index.css';
-import { QueryClientProvider } from '@tanstack/react-query';
+import App from './App';
 
-// Inicialize o cliente de consulta após as importações do React
-const queryClient = new QueryClient();
+// Initialize PDF utilities before importing components that might use them
+initializePdfUtils();
 
-// Renderize a aplicação
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+// Create the query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
+
+// Make sure the DOM is ready before rendering
+document.addEventListener('DOMContentLoaded', () => {
+  // Render the application
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    createRoot(rootElement).render(
+      <React.StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </React.StrictMode>
+    );
+  } else {
+    console.error('Root element not found!');
+  }
+
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js');
+    });
+  }
+});

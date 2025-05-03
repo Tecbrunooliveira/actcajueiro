@@ -1,8 +1,11 @@
 
 import { Font } from "@react-pdf/renderer";
 
+// Flag to track initialization status
+let initialized = false;
+
 // Register fonts for PDF
-export const registerFonts = () => {
+const registerFonts = () => {
   Font.register({
     family: 'Roboto',
     fonts: [
@@ -14,10 +17,19 @@ export const registerFonts = () => {
   });
 };
 
-// Registrar fontes apenas quando este módulo for importado
-// mas não imediatamente durante a inicialização
+// Initialize PDF utilities
 export const initializePdfUtils = () => {
-  registerFonts();
+  if (initialized) {
+    return;
+  }
+  
+  try {
+    registerFonts();
+    initialized = true;
+    console.log("PDF utilities initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize PDF utilities:", error);
+  }
 };
 
 // Helper function to download PDF
@@ -29,4 +41,5 @@ export const downloadPdf = (blob: Blob, fileName: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url); // Clean up the URL object
 };

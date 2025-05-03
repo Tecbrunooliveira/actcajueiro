@@ -30,7 +30,7 @@ const Reports = () => {
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
-    retry
+    handleRetry: handleReportsDataRetry
   } = useReportsData(retryCount);
 
   const {
@@ -47,6 +47,7 @@ const Reports = () => {
     activeTab === 'advanced' && retryCount > 0 ? selectedYear : ''
   );
   
+  // Combined retry function
   const handleRetry = () => {
     handleRetryCountIncrement();
     toast({
@@ -54,7 +55,9 @@ const Reports = () => {
       description: "Tentando carregar os dados de relatórios novamente...",
       duration: 3000,
     });
-    retry && retry();
+    if (handleReportsDataRetry) {
+      handleReportsDataRetry();
+    }
   };
   
   const handle360Retry = () => {
@@ -63,7 +66,9 @@ const Reports = () => {
       description: "Tentando carregar o relatório 360° novamente...",
       duration: 3000,
     });
-    retry360 && retry360();
+    if (retry360) {
+      retry360();
+    }
   };
 
   // Only show main loading state on initial load, not when waiting for search results

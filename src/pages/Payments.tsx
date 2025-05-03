@@ -131,6 +131,8 @@ const Payments = () => {
             className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onTouchEnd={e => setTimeout(() => (e.target as HTMLInputElement).focus(), 100)}
+            onClick={e => setTimeout(() => (e.target as HTMLInputElement).focus(), 100)}
           />
         </div>
         {isAdmin && (
@@ -141,7 +143,6 @@ const Payments = () => {
           </Link>
         )}
       </motion.div>
-
       {/* Tabs */}
       <Tabs defaultValue="all" className="mb-6" onValueChange={(v) => setActiveTab(v as "all" | "paid" | "pending")}>
         <TabsList className="grid grid-cols-3 mb-2">
@@ -149,7 +150,6 @@ const Payments = () => {
           <TabsTrigger value="paid">Pagos</TabsTrigger>
           <TabsTrigger value="pending">Pendentes</TabsTrigger>
         </TabsList>
-
         {loading ? (
           <PaymentListSkeleton />
         ) : (
@@ -177,7 +177,6 @@ const Payments = () => {
                     isPaid: false,
                     date: ""
                   };
-                  
                   return (
                     <motion.div key={member.id} variants={item}>
                       <PaymentCard
