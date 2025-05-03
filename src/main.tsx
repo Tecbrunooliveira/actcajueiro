@@ -33,10 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     console.error('Root element not found!');
   }
+<<<<<<< HEAD
 
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js');
     });
   }
+=======
+>>>>>>> 886a4582aebdd58b135875b2c2c933f23b478d8b
 });
