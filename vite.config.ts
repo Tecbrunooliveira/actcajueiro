@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -48,12 +49,18 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/react-pdf')) {
+          // Garantir que React seja carregado primeiro
+          if (id.includes('node_modules/react')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          // Depois carregar react-pdf
+          if (id.includes('node_modules/react-pdf') || id.includes('node_modules/@react-pdf')) {
             return 'react-pdf';
           }
-          if (id.includes('node_modules/react')) {
-            return 'react';
-          }
+          // Outros módulos
           if (id.includes('node_modules')) {
             return id.toString().split('node_modules/')[1].split('/')[0].toString();
           }
@@ -61,4 +68,10 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom'], // Garantir que o React seja pré-bundled
+    esbuildOptions: {
+      mainFields: ['module', 'main'], // Ajudar na resolução de módulos
+    }
+  }
 }));

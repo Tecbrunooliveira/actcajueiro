@@ -54,7 +54,9 @@ const Reports = () => {
       description: "Tentando carregar os dados de relatórios novamente...",
       duration: 3000,
     });
-    retry && retry();
+    if (retry) {
+      retry();
+    }
   };
   
   const handle360Retry = () => {
@@ -63,7 +65,9 @@ const Reports = () => {
       description: "Tentando carregar o relatório 360° novamente...",
       duration: 3000,
     });
-    retry360 && retry360();
+    if (retry360) {
+      retry360();
+    }
   };
 
   // Only show main loading state on initial load, not when waiting for search results

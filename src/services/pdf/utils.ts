@@ -2,7 +2,7 @@
 import { Font } from "@react-pdf/renderer";
 
 // Register fonts for PDF
-export const registerFonts = () => {
+const registerFonts = () => {
   Font.register({
     family: 'Roboto',
     fonts: [
@@ -14,10 +14,10 @@ export const registerFonts = () => {
   });
 };
 
-// Registrar fontes apenas quando este módulo for importado
-// mas não imediatamente durante a inicialização
+// Inicializar fontes e outros recursos PDF
 export const initializePdfUtils = () => {
   registerFonts();
+  console.log("PDF utilities initialized");
 };
 
 // Helper function to download PDF

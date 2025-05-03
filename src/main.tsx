@@ -1,13 +1,17 @@
 
+// Importar React primeiro para garantir sua inicialização
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { initializePdfUtils } from './services/pdf/utils';
 
-// Certifique-se de que o React esteja completamente inicializado antes de importar o App
-// que pode conter componentes como React-PDF que dependem dele
+// Certifique-se de que o React esteja completamente inicializado
+// e inicialize os utilitários PDF antes de importar o App
+initializePdfUtils();
+
+// Agora importe o App que pode conter componentes React-PDF
 import App from './App.tsx';
 import './index.css';
-import { QueryClientProvider } from '@tanstack/react-query';
 
 // Inicialize o cliente de consulta após as importações do React
 const queryClient = new QueryClient();

@@ -11,7 +11,7 @@ import { usePaymentGeneration } from "./reports/usePaymentGeneration";
 import { usePdfReportGeneration } from "./reports/usePdfReportGeneration";
 import { useToast } from "@/components/ui/use-toast";
 
-export function useReportsData(retryCount: number) {
+export const useReportsData = (retryCount: number = 0) => {
   const [allPayments, setAllPayments] = useState<Payment[]>([]);
   const [monthlyPayments, setMonthlyPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
@@ -120,37 +120,27 @@ export function useReportsData(retryCount: number) {
   // Calculate combined loading state
   const isLoading = loading || loadingMonthlyRecord || loadingMembers;
   
-  // Função para buscar dados do relatório
-  const fetchReportData = useCallback(async (month: string, year: string) => {
-    // Aqui você pode compor as chamadas necessárias (pagamentos, membros, etc)
-    // Exemplo: buscar pagamentos do mês/ano
-    const payments = await paymentService.getAllPayments();
-    return {
-      payments,
-      // ...outros dados
-    };
-  }, []);
-
-  // React Query para cachear os dados do relatório
-  const queryOptions: UseQueryOptions<any, Error, any, any[]> = {
-    queryKey: ['reportData', selectedMonth, selectedYear],
-    queryFn: () => fetchReportData(selectedMonth, selectedYear),
-    enabled: false,
-    staleTime: 1000 * 60 * 10,
-    cacheTime: 1000 * 60 * 30
+  // Usado para buscar dados quando o período muda
+  const { data, isLoading: loadingReport, error: reportError, refetch } = useQuery({
+    queryKey: ['reports', selectedMonth, selectedYear, retryCount],
+    queryFn: async () => {
+      // Aqui você pode compor as chamadas necessárias (pagamentos, membros, etc)
+      // Exemplo: buscar pagamentos do mês/ano
+      const payments = await paymentService.getAllPayments();
+      return {
+        payments,
+        // ...outros dados
+      };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos (antigo cacheTime)
+    enabled: !!selectedMonth && !!selectedYear
+  });
+  
+  const retry = () => {
+    refetch();
   };
-  const {
-    data: reportData,
-    isFetching: loadingReport,
-    error: reportError,
-    refetch: refetchReport
-  } = useQuery(queryOptions);
-
-  // Handler para buscar dados manualmente
-  const handleRetry = useCallback(() => {
-    refetchReport();
-  }, [refetchReport]);
-
+  
   return {
     selectedMonth,
     selectedYear,
@@ -169,6 +159,6 @@ export function useReportsData(retryCount: number) {
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
-    handleRetry
+    handleRetry: retry
   };
-}
+};

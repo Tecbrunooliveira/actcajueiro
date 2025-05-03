@@ -2,7 +2,7 @@
 import React from 'react';
 import { pdf } from "@react-pdf/renderer";
 import { Report360PdfDocument } from "./documents/Report360PdfDocument";
-import { downloadPdf, initializePdfUtils } from "./utils";
+import { downloadPdf } from "./utils";
 
 // Function to generate and download the report 360 in PDF
 export const generateReport360Pdf = async (
@@ -17,9 +17,6 @@ export const generateReport360Pdf = async (
     balance: number;
   }
 ) => {
-  // Inicializar utilitários PDF antes de usá-los
-  initializePdfUtils();
-  
   const blob = await pdf(
     React.createElement(Report360PdfDocument, {
       title,
