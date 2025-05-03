@@ -1,6 +1,9 @@
 
 import { Font } from "@react-pdf/renderer";
 
+// Flag to track initialization status
+let initialized = false;
+
 // Register fonts for PDF
 const registerFonts = () => {
   Font.register({
@@ -14,10 +17,19 @@ const registerFonts = () => {
   });
 };
 
-// Inicializar fontes e outros recursos PDF
+// Initialize PDF utilities
 export const initializePdfUtils = () => {
-  registerFonts();
-  console.log("PDF utilities initialized");
+  if (initialized) {
+    return;
+  }
+  
+  try {
+    registerFonts();
+    initialized = true;
+    console.log("PDF utilities initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize PDF utilities:", error);
+  }
 };
 
 // Helper function to download PDF
@@ -29,4 +41,5 @@ export const downloadPdf = (blob: Blob, fileName: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url); // Clean up the URL object
 };

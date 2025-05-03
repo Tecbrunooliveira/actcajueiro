@@ -30,7 +30,7 @@ const Reports = () => {
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
-    retry
+    handleRetry
   } = useReportsData(retryCount);
 
   const {
@@ -54,8 +54,8 @@ const Reports = () => {
       description: "Tentando carregar os dados de relatórios novamente...",
       duration: 3000,
     });
-    if (retry) {
-      retry();
+    if (handleRetry) {
+      handleRetry();
     }
   };
   

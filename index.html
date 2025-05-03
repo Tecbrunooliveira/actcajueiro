@@ -30,8 +30,14 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
     
+    <!-- Fontes para o React-PDF -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf" as="font" crossorigin />
+    
     <!-- Prevenir erros de preload do Facebook pixel -->
     <meta name="facebook-domain-verification" content="disabled" />
+    
+    <!-- Disable external tracking -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' cdnjs.cloudflare.com *.lovableproject.com data:; script-src 'self' cdn.gpteng.co 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' *.supabase.co *.lovableproject.com wss://*.supabase.co;">
   </head>
 
   <body>

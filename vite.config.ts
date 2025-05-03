@@ -2,7 +2,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-// import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
@@ -16,8 +15,6 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    // mode === 'development' &&
-    // componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -34,7 +31,6 @@ export default defineConfig(({ mode }) => ({
             sizes: '64x64 32x32 24x24 16x16',
             type: 'image/x-icon',
           },
-          // Adicione outros ícones se desejar
         ],
       },
     }),
@@ -48,30 +44,24 @@ export default defineConfig(({ mode }) => ({
     minify: false,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Garantir que React seja carregado primeiro
-          if (id.includes('node_modules/react')) {
-            return 'react-vendor';
-          }
-          if (id.includes('node_modules/react-dom')) {
-            return 'react-vendor';
-          }
-          // Depois carregar react-pdf
-          if (id.includes('node_modules/react-pdf') || id.includes('node_modules/@react-pdf')) {
-            return 'react-pdf';
-          }
-          // Outros módulos
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
-          }
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          'react-pdf': ['@react-pdf/renderer'],
+          ...Object.fromEntries(
+            ['@tanstack/react-query', 'framer-motion', 'recharts', 'date-fns'].map(
+              dep => [dep.split('/')[0] || dep, [dep]]
+            )
+          )
         },
+        inlineDynamicImports: false,
       },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom'], // Garantir que o React seja pré-bundled
+    include: ['react', 'react-dom', '@react-pdf/renderer'],
     esbuildOptions: {
-      mainFields: ['module', 'main'], // Ajudar na resolução de módulos
+      target: 'es2020',
+      mainFields: ['module', 'main'],
     }
   }
 }));

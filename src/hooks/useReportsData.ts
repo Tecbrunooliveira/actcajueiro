@@ -1,7 +1,8 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Payment } from "@/types";
 import { paymentService } from "@/services";
-import { useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 // Import our new hooks
 import { usePeriodSelection } from "./reports/usePeriodSelection";
@@ -17,8 +18,7 @@ export const useReportsData = (retryCount: number = 0) => {
   const [loading, setLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
+  
   // Use our smaller hooks
   const {
     selectedMonth,
@@ -133,12 +133,17 @@ export const useReportsData = (retryCount: number = 0) => {
       };
     },
     staleTime: 5 * 60 * 1000, // 5 minutos
-    gcTime: 10 * 60 * 1000, // 10 minutos (antigo cacheTime)
-    enabled: !!selectedMonth && !!selectedYear
+    gcTime: 10 * 60 * 1000, // 10 minutos
+    enabled: Boolean(selectedMonth) && Boolean(selectedYear)
   });
   
-  const retry = () => {
+  // Function to retry data loading
+  const handleRetry = () => {
     refetch();
+    
+    // Also retry individual data parts
+    if (retryMonthlyRecord) retryMonthlyRecord();
+    if (retryMembers) retryMembers();
   };
   
   return {
@@ -159,6 +164,6 @@ export const useReportsData = (retryCount: number = 0) => {
     handleGeneratePendingPayments,
     handleGeneratePdfReport,
     formatMonthYear,
-    handleRetry: retry
+    handleRetry
   };
 };
