@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 886a4582aebdd58b135875b2c2c933f23b478d8b
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -27,10 +23,7 @@ import PaymentStatus from "./pages/PaymentStatus";
 import UserProfile from "./pages/UserProfile";
 import AdminUsers from "./pages/AdminUsers";
 import AnnouncementAdmin from "./pages/AnnouncementAdmin";
-<<<<<<< HEAD
 import TestInput from "./pages/TestInput";
-=======
->>>>>>> 886a4582aebdd58b135875b2c2c933f23b478d8b
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useAuth();
@@ -85,10 +78,7 @@ const App = () => (
             </ProtectedRoute>
           }
         />
-<<<<<<< HEAD
         <Route path="/test-input" element={<TestInput />} />
-=======
->>>>>>> 886a4582aebdd58b135875b2c2c933f23b478d8b
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
