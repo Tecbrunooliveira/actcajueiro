@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    headers: {
+      // Permite data:, cdnjs e fontes externas para PDF
+      'Content-Security-Policy': "default-src 'self'; connect-src 'self' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com *.supabase.co *.lovableproject.com wss://*.supabase.co; font-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; img-src 'self' data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;"
+    }
   },
   plugins: [
     react(),
